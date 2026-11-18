@@ -10,3 +10,4 @@ Status:
 - [x] read spec + deps
 - [x] code written: features/auth/{server-form-error,form-alert,use-signed-in,signup-form,login-form,logout-button,account-menu,gate-redirect,viewer-gate}, (auth)/{layout,auth-page,login,signup}, (app)/layout, site-header (getViewer itself), not-found, routes safeNext+REQUEST_PATH_HEADER, proxy header. next: typecheck, tests
 - [x] tests written + green (features/auth 44, routes safeNext). next: full typecheck/lint/test/build, browser check, prettier, SPEC
+- [x] DONE: browser probe vs real API (dev 3100/3101) green; checks green; SPEC T22 x + ID-T22
