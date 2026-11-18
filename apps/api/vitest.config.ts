@@ -12,6 +12,8 @@ export default defineConfig({
   test: {
     // Tests never reach a real map provider, whatever apps/api/.env says.
     env: { GEOCODING_PROVIDER: 'fake', ROUTING_PROVIDER: 'fake', NOMINATIM_ENABLED: 'false' },
+    // ...and no request leaves the machine, whatever the code under test does.
+    setupFiles: ['test/support/network-lockdown.ts'],
     projects: [
       {
         extends: true,

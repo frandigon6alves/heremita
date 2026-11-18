@@ -3,6 +3,12 @@ import { EnvValidationError, parseEnv } from './env.js';
 
 const DATABASE_URL = 'postgresql://heremita:heremita@localhost:5434/heremita';
 const MINIMAL = { DATABASE_URL, GEOCODING_PROVIDER: 'fake', ROUTING_PROVIDER: 'fake' };
+const PRODUCTION = {
+  ...MINIMAL,
+  NODE_ENV: 'production',
+  PUBLIC_SITE_URL: 'https://heremita.example',
+  ALLOW_FAKE_PROVIDERS: 'true',
+};
 
 describe('parseEnv', () => {
   it('applies_the_defaults', () => {
@@ -30,17 +36,8 @@ describe('parseEnv', () => {
   });
 
   it('defaults_secure_cookies_to_production_only', () => {
-    const production = parseEnv({
-      ...MINIMAL,
-      NODE_ENV: 'production',
-      PUBLIC_SITE_URL: 'https://heremita.example',
-    });
-    const overridden = parseEnv({
-      ...MINIMAL,
-      NODE_ENV: 'production',
-      PUBLIC_SITE_URL: 'https://heremita.example',
-      COOKIE_SECURE: 'false',
-    });
+    const production = parseEnv(PRODUCTION);
+    const overridden = parseEnv({ ...PRODUCTION, COOKIE_SECURE: 'false' });
 
     expect(production.COOKIE_SECURE).toBe(true);
     expect(overridden.COOKIE_SECURE).toBe(false);
@@ -82,6 +79,33 @@ describe('parseEnv', () => {
     const parse = () => parseEnv({ ...MINIMAL, NODE_ENV: 'production' });
 
     expect(parse).toThrow(/- PUBLIC_SITE_URL: is required in production/);
+  });
+
+  it('refuses_fake_providers_in_production', () => {
+    const parse = () => parseEnv({ ...PRODUCTION, ALLOW_FAKE_PROVIDERS: 'false' });
+
+    expect(parse).toThrow(/- GEOCODING_PROVIDER: fake is refused in production/);
+    expect(parse).toThrow(/- ROUTING_PROVIDER: fake is refused in production/);
+  });
+
+  it('refuses_one_fake_provider_beside_a_real_one_in_production', () => {
+    const parse = () =>
+      parseEnv({
+        ...PRODUCTION,
+        ALLOW_FAKE_PROVIDERS: undefined,
+        GEOCODING_PROVIDER: 'photon',
+        PHOTON_URL: 'https://photon.komoot.io',
+      });
+
+    expect(parse).toThrow(/- ROUTING_PROVIDER: fake is refused in production/);
+    expect(parse).not.toThrow(/GEOCODING_PROVIDER/);
+  });
+
+  it('accepts_fake_providers_in_production_when_explicitly_allowed', () => {
+    const env = parseEnv(PRODUCTION);
+
+    expect(env.GEOCODING_PROVIDER).toBe('fake');
+    expect(env.ALLOW_FAKE_PROVIDERS).toBe(true);
   });
 
   it('names_every_missing_or_invalid_variable_in_one_readable_message', () => {

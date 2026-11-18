@@ -51,6 +51,17 @@ export const envSchema = z
     );
     requireWhen(env.NOMINATIM_ENABLED, 'NOMINATIM_URL', 'when NOMINATIM_ENABLED=true');
     requireWhen(env.ROUTING_PROVIDER === 'osrm', 'OSRM_URL', 'when ROUTING_PROVIDER=osrm');
+    if (env.NODE_ENV === 'production' && !env.ALLOW_FAKE_PROVIDERS) {
+      for (const key of ['GEOCODING_PROVIDER', 'ROUTING_PROVIDER'] as const) {
+        if (env[key] === 'fake') {
+          ctx.addIssue({
+            code: 'custom',
+            path: [key],
+            message: 'fake is refused in production unless ALLOW_FAKE_PROVIDERS=true',
+          });
+        }
+      }
+    }
   })
   .transform(({ COOKIE_SECURE, PUBLIC_SITE_URL, ...env }) => ({
     ...env,
