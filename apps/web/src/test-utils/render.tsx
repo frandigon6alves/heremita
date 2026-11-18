@@ -9,6 +9,15 @@ import { messages as ptBR } from '@/messages/pt-BR';
 
 const catalogues = { en, 'pt-BR': ptBR } as const;
 
+/** The app's intl provider with the real catalogue of `locale` and UTC dates. */
+export function TestIntlProvider({ locale, children }: { locale: Locale; children: ReactNode }) {
+  return (
+    <NextIntlClientProvider locale={locale} messages={catalogues[locale]} timeZone={TIME_ZONE}>
+      {children}
+    </NextIntlClientProvider>
+  );
+}
+
 interface RenderWithIntlOptions extends Omit<RenderOptions, 'wrapper'> {
   /** Defaults to `en` so assertions read in the source language. */
   locale?: Locale;
@@ -22,11 +31,7 @@ export function renderWithIntl(
   { locale = 'en', userOptions, ...options }: RenderWithIntlOptions = {},
 ): RenderResult & { user: UserEvent } {
   function Wrapper({ children }: { children: ReactNode }) {
-    return (
-      <NextIntlClientProvider locale={locale} messages={catalogues[locale]} timeZone={TIME_ZONE}>
-        {children}
-      </NextIntlClientProvider>
-    );
+    return <TestIntlProvider locale={locale}>{children}</TestIntlProvider>;
   }
   return { user: userEvent.setup(userOptions), ...render(ui, { wrapper: Wrapper, ...options }) };
 }
