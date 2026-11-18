@@ -1,0 +1,21 @@
+.spinner {
+  flex: none;
+  animation: spin 900ms linear infinite;
+}
+
+.track {
+  opacity: 0.25;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Reduced motion: a still arc; the surrounding text says the work is in progress. */
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}

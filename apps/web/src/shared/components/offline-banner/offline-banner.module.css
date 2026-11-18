@@ -1,0 +1,9 @@
+.banner {
+  padding: var(--space-2) calc(var(--space-4) + env(safe-area-inset-right)) var(--space-2)
+    calc(var(--space-4) + env(safe-area-inset-left));
+  background: var(--color-warning);
+  color: var(--color-surface);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: var(--leading-sm);
+}

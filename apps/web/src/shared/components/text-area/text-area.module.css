@@ -1,0 +1,5 @@
+.textArea {
+  min-height: calc(var(--target-min) * 3);
+  resize: vertical;
+  line-height: var(--leading-md);
+}

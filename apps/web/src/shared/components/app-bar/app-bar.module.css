@@ -1,0 +1,26 @@
+.appBar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: calc(var(--app-bar-height) + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) calc(var(--space-4) + env(safe-area-inset-right)) 0
+    calc(var(--space-4) + env(safe-area-inset-left));
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.start,
+.end {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+}

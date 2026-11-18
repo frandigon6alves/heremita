@@ -1,0 +1,20 @@
+node_modules
+dist
+.next
+coverage
+generated
+playwright-report
+test-results
+pnpm-lock.yaml
+next-env.d.ts
+# Prisma owns these files; keep its formatting so migrations stay byte-stable.
+apps/api/prisma/migrations
+
+# The spec tools parse its caveman pipe tables; Prettier would rewrite them.
+SPEC.md
+
+# Saved upstream responses, kept byte-for-byte.
+apps/api/test/fixtures/upstream
+
+# Design and research notes, kept as written.
+docs/design

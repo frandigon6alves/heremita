@@ -1,0 +1,37 @@
+Please see https://routing.openstreetmap.de/about.html and https://www.fossgis.de/arbeitsgruppen/osm-server/nutzungsbedingungen/ (German) for details of access to the current demo server.
+
+***
+
+The following terms applied to the previous demo server but are still good practice:
+
+We are in principle happy for [our Demo Server](https://github.com/Project-OSRM/osrm-backend/wiki/Demo-server) to be queried from external users. We don't give any guarantees though and expect everyone to adhere to the following rules:
+
+# General rules
+
+* Excessive use is not allowed. If your requests are impacting the service stability, we will block you.
+* Clearly display appropriate data license attribution ([ODbL](http://opendatacommons.org/licenses/odbl/)) and the source of your routes ([OSRM](http://project-osrm.org)).
+* Valid User-Agent identifying application. Faking another app's User-Agent WILL get you blocked.
+* If known, a valid HTTP Referer. See [Wikipedia](http://en.wikipedia.org/wiki/HTTP_referer) for an explanation.
+* Embedding `http://map.project-osrm.org` as an iframe in external websites is not allowed.
+
+## Commercial use
+
+* Access to the Demo Server shall be withdrawn at any time and without giving a reason.
+* Selling access to our demo server is strictly forbidden!
+* Access to the demo server shall not be behind a paywall: If the Demo Server is used in a commercial product, it needs to be publicly accessible and featuring proper attribution.
+* We don't give any quality guarantees. The Demo Sever is supplied on best effort basis.
+
+# Server name
+
+The server is reachable on host **router.project-osrm.org** and serves HTTP as well as encrypted HTTPS traffic.
+
+# Register your external App/Service/Project
+
+Please add yourself to the [list of services](https://github.com/Project-OSRM/osrm-backend/wiki/Websites-and-projects-using-OSRM) using OSRM.
+
+# Changes to this policy
+
+This policy may change at any time subject to the needs and constraints of the project. Commercial services, or those that seek donations, should be especially aware that access may be withdrawn at any point: you may no longer be able to serve your paying customers if access is withdrawn.
+
+# Credits
+We thank the [OSM Tile Usage Policy](http://wiki.openstreetmap.org/wiki/Tile_usage_policy) that served as a skeleton for this page.

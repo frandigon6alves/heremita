@@ -1,0 +1,13 @@
+[FOSSGIS](https://www.fossgis.de/) kindly sponsors an OSRM demo server running worldwide car, foot and bike profiles. The server is available at `router.project-osrm.org` and `routing.openstreetmap.de`.
+
+Example query in Berlin:
+
+```
+https://router.project-osrm.org/route/v1/driving/13.414167165756226,52.52167215019524;13.4197763,52.5003103?geometries=geojson&alternatives=true&steps=true&generate_hints=false
+```
+
+You can find API documentation on the project page http://project-osrm.org and in this wiki. **Note**: the demo server usage is restricted to reasonable, non-commercial use-cases. Do not exceed 1 request per second. We provide no guarantees wrt. uptime, latency, or data updates. [Usage policy (German)](https://fossgis.de/arbeitsgruppen/osm-server/nutzungsbedingungen/), [privacy policy (German)](https://fossgis.de/datenschutzerkl%C3%A4rung/).
+
+The profiles in use are different to the default osrm-backend profiles, especially the bike and foot profiles.
+
+For more information, see https://routing.openstreetmap.de/about.html.

@@ -1,0 +1,37 @@
+'use client';
+
+import { isServer, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
+import type { ReactNode } from 'react';
+import { makeQueryClient, type Navigation } from '@/lib/api/query-client';
+
+let browserQueryClient: QueryClient | undefined;
+
+/**
+ * A lost session leaves with a full page load: the login page starts from a
+ * clean cache, and nothing of the previous viewer stays in memory.
+ */
+const browserNavigation: Navigation = {
+  location: () => ({ pathname: window.location.pathname, search: window.location.search }),
+  redirect: (url) => window.location.assign(url),
+};
+
+function getQueryClient(): QueryClient {
+  // Server: one client per request, so nothing leaks between users.
+  if (isServer) {
+    return makeQueryClient();
+  }
+  // Browser: one client for the whole session. It is not kept in React state
+  // because React discards state if the first render suspends.
+  browserQueryClient ??= makeQueryClient(browserNavigation);
+  return browserQueryClient;
+}
+
+/** Client-side providers: server-state cache and URL search-param state. */
+export function Providers({ children }: { children: ReactNode }) {
+  return (
+    <QueryClientProvider client={getQueryClient()}>
+      <NuqsAdapter>{children}</NuqsAdapter>
+    </QueryClientProvider>
+  );
+}

@@ -1,0 +1,43 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+.turbo/
+
+# env files (keep the examples)
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# tests
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# generated
+generated/
+next-env.d.ts
+
+# Scratch output from agents (command logs, lockfile snapshots)
+docs/progress/*.txt
+docs/progress/*.yaml

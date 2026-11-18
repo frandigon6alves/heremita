@@ -1,0 +1,39 @@
+{
+  "name": "@heremita/shared",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared contract between the web app and the API: zod schemas and the types inferred from them.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./openapi": {
+      "types": "./dist/openapi/document.d.ts",
+      "default": "./dist/openapi/document.js"
+    },
+    "./openapi.json": "./openapi.json"
+  },
+  "files": [
+    "dist",
+    "openapi.json"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "openapi:generate": "tsc -p tsconfig.build.json && node scripts/generate-openapi.mjs && prettier --write --log-level warn openapi.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "catalog:",
+    "zod-openapi": "^6.0.2"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "heremita",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Heremita - plan your own trip: places on a map, day-by-day itinerary, routes and shared opinions.",
+  "type": "module",
+  "packageManager": "pnpm@11.1.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "pnpm run build:shared && pnpm --recursive --parallel run dev",
+    "build": "pnpm --recursive run build",
+    "build:shared": "pnpm --filter @heremita/shared run build",
+    "typecheck": "pnpm run build:shared && pnpm --recursive run typecheck",
+    "lint": "pnpm run build:shared && pnpm --recursive run lint && eslint eslint.config.mjs scripts",
+    "test": "pnpm run build:shared && pnpm --recursive run test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "env:init": "node scripts/init-env.mjs",
+    "db:up": "docker compose up --detach --wait",
+    "db:down": "docker compose down",
+    "db:migrate": "pnpm --filter @heremita/api run db:migrate",
+    "db:seed": "pnpm --filter @heremita/api run db:seed",
+    "db:reset": "pnpm --filter @heremita/api run db:reset",
+    "e2e": "pnpm run build:shared && pnpm --filter @heremita/web run e2e",
+    "e2e:install": "pnpm --filter @heremita/web exec playwright install chromium"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "eslint-config-next": "16.4.6",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.14.0",
+    "prettier": "^3.10.1",
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.73.0"
+  }
+}

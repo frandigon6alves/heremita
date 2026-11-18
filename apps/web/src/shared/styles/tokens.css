@@ -1,0 +1,171 @@
+/*
+ * Design tokens (§I.tokens). Components read these custom properties and never
+ * hard-code colour, spacing or size. Brand: "Tide pool": warm sand ground, deep
+ * teal action, crab coral accent for the one thing that matters on a screen.
+ * Contrast pairs are checked by src/shared/styles/tokens.test.ts.
+ */
+
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  --color-bg: #f5efe3;
+  --color-surface: #fffcf6;
+  --color-surface-raised: #ffffff;
+  --color-text: #1c2629;
+  --color-text-muted: #535e62;
+  --color-primary: #0e5a60;
+  --color-on-primary: #ffffff;
+  --color-primary-soft: #dcebea;
+  --color-accent: #b8432a;
+  --color-on-accent: #ffffff;
+  --color-accent-soft: #f7e1da;
+  --color-danger: #a8261c;
+  --color-success: #2c6637;
+  --color-warning: #8a5a00;
+  --color-border: #d8cdb8;
+  --color-border-control: #8c8273;
+  --color-focus: #0e5a60;
+  --color-route-casing: #ffffff;
+  --color-backdrop: rgb(28 38 41 / 0.5);
+
+  --shadow-1: 0 1px 2px rgb(28 38 41 / 0.12);
+  --shadow-2: 0 4px 12px rgb(28 38 41 / 0.14);
+  --shadow-3: 0 -6px 24px rgb(28 38 41 / 0.16);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg: #0f1619;
+  --color-surface: #162024;
+  --color-surface-raised: #1d2a2f;
+  --color-text: #ebe5d9;
+  --color-text-muted: #a6afb0;
+  --color-primary: #6cc7c2;
+  --color-on-primary: #0b2224;
+  --color-primary-soft: #173a3c;
+  --color-accent: #f0896b;
+  --color-on-accent: #2a0e06;
+  --color-accent-soft: #3a211b;
+  --color-danger: #ff8a80;
+  --color-success: #7bcb8a;
+  --color-warning: #e9b65c;
+  --color-border: #2c3a40;
+  --color-border-control: #6e7c80;
+  --color-focus: #6cc7c2;
+  --color-route-casing: #0f1619;
+  --color-backdrop: rgb(0 0 0 / 0.6);
+
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.5);
+  --shadow-2: 0 4px 12px rgb(0 0 0 / 0.5);
+  --shadow-3: 0 -6px 24px rgb(0 0 0 / 0.5);
+}
+
+/* No override (or "system"): follow the operating system. Same values as [data-theme='dark']. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]),
+  [data-theme='system'] {
+    color-scheme: dark;
+
+    --color-bg: #0f1619;
+    --color-surface: #162024;
+    --color-surface-raised: #1d2a2f;
+    --color-text: #ebe5d9;
+    --color-text-muted: #a6afb0;
+    --color-primary: #6cc7c2;
+    --color-on-primary: #0b2224;
+    --color-primary-soft: #173a3c;
+    --color-accent: #f0896b;
+    --color-on-accent: #2a0e06;
+    --color-accent-soft: #3a211b;
+    --color-danger: #ff8a80;
+    --color-success: #7bcb8a;
+    --color-warning: #e9b65c;
+    --color-border: #2c3a40;
+    --color-border-control: #6e7c80;
+    --color-focus: #6cc7c2;
+    --color-route-casing: #0f1619;
+    --color-backdrop: rgb(0 0 0 / 0.6);
+
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.5);
+    --shadow-2: 0 4px 12px rgb(0 0 0 / 0.5);
+    --shadow-3: 0 -6px 24px rgb(0 0 0 / 0.5);
+  }
+}
+
+:root {
+  /* Day colours: pins and routes, same in both themes (white stroke + white number ≥ 4.5:1). Day 9+ cycles. */
+  --day-1: #0e5a60;
+  --day-2: #b8432a;
+  --day-3: #3d5a99;
+  --day-4: #9a5b00;
+  --day-5: #2c6637;
+  --day-6: #8e3b6a;
+  --day-7: #4f5b12;
+  --day-8: #41535e;
+
+  /* Type: font families come from next/font (variables set on <html> by the root layout). */
+  --font-heading: var(--font-fraunces), Georgia, 'Times New Roman', serif;
+  --font-body: var(--font-atkinson), system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-md: 16px;
+  --text-lg: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+  --text-xl: clamp(1.25rem, 1.05rem + 0.8vw, 1.5rem);
+  --text-2xl: clamp(1.5rem, 1.1rem + 1.6vw, 2rem);
+  --text-3xl: clamp(2rem, 1.2rem + 3.2vw, 3rem);
+  --leading-xs: 1.4;
+  --leading-sm: 1.45;
+  --leading-md: 1.5;
+  --leading-lg: 1.3;
+  --leading-xl: 1.25;
+  --leading-2xl: 1.15;
+  --leading-3xl: 1.1;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --duration-fade: 120ms;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in: cubic-bezier(0.3, 0, 1, 1);
+  --pressed-scale: 0.97;
+
+  --target-min: 44px;
+  --app-bar-height: 56px;
+  --fab-size: 56px;
+  --chip-height: 44px;
+  --row-height-leg: 48px;
+  --sheet-peek: 136px;
+  --content-max: 1200px;
+  --form-max: 420px;
+  --form-max-wide: 560px;
+
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 2px;
+}
+
+/* Motion off: every transition is instant except opacity fades. Map camera calls pass duration 0. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+    --pressed-scale: 1;
+  }
+}

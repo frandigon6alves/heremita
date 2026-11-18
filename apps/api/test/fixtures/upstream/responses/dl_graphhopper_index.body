@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Photon Downloads - planet</title>
+  <meta name="description" content="Service for downloading DB and json dumps for the Photon geocoder.">
+</head>
+
+<body>
+<header>
+<div class="site-title"><a href="https://download1.graphhopper.com/public">Photon Download Service</a></div>
+<div id="powered-by">Powered by</div>
+<div id="graphhopper-link"><a href="https://graphhopper.com"><img height="40px" alt="Graphhopper" src="https://nominatim.org/img/graphhopper.png"></a></div>
+</header>
+
+<div id="main">
+<div class="title">
+<div class="title-super">
+<a href="https://download1.graphhopper.com/public/index.html">Planet</a> &gt;&gt;
+</div>
+<h1>Planet</h1>
+</div>
+
+<p>This is the download service for dumps of
+<a href="https://openstreetmap.org">OpenStreetMap</a> data, preprocessed for
+use with the <a href="https://photon.komoot.io">Photon</a> geocoder.
+You can use these dumps to set up your own local Photon server.</p>
+
+
+<h2>Sub-regions</h2>
+
+There are smaller extracts for this region available.
+
+<table>
+<thead><tr><th>Region</th><th>DB dump</th><th>Countries</th></tr></thead>
+<tbody>
+
+<tr>
+    <td><a href="https://download1.graphhopper.com/public/africa/index.html">Africa</a></td>
+    <td class="td-center">✓</td>
+    <td>DZ, EG, EH, LY, MA, SD, TN, BJ, BF, CV, GH, GN, GW, CI, LR, ML, MR, NE, SN, GM, SL, TG, NG, AO, CM, CF, TD, CG, CD, GQ, GA, ST, BI, KE, MW, MZ, RW, TZ, UG, SS, ZM, ZW, ER, ET, DJ, SO, MG, MU, SC, KM, BW, LS, NA, ZA, SZ, SH</td>
+</tr>
+
+<tr>
+    <td><a href="https://download1.graphhopper.com/public/asia/index.html">Asia</a></td>
+    <td class="td-center">✓</td>
+    <td>KZ, KG, TJ, TM, UZ, BH, KW, OM, QA, SA, AE, YE, MV, LK, IO, AM, AZ, IR, IQ, IL, JO, LB, PS, SY, AF, BD, BT, NP, PK, CN, MN, KP, KR, TW, BN, KH, ID, LA, MY, MM, PH, SG, TH, TL, VN, IN, JP</td>
+</tr>
+
+<tr>
+    <td><a href="https://download1.graphhopper.com/public/australia-oceania/index.html">Australia-Oceania</a></td>
+    <td class="td-center">✓</td>
+    <td>AU, NZ, CK, FJ, KI, MH, FM, NR, NU, PW, PG, PN, WS, SB, TK, TO, TV, VU</td>
+</tr>
+
+<tr>
+    <td><a href="https://download1.graphhopper.com/public/europe/index.html">Europe</a></td>
+    <td class="td-center">✓</td>
+    <td>AL, BY, BE, BA, BG, HR, CY, CZ, EE, LT, LV, GB, IM, GG, JE, IS, FO, IE, FI, GE, GR, HU, IT, VA, SM, XK, CH, LI, MK, MT, MD, ME, NO, PL, PT, RO, RS, SI, SE, TR, UA, AD, AT, DK, ES, GI, FR, MC, DE, LU, NL, RU, SK</td>
+</tr>
+
+<tr>
+    <td><a href="https://download1.graphhopper.com/public/north-america/index.html">North-America</a></td>
+    <td class="td-center">✓</td>
+    <td>BZ, CR, SV, GT, HN, NI, PA, BS, CU, HT, DO, JM, AG, AI, BB, DM, GD, KN, KY, LC, MS, TC, TT, VC, VG, GL, BM, CA, US, MX</td>
+</tr>
+
+<tr>
+    <td><a href="https://download1.graphhopper.com/public/south-america/index.html">South-America</a></td>
+    <td class="td-center">✓</td>
+    <td>CL, BR, BO, CO, EC, PY, PE, UY, GY, VE, SR, FK, GS, AR</td>
+</tr>
+
+</tbody>
+</table>
+
+
+
+<h2>Downloads</h2>
+
+
+
+
+<h3>Database dump (tar.bz2)</h3>
+
+<table>
+<thead><tr><th>Photon version</th><th>Database dump</th><th>Size</th><th>Last update</th></tr></thead>
+<tbody>
+
+
+<tr>
+  <td>0.5.x</td>
+  
+  <td><a href="https://download1.graphhopper.com/public/photon-db-planet-0.5-latest.tar.bz2">photon-db-planet-0.5-latest.tar.bz2</a></td>
+  <td>101.0 GB</td>
+  <td>2026-02-01 13:07:59</td>
+  
+</tr>
+
+
+<tr>
+  <td>0.6.x</td>
+  
+  <td><a href="https://download1.graphhopper.com/public/photon-db-planet-0.6-latest.tar.bz2">photon-db-planet-0.6-latest.tar.bz2</a></td>
+  <td>101.0 GB</td>
+  <td>2026-02-01 13:07:59</td>
+  
+</tr>
+
+
+<tr>
+  <td>0.7.x ElasticSearch</td>
+  
+  <td><a href="https://download1.graphhopper.com/public/photon-db-planet-0.7ES-latest.tar.bz2">photon-db-planet-0.7ES-latest.tar.bz2</a></td>
+  <td>101.0 GB</td>
+  <td>2026-02-01 13:07:59</td>
+  
+</tr>
+
+
+<tr>
+  <td>0.7.x OpenSearch</td>
+  
+  <td><a href="https://download1.graphhopper.com/public/photon-db-planet-0.7OS-latest.tar.bz2">photon-db-planet-0.7OS-latest.tar.bz2</a></td>
+  <td>126.1 GB</td>
+  <td>2026-01-31 10:27:24</td>
+  
+</tr>
+
+
+<tr>
+  <td>1.x</td>
+  
+  <td><a href="https://download1.graphhopper.com/public/photon-db-planet-1.0-latest.tar.bz2">photon-db-planet-1.0-latest.tar.bz2</a></td>
+  <td>63.3 GB</td>
+  <td>2026-11-17 10:41:12</td>
+  
+</tr>
+
+
+<tr>
+  <td>master</td>
+  
+  <td><a href="https://download1.graphhopper.com/public/photon-db-planet-master-latest.tar.bz2">photon-db-planet-master-latest.tar.bz2</a></td>
+  <td>62.8 GB</td>
+  <td>2026-11-12 15:39:56</td>
+  
+</tr>
+
+</tbody>
+</table>
+
+
+<p>These files contain a ready-to-use Photon database. Download and unpack the file.
+Then start Photon from the directory where you have unpacked the tarball.</p>
+
+<p>The database dump only has support for the languages English, German, French
+and local language. There is also no support for structured search or full
+geometries. If you need more languages or any of the advanced features, use
+the JSON data dump.</p>
+
+<p>Please make sure to download the dump that fits with the major release number
+of your Photon package. For <b>version 0.7</b>, extracts for both
+ElasticSearch 5.6 and OpenSearch are provided. Choose what fits to the
+jar file you downloaded.</p>
+
+<p><b>master</b> versions are built with the latest Photon version from GitHub.
+They are only guaranteed to work with the version they have been built with, so
+use with care.</p>
+
+
+<h3>Json data dump (jsonl.zst)</h3>
+
+<table>
+<thead><tr><th>Photon version</th><th>Json data dump</th><th>Size</th><th>Last update</th></tr></thead>
+<tbody>
+<tr>
+  <td>0.7.x - 1.x</td>
+  
+  
+  <td><a href="https://download1.graphhopper.com/public/photon-dump-planet-1.0-latest.jsonl.zst">photon-dump-planet-1.0-latest.jsonl.zst</a></td>
+  <td>27.1 GB</td>
+  <td>2026-11-16 06:33:06</td>
+  
+</tr>
+<tr>
+  <td>master</td>
+  
+  
+  <td><a href="https://download1.graphhopper.com/public/photon-dump-planet-master-latest.jsonl.zst">photon-dump-planet-master-latest.jsonl.zst</a></td>
+  <td>27.1 GB</td>
+  <td>2026-11-12 05:23:27</td>
+  
+</tr>
+</tbody>
+</table>
+
+
+<p>This file contains a data dump, which can be used to build your own custom
+Photon database. Download the file, then run an import like this:</p>
+
+<p><code>zstd --stdout -d photon-dump-*.jsonl.zst | java -jar photon.jar import -import-file -</code></p>
+
+Json data dumps are guaranteed to work with the Photons versions given.
+
+For more information on data dumps, see the
+<a href="https://github.com/komoot/photon/blob/master/docs/usage.md#importing-from-a-dump-file">documentation</a>.
+
+
+
+<h2>Full directory listing</h2>
+
+<p>Here you find a listing of all available files including older versions.</p>
+
+<table>
+<thead><tr><th>File</th><th>Size</th><th>Date</th></tr></thead>
+<tbody>
+
+<tr>
+  <td><a href="photon-db-250720.tar.bz2">photon-db-250720.tar.bz2</a></td>
+  <td class="td-right">101487514668</td>
+  <td>2025-07-20 23:34:55</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-250720.tar.bz2.md5">photon-db-250720.tar.bz2.md5</a></td>
+  <td class="td-right">59</td>
+  <td>2025-07-20 23:47:22</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-latest.tar.bz2">photon-db-latest.tar.bz2</a></td>
+  <td class="td-right">101487514668</td>
+  <td>2025-07-20 23:34:55</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-latest.tar.bz2.md5">photon-db-latest.tar.bz2.md5</a></td>
+  <td class="td-right">59</td>
+  <td>2026-01-27 13:40:53</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-0.5-latest.tar.bz2">photon-db-planet-0.5-latest.tar.bz2</a></td>
+  <td class="td-right">100956769302</td>
+  <td>2026-02-01 13:07:59</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-0.5-latest.tar.bz2.md5">photon-db-planet-0.5-latest.tar.bz2.md5</a></td>
+  <td class="td-right">70</td>
+  <td>2026-02-02 04:34:53</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-0.6-latest.tar.bz2">photon-db-planet-0.6-latest.tar.bz2</a></td>
+  <td class="td-right">100956769302</td>
+  <td>2026-02-01 13:07:59</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-0.6-latest.tar.bz2.md5">photon-db-planet-0.6-latest.tar.bz2.md5</a></td>
+  <td class="td-right">70</td>
+  <td>2026-02-02 04:34:53</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-0.7ES-latest.tar.bz2">photon-db-planet-0.7ES-latest.tar.bz2</a></td>
+  <td class="td-right">100956769302</td>
+  <td>2026-02-01 13:07:59</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-0.7ES-latest.tar.bz2.md5">photon-db-planet-0.7ES-latest.tar.bz2.md5</a></td>
+  <td class="td-right">72</td>
+  <td>2026-02-02 04:34:53</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-0.7OS-latest.tar.bz2">photon-db-planet-0.7OS-latest.tar.bz2</a></td>
+  <td class="td-right">126105739712</td>
+  <td>2026-01-31 10:27:24</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-0.7OS-latest.tar.bz2.md5">photon-db-planet-0.7OS-latest.tar.bz2.md5</a></td>
+  <td class="td-right">72</td>
+  <td>2026-02-01 03:23:16</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-1.0-latest.tar.bz2">photon-db-planet-1.0-latest.tar.bz2</a></td>
+  <td class="td-right">63271704602</td>
+  <td>2026-11-17 10:41:12</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-1.0-latest.tar.bz2.md5">photon-db-planet-1.0-latest.tar.bz2.md5</a></td>
+  <td class="td-right">70</td>
+  <td>2026-11-18 03:01:18</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-master-261101.tar.bz2">photon-db-planet-master-261101.tar.bz2</a></td>
+  <td class="td-right">62840752637</td>
+  <td>2026-11-05 19:12:10</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-master-261101.tar.bz2.md5">photon-db-planet-master-261101.tar.bz2.md5</a></td>
+  <td class="td-right">73</td>
+  <td>2026-11-05 19:26:00</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-master-261108.tar.bz2">photon-db-planet-master-261108.tar.bz2</a></td>
+  <td class="td-right">62824488706</td>
+  <td>2026-11-12 15:39:56</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-master-261108.tar.bz2.md5">photon-db-planet-master-261108.tar.bz2.md5</a></td>
+  <td class="td-right">73</td>
+  <td>2026-11-12 15:58:32</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-master-latest.tar.bz2">photon-db-planet-master-latest.tar.bz2</a></td>
+  <td class="td-right">62824488706</td>
+  <td>2026-11-12 15:39:56</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-master-latest.tar.bz2.md5">photon-db-planet-master-latest.tar.bz2.md5</a></td>
+  <td class="td-right">73</td>
+  <td>2026-11-13 08:08:05</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-release-261025.tar.bz2">photon-db-planet-release-261025.tar.bz2</a></td>
+  <td class="td-right">63078265646</td>
+  <td>2026-10-27 09:17:17</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-release-261025.tar.bz2.md5">photon-db-planet-release-261025.tar.bz2.md5</a></td>
+  <td class="td-right">74</td>
+  <td>2026-10-27 11:12:44</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-release-261101.tar.bz2">photon-db-planet-release-261101.tar.bz2</a></td>
+  <td class="td-right">63112939450</td>
+  <td>2026-11-03 11:25:54</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-release-261101.tar.bz2.md5">photon-db-planet-release-261101.tar.bz2.md5</a></td>
+  <td class="td-right">74</td>
+  <td>2026-11-03 13:24:16</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-release-261108.tar.bz2">photon-db-planet-release-261108.tar.bz2</a></td>
+  <td class="td-right">63206285720</td>
+  <td>2026-11-10 09:56:09</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-release-261108.tar.bz2.md5">photon-db-planet-release-261108.tar.bz2.md5</a></td>
+  <td class="td-right">74</td>
+  <td>2026-11-10 10:19:49</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-release-261115.tar.bz2">photon-db-planet-release-261115.tar.bz2</a></td>
+  <td class="td-right">63271704602</td>
+  <td>2026-11-17 10:41:12</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-release-261115.tar.bz2.md5">photon-db-planet-release-261115.tar.bz2.md5</a></td>
+  <td class="td-right">74</td>
+  <td>2026-11-17 11:11:38</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-release_es-260126.tar.bz2">photon-db-planet-release_es-260126.tar.bz2</a></td>
+  <td class="td-right">100897564341</td>
+  <td>2026-01-29 01:44:20</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-release_es-260126.tar.bz2.md5">photon-db-planet-release_es-260126.tar.bz2.md5</a></td>
+  <td class="td-right">77</td>
+  <td>2026-01-29 02:00:53</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-release_es-260129.tar.bz2">photon-db-planet-release_es-260129.tar.bz2</a></td>
+  <td class="td-right">100956769302</td>
+  <td>2026-02-01 13:07:59</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-release_es-260129.tar.bz2.md5">photon-db-planet-release_es-260129.tar.bz2.md5</a></td>
+  <td class="td-right">77</td>
+  <td>2026-02-01 13:21:25</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-release_os-260126.tar.bz2">photon-db-planet-release_os-260126.tar.bz2</a></td>
+  <td class="td-right">125536632336</td>
+  <td>2026-01-27 23:10:36</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-release_os-260126.tar.bz2.md5">photon-db-planet-release_os-260126.tar.bz2.md5</a></td>
+  <td class="td-right">77</td>
+  <td>2026-01-27 23:31:02</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-release_os-260129.tar.bz2">photon-db-planet-release_os-260129.tar.bz2</a></td>
+  <td class="td-right">126105739712</td>
+  <td>2026-01-31 10:27:24</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-release_os-260129.tar.bz2.md5">photon-db-planet-release_os-260129.tar.bz2.md5</a></td>
+  <td class="td-right">77</td>
+  <td>2026-01-31 10:48:28</td>
+</tr>
+
+<tr>
+  <td><a href="photon-db-planet-reverse-only.tar.bz2">photon-db-planet-reverse-only.tar.bz2</a></td>
+  <td class="td-right">31522046765</td>
+  <td>2026-02-16 11:07:36</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-0.7-latest.jsonl.zst.md5">photon-dump-planet-0.7-latest.jsonl.zst.md5</a></td>
+  <td class="td-right">74</td>
+  <td>2026-01-31 00:14:14</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-1.0-latest.jsonl.zst">photon-dump-planet-1.0-latest.jsonl.zst</a></td>
+  <td class="td-right">27115044730</td>
+  <td>2026-11-16 06:33:06</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-1.0-latest.jsonl.zst.md5">photon-dump-planet-1.0-latest.jsonl.zst.md5</a></td>
+  <td class="td-right">74</td>
+  <td>2026-11-16 06:43:24</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-master-261101.jsonl.zst">photon-dump-planet-master-261101.jsonl.zst</a></td>
+  <td class="td-right">27040449695</td>
+  <td>2026-11-05 08:42:25</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-master-261101.jsonl.zst.md5">photon-dump-planet-master-261101.jsonl.zst.md5</a></td>
+  <td class="td-right">77</td>
+  <td>2026-11-05 08:44:39</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-master-261108.jsonl.zst">photon-dump-planet-master-261108.jsonl.zst</a></td>
+  <td class="td-right">27078011323</td>
+  <td>2026-11-12 05:23:27</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-master-261108.jsonl.zst.md5">photon-dump-planet-master-261108.jsonl.zst.md5</a></td>
+  <td class="td-right">77</td>
+  <td>2026-11-12 05:26:31</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-master-latest.jsonl.zst">photon-dump-planet-master-latest.jsonl.zst</a></td>
+  <td class="td-right">27078011323</td>
+  <td>2026-11-12 05:23:27</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-master-latest.jsonl.zst.md5">photon-dump-planet-master-latest.jsonl.zst.md5</a></td>
+  <td class="td-right">77</td>
+  <td>2026-11-12 05:34:28</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-release-261025.jsonl.zst">photon-dump-planet-release-261025.jsonl.zst</a></td>
+  <td class="td-right">27009953312</td>
+  <td>2026-10-26 05:10:57</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-release-261025.jsonl.zst.md5">photon-dump-planet-release-261025.jsonl.zst.md5</a></td>
+  <td class="td-right">78</td>
+  <td>2026-10-26 05:13:05</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-release-261101.jsonl.zst">photon-dump-planet-release-261101.jsonl.zst</a></td>
+  <td class="td-right">27040451608</td>
+  <td>2026-11-02 06:46:45</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-release-261101.jsonl.zst.md5">photon-dump-planet-release-261101.jsonl.zst.md5</a></td>
+  <td class="td-right">78</td>
+  <td>2026-11-02 06:49:01</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-release-261108.jsonl.zst">photon-dump-planet-release-261108.jsonl.zst</a></td>
+  <td class="td-right">27078130564</td>
+  <td>2026-11-09 06:24:59</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-release-261108.jsonl.zst.md5">photon-dump-planet-release-261108.jsonl.zst.md5</a></td>
+  <td class="td-right">78</td>
+  <td>2026-11-09 06:27:48</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-release-261115.jsonl.zst">photon-dump-planet-release-261115.jsonl.zst</a></td>
+  <td class="td-right">27115044730</td>
+  <td>2026-11-16 06:33:06</td>
+</tr>
+
+<tr>
+  <td><a href="photon-dump-planet-release-261115.jsonl.zst.md5">photon-dump-planet-release-261115.jsonl.zst.md5</a></td>
+  <td class="td-right">78</td>
+  <td>2026-11-16 06:35:21</td>
+</tr>
+
+</tbody>
+</table>
+
+</div>
+
+<footer>
+<div id="weblinks" class="footer-div">
+  <div><a href="https://photon.komoot.io">Demo server</a></div>
+  <div><a href="https://github.com/komoot/photon">GitHub</a></div>
+  <div><a href="https://github.com/komoot/photon/discussions">Help and discussions</a></div>
+</div>
+<div id="copyright" class="footer-div">
+  <div>Data Copyright <a href="https://openstreetmap.org/copyright">OpenStreetMap Contributors</a></div>
+  <div>available under a <a href="http://opendatacommons.org/licenses/odbl/">ODbL 1.0</a> license.</div>
+</div>
+<div id="imprint" class="footer-div">
+  <div>Site maintained by <a href="https://github.com/lonvia">Sarah Hoffmann</a></div>
+  <div>Server sponsored by <a href="https://graphhopper.com">Graphhopper</a></div>
+  <div><a href="https://www.graphhopper.com/imprint/">Imprint</a></div>
+</div>
+</footer>
+
+<style>
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+header {
+  background-image: linear-gradient(#fff,#fff 89%, #999 90%,#fff);
+  padding: 10px;
+  margin: 0;
+  display: flex;
+  gap: 5px;
+}
+.site-title {
+  font-size: 45px;
+  font-weight: bold;
+  flex-grow: 1;
+}
+#main {
+  margin: 10px 50px;
+  max-width: 800px;
+  flex: 1;
+}
+footer {
+  background-color: rgb(227, 234, 219);
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  margin: 0;
+  padding: 10px;
+}
+.footer-div {
+  display: flex;
+  flex-direction: column;
+}
+a {
+    color: #417900;
+    text-decoration: none
+}
+.title {
+  margin-top: 10px
+}
+h1 {
+  margin-top: 0;
+  font-size: 2em;
+}
+table {
+  margin: 25px 3px;
+}
+th {
+  background-color: rgb(227, 234, 219);
+  padding: 2px 20px;
+}
+tbody > tr:nth-of-type(even) {
+  background-color: rgb(227, 234, 219, 0.2);
+}
+td {
+  padding: 2px;
+  vertical-align: top;
+}
+.td-right {
+  text-align: right;
+}
+.td-center {
+  text-align: center;
+}
+</style>
+</body>

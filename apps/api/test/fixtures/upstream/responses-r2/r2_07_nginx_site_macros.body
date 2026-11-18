@@ -1,0 +1,70 @@
+{% macro enable_ssl(certificate_name) -%}
+    ssl_certificate {{ acme__daemon_basedir }}/certs/{{ certificate_name }}.pem;
+    ssl_certificate_key {{ acme__daemon_basedir }}/certs/{{ certificate_name }}.key;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ecdh_curve X25519MLKEM768:X25519:prime256v1:secp384r1;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305;
+    ssl_prefer_server_ciphers off;
+
+    # see also ssl_session_ticket_key alternative to stateful session cache
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:MozSSL:10m;  # about 40000 sessions
+{%- endmacro %}
+{% macro custom_log(name) -%}
+    access_log /var/log/nginx/{{ name }}-access.log anonymized;
+    error_log /var/log/nginx/{{ name }}-error.log;
+{%- endmacro %}
+{% macro block_map() %}
+    map $http_user_agent $blocked_user_agent {
+        default 0;
+        include /etc/nginx/blocked_user_agent.conf;
+    }
+
+    map $http_referer $blocked_referrer {
+        default 0;
+        include /etc/nginx/blocked_referrer.conf;
+    }
+{% endmacro %}
+{% macro error_out_blocked(error='403') %}
+    if ($blocked_user_agent)
+        { return {{ error }}; }
+    if ($blocked_referrer)
+        { return {{ error }}; }
+{% endmacro %}
+{% macro server(fqdns, http='yes', https='', listen_params='') -%}
+{% if http == 'forward' -%}
+server {
+    listen 80 {{ listen_params }};
+    listen [::]:80 {{ listen_params }};
+
+    server_name{% for fqdn in fqdns %} {{ fqdn }}{% endfor %};
+
+    rewrite ^/\.well-known/acme-challenge/(.*)$ http://{{ hostvars[groups.acme.0].acme__fqdn }}/.well-known/acme-challenge/$1 permanent;
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+{%- endif %}
+
+server {
+    {% if http == 'yes' -%}
+    listen 80 {{ listen_params }};
+    listen [::]:80 {{ listen_params }};
+    {% endif %}
+    {% if https %}
+    listen 443 ssl http2 {{ listen_params }};
+    listen [::]:443 ssl http2 {{ listen_params }};
+
+    server_name{% for fqdn in fqdns %} {{ fqdn }}{% endfor %};
+
+    {{ enable_ssl(https) }}
+
+    rewrite ^/\.well-known/acme-challenge/(.*)$ http://{{ hostvars[groups.acme.0].acme__fqdn }}/.well-known/acme-challenge/$1 permanent;
+    {% endif %}
+
+    {{ caller() }}
+}
+{%- endmacro %}
+{% include nginx_site_body %}

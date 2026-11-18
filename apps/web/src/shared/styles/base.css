@@ -1,0 +1,63 @@
+/* Document-wide styles on top of the reset. Everything else lives in CSS Modules. */
+
+html {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 100%;
+  line-height: var(--leading-md);
+  /* Sticky bars (app bar, sheet, CTA) never cover a focused element (WCAG 2.4.11). */
+  scroll-padding-top: calc(var(--app-bar-height) + env(safe-area-inset-top));
+}
+
+body {
+  background: var(--color-bg);
+  font-size: var(--text-md);
+  overflow-x: clip;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 50;
+}
+
+h1 {
+  font-size: var(--text-2xl);
+  line-height: var(--leading-2xl);
+}
+
+h2 {
+  font-size: var(--text-xl);
+  line-height: var(--leading-xl);
+}
+
+h3 {
+  font-size: var(--text-lg);
+  line-height: var(--leading-lg);
+}
+
+a {
+  color: var(--color-primary);
+  text-underline-offset: 0.15em;
+}
+
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
+::selection {
+  background: var(--color-primary-soft);
+  color: var(--color-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}

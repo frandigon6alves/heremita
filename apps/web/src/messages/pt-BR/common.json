@@ -1,0 +1,78 @@
+{
+  "appName": "Heremita",
+  "meta": {
+    "description": "Planeje sua própria viagem: lugares no mapa, roteiro dia a dia e rotas."
+  },
+  "skipToContent": "Pular para o conteúdo",
+  "nav": {
+    "label": "Principal",
+    "home": "Heremita, página inicial",
+    "explore": "Explorar",
+    "myTrips": "Minhas viagens",
+    "settings": "Configurações",
+    "logIn": "Entrar",
+    "signUp": "Criar conta"
+  },
+  "footer": {
+    "label": "Site",
+    "about": "Sobre",
+    "privacy": "Privacidade",
+    "language": "Idioma"
+  },
+  "appBar": {
+    "back": "Voltar",
+    "more": "Mais opções"
+  },
+  "actions": {
+    "retry": "Tentar de novo",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "undo": "Desfazer",
+    "change": "Alterar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "loadMore": "Carregar mais"
+  },
+  "status": {
+    "saving": "Salvando…",
+    "saved": "Salvo",
+    "notSaved": "Não salvo"
+  },
+  "password": {
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "showLabel": "Mostrar senha",
+    "hideLabel": "Ocultar senha"
+  },
+  "states": {
+    "loading": "Carregando…",
+    "errorTitle": "Algo deu errado",
+    "errorCode": "Código: {code}",
+    "requestId": "ID da requisição: {requestId}"
+  },
+  "offline": "Você está offline. As alterações estão pausadas.",
+  "onlineAgain": "Você está online de novo.",
+  "toast": {
+    "region": "Notificações",
+    "dismiss": "Dispensar"
+  },
+  "theme": {
+    "system": "Sistema",
+    "light": "Claro",
+    "dark": "Escuro"
+  },
+  "demoBadge": "Exemplo",
+  "counts": {
+    "places": "{count, plural, =0 {Nenhum lugar} one {# lugar} other {# lugares}}",
+    "days": "{count, plural, =0 {Nenhum dia} one {# dia} other {# dias}}"
+  },
+  "notFound": {
+    "title": "Página não encontrada",
+    "body": "Este endereço não existe ou não está mais disponível.",
+    "home": "Ir para a página inicial"
+  },
+  "error": {
+    "title": "Algo deu errado",
+    "body": "Tente de novo. Se continuar acontecendo, recarregue a página."
+  }
+}

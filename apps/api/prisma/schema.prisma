@@ -1,0 +1,333 @@
+// Prisma schema: https://pris.ly/d/prisma-schema
+// The connection URL is not declared here; it comes from prisma7.config.ts.
+// CHECK constraints and the `unaccent` extension cannot be modelled here: they
+// are hand-written at the end of the `*_v1_model` migration.
+
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["partialIndexes"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Locale {
+  pt_BR @map("pt-BR")
+  en
+}
+
+enum ThemePreference {
+  system
+  light
+  dark
+}
+
+enum UserRole {
+  user
+  moderator
+}
+
+enum TripVisibility {
+  private
+  link
+  public
+}
+
+enum PlaceSource {
+  osm
+  custom
+}
+
+enum OsmType {
+  N
+  W
+  R
+}
+
+enum PlaceCategory {
+  sight
+  food
+  cafe
+  nightlife
+  lodging
+  shopping
+  nature
+  beach
+  culture
+  transport
+  activity
+  other
+}
+
+enum TravelMode {
+  walk
+  bike
+  drive
+}
+
+enum ReviewStatus {
+  published
+  hidden
+}
+
+enum ReportTarget {
+  review
+  trip
+}
+
+enum ReportReason {
+  spam
+  offensive
+  misleading
+  personal_data
+  other
+}
+
+enum ReportStatus {
+  open
+  actioned
+  dismissed
+}
+
+model User {
+  id                String          @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  /// Trimmed and lower-cased by the service before it reaches the database.
+  email             String          @unique @db.VarChar(254)
+  passwordHash      String          @map("password_hash")
+  displayName       String          @map("display_name") @db.VarChar(50)
+  role              UserRole        @default(user)
+  locale            Locale          @default(pt_BR)
+  theme             ThemePreference @default(system)
+  isDemo            Boolean         @default(false) @map("is_demo")
+  passwordChangedAt DateTime        @default(now()) @map("password_changed_at") @db.Timestamptz(3)
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sessions        Session[]
+  trips           Trip[]
+  reviews         Review[]
+  reportsFiled    Report[]    @relation("ReportReporter")
+  reportsResolved Report[]    @relation("ReportResolver")
+  blocking        UserBlock[] @relation("Blocker")
+  blockedBy       UserBlock[] @relation("Blocked")
+
+  @@map("users")
+}
+
+model Session {
+  id                String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  /// sha256 of the cookie token; the token itself is never stored.
+  tokenHash         Bytes    @unique @map("token_hash") @db.ByteA
+  userId            String   @map("user_id") @db.Uuid
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  lastUsedAt        DateTime @default(now()) @map("last_used_at") @db.Timestamptz(3)
+  /// Idle expiry; slides forward at most once an hour.
+  expiresAt         DateTime @map("expires_at") @db.Timestamptz(3)
+  /// createdAt + 90 days; never slides.
+  absoluteExpiresAt DateTime @map("absolute_expires_at") @db.Timestamptz(3)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model Trip {
+  id                     String         @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  ownerId                String         @map("owner_id") @db.Uuid
+  owner                  User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title                  String         @db.VarChar(120)
+  description            String?        @db.VarChar(2000)
+  destinationName        String?        @map("destination_name") @db.VarChar(120)
+  destinationCountryCode String?        @map("destination_country_code") @db.Char(2)
+  destinationLng         Float?         @map("destination_lng")
+  destinationLat         Float?         @map("destination_lat")
+  /// Owner only. Day n falls on startDate + n - 1.
+  startDate              DateTime?      @map("start_date") @db.Date
+  visibility             TripVisibility @default(private)
+  /// 16 random bytes, base64url (22 characters).
+  shareToken             String?        @unique @map("share_token") @db.VarChar(32)
+  defaultMode            TravelMode     @default(walk) @map("default_mode")
+  planVersion            Int            @default(0) @map("plan_version")
+  publishedAt            DateTime?      @map("published_at") @db.Timestamptz(3)
+  moderationHiddenAt     DateTime?      @map("moderation_hidden_at") @db.Timestamptz(3)
+  copiedFromTripId       String?        @map("copied_from_trip_id") @db.Uuid
+  copiedFrom             Trip?          @relation("TripCopies", fields: [copiedFromTripId], references: [id], onDelete: SetNull)
+  copies                 Trip[]         @relation("TripCopies")
+  createdAt              DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  days         Day[]
+  tripPlaces   TripPlace[]
+  customPlaces Place[]
+  reports      Report[]
+
+  @@index([ownerId, updatedAt(sort: Desc), id(sort: Desc)])
+  @@index([publishedAt(sort: Desc), id(sort: Desc)], map: "trips_discovery_idx", where: raw("visibility = 'public' AND moderation_hidden_at IS NULL"))
+  @@index([ownerId, publishedAt(sort: Desc), id(sort: Desc)], map: "trips_author_public_idx", where: raw("visibility = 'public' AND moderation_hidden_at IS NULL"))
+  @@index([copiedFromTripId])
+  @@map("trips")
+}
+
+model Place {
+  id          String        @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  source      PlaceSource
+  osmType     OsmType?      @map("osm_type")
+  /// Needs 64 bits: node ids already pass 2^32 (N14183629101).
+  osmId       BigInt?       @map("osm_id")
+  /// Set for custom places only: they belong to one trip.
+  tripId      String?       @map("trip_id") @db.Uuid
+  trip        Trip?         @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  name        String        @db.VarChar(200)
+  label       String?       @db.VarChar(300)
+  category    PlaceCategory
+  osmKey      String?       @map("osm_key") @db.VarChar(64)
+  osmValue    String?       @map("osm_value") @db.VarChar(64)
+  lng         Float
+  lat         Float
+  /// Same shape as `address` in placeResultSchema.
+  address     Json?
+  countryCode String?       @map("country_code") @db.Char(2)
+  lastSeenAt  DateTime?     @map("last_seen_at") @db.Timestamptz(3)
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  tripPlaces TripPlace[]
+  reviews    Review[]
+
+  @@unique([osmType, osmId])
+  @@index([tripId])
+  @@map("places")
+}
+
+model TripPlace {
+  id        String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  tripId    String   @map("trip_id") @db.Uuid
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  placeId   String   @map("place_id") @db.Uuid
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Restrict)
+  /// Private to the trip owner: never shown to viewers, never copied.
+  note      String?  @db.VarChar(4000)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  stops Stop[]
+
+  @@unique([tripId, placeId])
+  // Target of the composite foreign key from stops.
+  @@unique([id, tripId])
+  @@index([placeId])
+  @@map("trip_places")
+}
+
+model Day {
+  id           String      @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  tripId       String      @map("trip_id") @db.Uuid
+  trip         Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  /// Dense 0..n-1; the UI shows "Day position + 1".
+  position     Int
+  /// NULL means the trip's defaultMode.
+  modeOverride TravelMode? @map("mode_override")
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  stops Stop[]
+
+  @@unique([tripId, position])
+  @@unique([id, tripId])
+  @@map("days")
+}
+
+model Stop {
+  id          String      @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  /// Denormalised so both composite foreign keys pin the stop to one trip.
+  tripId      String      @map("trip_id") @db.Uuid
+  dayId       String      @map("day_id") @db.Uuid
+  day         Day         @relation(fields: [dayId, tripId], references: [id, tripId], onDelete: Cascade)
+  tripPlaceId String      @map("trip_place_id") @db.Uuid
+  tripPlace   TripPlace   @relation(fields: [tripPlaceId, tripId], references: [id, tripId], onDelete: Cascade)
+  /// Dense 0..n-1 within the day.
+  position    Int
+  /// NULL means the day's mode; ignored on the last stop.
+  modeToNext  TravelMode? @map("mode_to_next")
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([dayId, position])
+  @@index([tripPlaceId])
+  @@index([tripId])
+  @@map("stops")
+}
+
+model Review {
+  id        String       @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  placeId   String       @map("place_id") @db.Uuid
+  place     Place        @relation(fields: [placeId], references: [id], onDelete: Restrict)
+  authorId  String       @map("author_id") @db.Uuid
+  author    User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  rating    Int          @db.SmallInt
+  body      String       @db.VarChar(2000)
+  /// First day of the month of the visit.
+  visitedOn DateTime     @map("visited_on") @db.Date
+  language  Locale
+  status    ReviewStatus @default(published)
+  hiddenAt  DateTime?    @map("hidden_at") @db.Timestamptz(3)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  reports Report[]
+
+  @@unique([placeId, authorId])
+  @@index([placeId, status, createdAt(sort: Desc), id(sort: Desc)])
+  @@index([placeId, status, rating, createdAt(sort: Desc), id(sort: Desc)])
+  @@index([authorId, createdAt(sort: Desc), id(sort: Desc)])
+  @@map("reviews")
+}
+
+model Report {
+  id           String       @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  reporterId   String?      @map("reporter_id") @db.Uuid
+  reporter     User?        @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: SetNull)
+  targetType   ReportTarget @map("target_type")
+  reviewId     String?      @map("review_id") @db.Uuid
+  review       Review?      @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  tripId       String?      @map("trip_id") @db.Uuid
+  trip         Trip?        @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  reason       ReportReason
+  details      String?      @db.VarChar(1000)
+  status       ReportStatus @default(open)
+  resolvedById String?      @map("resolved_by_id") @db.Uuid
+  resolvedBy   User?        @relation("ReportResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolvedAt   DateTime?    @map("resolved_at") @db.Timestamptz(3)
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([reporterId, reviewId])
+  @@unique([reporterId, tripId])
+  @@index([status, createdAt])
+  @@index([reviewId])
+  @@index([tripId])
+  @@map("reports")
+}
+
+model UserBlock {
+  blockerId String   @map("blocker_id") @db.Uuid
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId String   @map("blocked_id") @db.Uuid
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+  @@map("user_blocks")
+}
+
+model ProviderCache {
+  /// Content-addressed: provider id, version and canonical parameters.
+  key       String   @id
+  value     Json
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([expiresAt])
+  @@map("provider_cache")
+}

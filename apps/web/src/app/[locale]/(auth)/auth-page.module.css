@@ -1,0 +1,31 @@
+.main {
+  min-height: calc(100dvh - var(--app-bar-height));
+  padding: var(--space-8) var(--space-4) var(--space-12);
+}
+
+.column {
+  display: grid;
+  gap: var(--space-4);
+  max-width: var(--form-max);
+}
+
+.column > form {
+  margin-top: var(--space-4);
+}
+
+.intro {
+  color: var(--color-text-muted);
+}
+
+@media (min-width: 768px) {
+  .main {
+    padding: var(--space-16) var(--space-8);
+  }
+}
+
+/* Wide screens: the form lines up with the content grid, left-aligned (not a centred card). */
+@media (min-width: 1280px) {
+  .main {
+    padding-inline: calc((100% - var(--content-max)) / 2);
+  }
+}

@@ -1,0 +1,26 @@
+packages:
+  - apps/*
+  - packages/*
+
+# pnpm 11 runs no dependency install script unless the package is reviewed here
+# (true = run it, false = never run it). An unreviewed script fails the install
+# with ERR_PNPM_IGNORED_BUILDS.
+allowBuilds:
+  '@parcel/watcher': false # next-intl dependency; builds from source only on request, prebuilt binary ships as an optional dependency
+  '@prisma/engines': true # downloads the schema engine used by `prisma migrate`
+  '@swc/core': false # next-intl dependency; postinstall only falls back to WASM when the prebuilt native binary is missing
+  esbuild: true # installs its native binary; tsx (the seed runner) depends on it
+  prisma: true # preinstall check of the Node.js version
+
+# Versions shared by more than one workspace are declared once here and
+# referenced from each package.json as "catalog:".
+catalog:
+  '@types/node': ^24.19.2
+  '@types/pg': ^8.23.1
+  # The API's driver; the web e2e global setup recreates the e2e database with it.
+  pg: ^8.23.1
+  # 7.0 ships no compiler API: `nest build` and typescript-eslint refuse it.
+  typescript: 6.0.3
+  # Exact: 5.1.1 was younger than pnpm's 24-hour minimumReleaseAge on 2026-11-18.
+  vitest: 5.1.0
+  zod: ^4.6.7

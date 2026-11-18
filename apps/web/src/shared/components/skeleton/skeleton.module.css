@@ -1,0 +1,46 @@
+/* Space is reserved from the first paint (no layout shift); the shapes only show after the delay. */
+.skeleton {
+  display: grid;
+  gap: var(--space-3);
+  visibility: hidden;
+}
+
+.skeleton[data-visible='true'] {
+  visibility: visible;
+  animation: fade-in var(--duration-fade) var(--ease-out);
+}
+
+.block {
+  display: block;
+  max-width: 100%;
+  border-radius: var(--radius-md);
+  background: var(--color-border);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.text {
+  height: 1em;
+  border-radius: var(--radius-sm);
+}
+
+.circle {
+  border-radius: var(--radius-full);
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block {
+    animation: none;
+  }
+}

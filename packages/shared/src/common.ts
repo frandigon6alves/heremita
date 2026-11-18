@@ -1,0 +1,81 @@
+import { z } from 'zod';
+import { LIMITS } from './limits.js';
+
+/** Opaque identifier (UUIDv7 in practice); format-checked so a garbage id never reaches SQL. */
+export const idSchema = z.uuid();
+
+/** ISO-8601 UTC timestamp; only the `Z` designator is accepted. */
+export const timestampSchema = z.iso.datetime();
+
+/** Calendar date `YYYY-MM-DD`. */
+export const isoDateSchema = z.iso.date();
+
+/** Calendar month `YYYY-MM`. */
+export const yearMonthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
+
+export const localeSchema = z.enum(['pt-BR', 'en']);
+export type Locale = z.infer<typeof localeSchema>;
+
+export const themeSchema = z.enum(['system', 'light', 'dark']);
+export type Theme = z.infer<typeof themeSchema>;
+
+export const travelModeSchema = z.enum(['walk', 'bike', 'drive']);
+export type TravelMode = z.infer<typeof travelModeSchema>;
+
+export const placeCategorySchema = z.enum([
+  'sight',
+  'food',
+  'cafe',
+  'nightlife',
+  'lodging',
+  'shopping',
+  'nature',
+  'beach',
+  'culture',
+  'transport',
+  'activity',
+  'other',
+]);
+export type PlaceCategory = z.infer<typeof placeCategorySchema>;
+
+export const longitudeSchema = z.number().min(-180).max(180);
+export const latitudeSchema = z.number().min(-90).max(90);
+
+export const lngLatSchema = z
+  .object({ lng: longitudeSchema, lat: latitudeSchema })
+  .meta({ id: 'LngLat' });
+export type LngLat = z.infer<typeof lngLatSchema>;
+
+/** `lngLatSchema` for request bodies: unknown keys are rejected. */
+export const lngLatInputSchema = z.strictObject(lngLatSchema.shape);
+
+/** Opaque keyset cursor returned as `nextCursor` and sent back unchanged. */
+export const cursorSchema = z
+  .string()
+  .max(LIMITS.CURSOR_MAX)
+  .regex(/^[A-Za-z0-9_-]+$/);
+
+/** Page size of a list endpoint. Query strings only: it coerces. */
+export function limitQuery(max: number, fallback: number) {
+  return z.coerce.number().int().min(1).max(max).default(fallback);
+}
+
+/** Query of a keyset-paginated list. */
+export function pageQuerySchema(size: { default: number; max: number }) {
+  return z.strictObject({
+    limit: limitQuery(size.max, size.default),
+    cursor: cursorSchema.optional(),
+  });
+}
+
+/** Keyset page: `nextCursor` is `null` on the last page. */
+export function pageSchema<T extends z.ZodType>(item: T) {
+  return z.object({ items: z.array(item), nextCursor: cursorSchema.nullable() });
+}
+
+export type Page<T> = { items: T[]; nextCursor: string | null };
+
+export const userCardSchema = z
+  .object({ id: idSchema, displayName: z.string(), isDemo: z.boolean() })
+  .meta({ id: 'UserCard' });
+export type UserCard = z.infer<typeof userCardSchema>;
