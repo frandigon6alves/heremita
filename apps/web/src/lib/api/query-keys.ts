@@ -165,8 +165,8 @@ const routeOptions = {
 
 /**
  * E40. `mode` = URL mode, or `null` for the day's saved modes. Callers enable
- * it only for visible days whose summary has a null leg, or when `mode` differs
- * from the saved one.
+ * it for every visible day with at least two stops: the plan's summaries carry
+ * no polylines, and the map needs them (ID-T60).
  */
 export const dayRouteQuery = (
   tripId: string,
@@ -248,7 +248,7 @@ export const placeSearchQuery = (input: PlaceSearchInput) => {
   });
 };
 
-/** E43. Only on an explicit tap, long-press or "Add here" (never on map move). */
+/** E43. On an explicit tap or long-press, and in "Add here" mode once each map move settles. */
 export const reversePlacesQuery = (input: ReverseInput) => {
   const queryKey = queryKeys.places.reverse(input);
   const { lng, lat, locale } = queryKey[2];
