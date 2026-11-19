@@ -6,10 +6,9 @@ import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { myTripsQuery } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
-import { Button } from '@/shared/components/button/button';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { ErrorState } from '@/shared/components/error-state/error-state';
-import { FormAlert } from '@/shared/components/form-alert/form-alert';
+import { LoadMore } from '@/shared/components/load-more/load-more';
 import { LinkButton } from '@/shared/components/link-button/link-button';
 import { Shell } from '@/shared/icons/icons';
 import { TripCard } from './trip-card';
@@ -24,7 +23,6 @@ export interface TripListProps {
 /** My trips (E18), last changed first, with "Load more" (never infinite scroll). */
 export function TripList({ initialPage }: TripListProps) {
   const t = useTranslations('trips.mine');
-  const tActions = useTranslations('common.actions');
   const locale = useLocale();
   const trips = useInfiniteQuery({
     ...myTripsQuery(),
@@ -70,18 +68,7 @@ export function TripList({ initialPage }: TripListProps) {
           </li>
         ))}
       </ul>
-      {trips.isFetchNextPageError ? (
-        <FormAlert error={trips.error} message={t('moreFailed')} />
-      ) : null}
-      {trips.hasNextPage ? (
-        <Button
-          className={styles.more}
-          busy={trips.isFetchingNextPage}
-          onClick={() => void trips.fetchNextPage()}
-        >
-          {tActions('loadMore')}
-        </Button>
-      ) : null}
+      <LoadMore pages={trips} failedMessage={t('moreFailed')} />
     </div>
   );
 }

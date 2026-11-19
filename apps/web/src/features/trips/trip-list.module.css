@@ -11,10 +11,6 @@
   list-style: none;
 }
 
-.more {
-  justify-self: start;
-}
-
 .exploreLink {
   display: inline-flex;
   align-items: center;

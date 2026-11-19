@@ -4,10 +4,9 @@ import type { Page, Review, ReviewSort } from '@heremita/shared';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { placeReviewsQuery } from '@/lib/api/query-keys';
-import { Button } from '@/shared/components/button/button';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { ErrorState } from '@/shared/components/error-state/error-state';
-import { FormAlert } from '@/shared/components/form-alert/form-alert';
+import { LoadMore } from '@/shared/components/load-more/load-more';
 import { SegmentedControl } from '@/shared/components/segmented-control/segmented-control';
 import { Skeleton, SkeletonBlock } from '@/shared/components/skeleton/skeleton';
 import { ReviewItem } from './review-item';
@@ -36,7 +35,6 @@ export function ReviewList({
   signedIn,
 }: ReviewListProps) {
   const t = useTranslations('reviews.list');
-  const tActions = useTranslations('common.actions');
   const [sort, setSort] = useReviewSort();
   const reviews = useInfiniteQuery({
     ...placeReviewsQuery(placeId, sort),
@@ -96,18 +94,7 @@ export function ReviewList({
             </li>
           ))}
         </ol>
-        {reviews.isFetchNextPageError ? (
-          <FormAlert error={reviews.error} message={t('moreFailed')} />
-        ) : null}
-        {reviews.hasNextPage ? (
-          <Button
-            className={styles.more}
-            busy={reviews.isFetchingNextPage}
-            onClick={() => void reviews.fetchNextPage()}
-          >
-            {tActions('loadMore')}
-          </Button>
-        ) : null}
+        <LoadMore pages={reviews} failedMessage={t('moreFailed')} />
       </>
     );
   }

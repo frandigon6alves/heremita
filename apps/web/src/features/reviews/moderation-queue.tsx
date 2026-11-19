@@ -15,6 +15,7 @@ import { Button } from '@/shared/components/button/button';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { ErrorState } from '@/shared/components/error-state/error-state';
 import { FormAlert } from '@/shared/components/form-alert/form-alert';
+import { LoadMore } from '@/shared/components/load-more/load-more';
 import { SegmentedControl } from '@/shared/components/segmented-control/segmented-control';
 import { Skeleton, SkeletonBlock } from '@/shared/components/skeleton/skeleton';
 import { showToast } from '@/shared/components/toast/toast-store';
@@ -32,7 +33,6 @@ export interface ModerationQueueProps {
  */
 export function ModerationQueue({ initialOpenPage }: ModerationQueueProps) {
   const t = useTranslations('reviews.moderation');
-  const tActions = useTranslations('common.actions');
   const [status, setStatus] = useState<ReportStatus>('open');
   const serverRendered = status === 'open' && initialOpenPage !== undefined;
   const reports = useInfiniteQuery({
@@ -89,18 +89,7 @@ export function ModerationQueue({ initialOpenPage }: ModerationQueueProps) {
             </li>
           ))}
         </ol>
-        {reports.isFetchNextPageError ? (
-          <FormAlert error={reports.error} message={t('failed')} />
-        ) : null}
-        {reports.hasNextPage ? (
-          <Button
-            className={styles.more}
-            busy={reports.isFetchingNextPage}
-            onClick={() => void reports.fetchNextPage()}
-          >
-            {tActions('loadMore')}
-          </Button>
-        ) : null}
+        <LoadMore pages={reports} failedMessage={t('failed')} />
       </>
     );
   }

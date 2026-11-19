@@ -7,10 +7,9 @@ import Link from 'next/link';
 import { formatYearMonth } from '@/lib/format/dates';
 import { userReviewsQuery } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
-import { Button } from '@/shared/components/button/button';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { ErrorState } from '@/shared/components/error-state/error-state';
-import { FormAlert } from '@/shared/components/form-alert/form-alert';
+import { LoadMore } from '@/shared/components/load-more/load-more';
 import { RatingStars } from '@/shared/components/rating-stars/rating-stars';
 import { Skeleton, SkeletonBlock } from '@/shared/components/skeleton/skeleton';
 import styles from './user-review-list.module.css';
@@ -26,7 +25,6 @@ export interface UserReviewListProps {
  */
 export function UserReviewList({ userId, initialPage }: UserReviewListProps) {
   const t = useTranslations('explore.profile');
-  const tActions = useTranslations('common.actions');
   const locale = useLocale();
   const reviews = useInfiniteQuery({
     ...userReviewsQuery(userId),
@@ -76,18 +74,7 @@ export function UserReviewList({ userId, initialPage }: UserReviewListProps) {
           </li>
         ))}
       </ol>
-      {reviews.isFetchNextPageError ? (
-        <FormAlert error={reviews.error} message={t('reviewsMoreFailed')} />
-      ) : null}
-      {reviews.hasNextPage ? (
-        <Button
-          className={styles.more}
-          busy={reviews.isFetchingNextPage}
-          onClick={() => void reviews.fetchNextPage()}
-        >
-          {tActions('loadMore')}
-        </Button>
-      ) : null}
+      <LoadMore pages={reviews} failedMessage={t('reviewsMoreFailed')} />
     </div>
   );
 }

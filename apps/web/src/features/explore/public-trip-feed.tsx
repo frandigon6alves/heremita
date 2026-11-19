@@ -4,9 +4,8 @@ import type { Page, PublicTripCard as PublicTripCardData } from '@heremita/share
 import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
-import { Button } from '@/shared/components/button/button';
 import { ErrorState } from '@/shared/components/error-state/error-state';
-import { FormAlert } from '@/shared/components/form-alert/form-alert';
+import { LoadMore } from '@/shared/components/load-more/load-more';
 import { Skeleton, SkeletonBlock } from '@/shared/components/skeleton/skeleton';
 import { PublicTripCard } from './public-trip-card';
 import styles from './public-trip-feed.module.css';
@@ -50,7 +49,6 @@ export function PublicTripFeed({
   headingLevel = 2,
 }: PublicTripFeedProps) {
   const t = useTranslations('explore.feed');
-  const tActions = useTranslations('common.actions');
 
   if (trips.isPending) {
     return <PublicTripFeedSkeleton />;
@@ -79,18 +77,7 @@ export function PublicTripFeed({
           </li>
         ))}
       </ul>
-      {trips.isFetchNextPageError ? (
-        <FormAlert error={trips.error} message={t('moreFailed')} />
-      ) : null}
-      {trips.hasNextPage ? (
-        <Button
-          className={styles.more}
-          busy={trips.isFetchingNextPage}
-          onClick={() => void trips.fetchNextPage()}
-        >
-          {tActions('loadMore')}
-        </Button>
-      ) : null}
+      <LoadMore pages={trips} failedMessage={t('moreFailed')} />
     </div>
   );
 }

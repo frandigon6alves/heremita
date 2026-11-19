@@ -12,7 +12,7 @@ import { Button } from '@/shared/components/button/button';
 import { DemoBadge } from '@/shared/components/demo-badge/demo-badge';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { ErrorState } from '@/shared/components/error-state/error-state';
-import { FormAlert } from '@/shared/components/form-alert/form-alert';
+import { LoadMore } from '@/shared/components/load-more/load-more';
 import { Skeleton, SkeletonBlock } from '@/shared/components/skeleton/skeleton';
 import { showToast } from '@/shared/components/toast/toast-store';
 import styles from './settings.module.css';
@@ -97,14 +97,7 @@ export function BlockedUsers() {
           );
         })}
       </ul>
-      {blocks.isFetchNextPageError ? (
-        <FormAlert error={blocks.error} message={t('loadMoreFailed')} />
-      ) : null}
-      {blocks.hasNextPage ? (
-        <Button busy={blocks.isFetchingNextPage} onClick={() => void blocks.fetchNextPage()}>
-          {tActions('loadMore')}
-        </Button>
-      ) : null}
+      <LoadMore pages={blocks} failedMessage={t('loadMoreFailed')} />
     </div>
   );
 }
