@@ -22,6 +22,13 @@ const nextConfig: NextConfig = {
   // The monorepo root: Turbopack must be able to read packages/shared.
   turbopack: {
     root: path.join(import.meta.dirname, '../..'),
+    // Keeps MapLibre's development builds out of the output (see the loader).
+    rules: {
+      '*.mjs': {
+        condition: { path: /maplibre-gl\/dist\/maplibre-gl\.mjs$/ },
+        loaders: [path.join(import.meta.dirname, 'scripts/maplibre-url-loader.mjs')],
+      },
+    },
   },
 
   // The browser only talks to this origin; /api/* is forwarded to the NestJS API.
