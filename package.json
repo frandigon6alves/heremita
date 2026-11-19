@@ -14,17 +14,20 @@
     "build:shared": "pnpm --filter @heremita/shared run build",
     "typecheck": "pnpm run build:shared && pnpm --recursive run typecheck",
     "lint": "pnpm run build:shared && pnpm --recursive run lint && eslint eslint.config.mjs scripts",
-    "test": "pnpm run build:shared && pnpm --recursive run test",
+    "test": "pnpm run build:shared && pnpm --recursive --workspace-concurrency=1 run test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "env:init": "node scripts/init-env.mjs",
+    "shortcuts": "node scripts/shortcuts.mjs",
+    "budget": "node apps/web/scripts/bundle-budget.ts",
     "db:up": "docker compose up --detach --wait",
     "db:down": "docker compose down",
     "db:migrate": "pnpm --filter @heremita/api run db:migrate",
     "db:seed": "pnpm --filter @heremita/api run db:seed",
     "db:reset": "pnpm --filter @heremita/api run db:reset",
     "e2e": "pnpm run build:shared && pnpm --filter @heremita/web run e2e",
-    "e2e:install": "pnpm --filter @heremita/web exec playwright install chromium"
+    "e2e:webkit": "pnpm run build:shared && pnpm --filter @heremita/web run e2e:webkit",
+    "e2e:install": "pnpm --filter @heremita/web exec playwright install chromium webkit"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

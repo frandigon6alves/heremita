@@ -4,6 +4,8 @@ node_modules/
 
 # build output
 .next/
+.next-e2e/
+dist-e2e/
 out/
 dist/
 build/
@@ -37,7 +39,3 @@ pnpm-debug.log*
 # generated
 generated/
 next-env.d.ts
-
-# Scratch output from agents (command logs, lockfile snapshots)
-docs/progress/*.txt
-docs/progress/*.yaml

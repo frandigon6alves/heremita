@@ -1,8 +1,12 @@
 import { z } from 'zod';
 import { LIMITS } from './limits.js';
 
-/** Opaque identifier (UUIDv7 in practice); format-checked so a garbage id never reaches SQL. */
-export const idSchema = z.uuid();
+/**
+ * Opaque identifier (UUIDv7 in practice); format-checked so a garbage id never
+ * reaches SQL. Lower-cased: a UUID is case-insensitive and PostgreSQL treats
+ * both spellings as one id, so code comparing ids as strings must see one too.
+ */
+export const idSchema = z.uuid().overwrite((id) => id.toLowerCase());
 
 /** ISO-8601 UTC timestamp; only the `Z` designator is accepted. */
 export const timestampSchema = z.iso.datetime();
@@ -13,8 +17,12 @@ export const isoDateSchema = z.iso.date();
 /** Calendar month `YYYY-MM`. */
 export const yearMonthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
 
-export const localeSchema = z.enum(['pt-BR', 'en']);
+/** UI languages: English is the official one, Spanish and Brazilian Portuguese are translations. */
+export const localeSchema = z.enum(['en', 'es', 'pt-BR']);
 export type Locale = z.infer<typeof localeSchema>;
+
+/** The language of a visitor nothing else tells us about. */
+export const DEFAULT_LOCALE: Locale = 'en';
 
 export const themeSchema = z.enum(['system', 'light', 'dark']);
 export type Theme = z.infer<typeof themeSchema>;

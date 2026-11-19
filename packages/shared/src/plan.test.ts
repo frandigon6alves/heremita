@@ -149,4 +149,10 @@ describe('stopOrderBodySchema', () => {
 
     expect(result.error?.issues.map((issue) => issue.path)).toEqual([['stopIds']]);
   });
+
+  it('rejects_the_same_stop_id_twice_in_different_letter_case', () => {
+    const result = stopOrderBodySchema.safeParse({ stopIds: [ids.stop, ids.stop.toUpperCase()] });
+
+    expect(result.error?.issues.map((issue) => issue.path)).toEqual([['stopIds']]);
+  });
 });

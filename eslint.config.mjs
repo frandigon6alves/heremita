@@ -12,14 +12,14 @@ export default defineConfig([
   globalIgnores([
     '**/node_modules/**',
     '**/dist/**',
+    '**/dist-e2e/**',
     '**/.next/**',
+    '**/.next-e2e/**',
     '**/coverage/**',
     '**/generated/**',
     '**/playwright-report/**',
     '**/test-results/**',
     '**/next-env.d.ts',
-    // Unported reference code from the provider research; ported in the provider tasks.
-    'apps/api/test/fixtures/upstream/**',
   ]),
 
   js.configs.recommended,
@@ -39,7 +39,14 @@ export default defineConfig([
 
   // Code that runs on Node.js: the API, the shared package, scripts and tool configs.
   {
-    files: ['apps/api/**', 'packages/**', 'scripts/**', '**/*.config.{js,mjs,ts}'],
+    files: [
+      'apps/api/**',
+      'packages/**',
+      'scripts/**',
+      'apps/web/scripts/**',
+      'apps/web/e2e/**',
+      '**/*.config.{js,mjs,ts}',
+    ],
     languageOptions: { globals: globals.node },
   },
 
@@ -68,6 +75,22 @@ export default defineConfig([
         {
           selector: "ExpressionStatement[directive='use server']",
           message: 'Server Actions are not used: mutations call the API through /api/v1.',
+        },
+      ],
+    },
+  },
+
+  // E2E stays hermetic and deterministic (V72): web-first assertions, never fixed sleeps.
+  {
+    files: ['apps/web/e2e/**'],
+    rules: {
+      // Playwright fixtures call their callback `use`; it is not React's hook.
+      'react-hooks/rules-of-hooks': 'off',
+      'no-restricted-properties': [
+        'error',
+        {
+          property: 'waitForTimeout',
+          message: 'Wait for a condition (web-first assertion, expect.poll, page.clock) instead.',
         },
       ],
     },

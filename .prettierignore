@@ -1,6 +1,8 @@
 node_modules
 dist
+dist-e2e
 .next
+.next-e2e
 coverage
 generated
 playwright-report
@@ -15,6 +17,3 @@ SPEC.md
 
 # Saved upstream responses, kept byte-for-byte.
 apps/api/test/fixtures/upstream
-
-# Design and research notes, kept as written.
-docs/design
