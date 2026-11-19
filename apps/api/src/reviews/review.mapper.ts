@@ -1,5 +1,6 @@
 import type { Review } from '@heremita/shared';
 import { fromDbLocale } from '../auth/me.mapper.js';
+import { USER_CARD_SELECT } from '../core/user-card.js';
 import type { Prisma } from '../generated/prisma/client.js';
 
 /** Prisma `select` of everything a `Review` payload is built from. */
@@ -13,14 +14,14 @@ export const REVIEW_SELECT = {
   createdAt: true,
   updatedAt: true,
   place: { select: { id: true, name: true, category: true } },
-  author: { select: { id: true, displayName: true, isDemo: true } },
+  author: { select: USER_CARD_SELECT },
 } as const satisfies Prisma.ReviewSelect;
 
 export type ReviewRow = Prisma.ReviewGetPayload<{ select: typeof REVIEW_SELECT }>;
 
-/** `visited_on` holds the first day of the visit month: `2026-09-01` → `2026-09`. */
-export function toVisitedMonth(visitedOn: Date): string {
-  return visitedOn.toISOString().slice(0, 7);
+/** `YYYY-MM` of a UTC instant or calendar date; `visited_on` holds the first day of the visit month. */
+export function toYearMonth(date: Date): string {
+  return date.toISOString().slice(0, 7);
 }
 
 export function toReview(row: ReviewRow, viewerId: string | null): Review {
@@ -29,7 +30,7 @@ export function toReview(row: ReviewRow, viewerId: string | null): Review {
     place: row.place,
     rating: row.rating,
     body: row.body,
-    visitedMonth: toVisitedMonth(row.visitedOn),
+    visitedMonth: toYearMonth(row.visitedOn),
     language: fromDbLocale(row.language),
     author: row.author,
     status: row.status,

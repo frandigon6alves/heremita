@@ -7,22 +7,16 @@ import {
   type Review,
   type UserProfile,
 } from '@heremita/shared';
-import { fromDbLocale } from '../auth/me.mapper.js';
 import { userNotBlockedBy } from '../core/block-filter.js';
 import { CURSOR_TUPLES, decodeCursor, toPage } from '../core/cursor.js';
 import { userNotFound } from '../core/http/problems.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { PublicTripsReader } from '../discovery/public-trips.reader.js';
+import { USER_CARD_SELECT } from '../core/user-card.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { REVIEW_SELECT, toReview, toYearMonth } from '../reviews/review.mapper.js';
 
 type PageQuery = EndpointInput<typeof endpoints.listUserTrips>['query'];
-
-const USER_CARD_SELECT = { id: true, displayName: true, isDemo: true } as const;
-
-/** `YYYY-MM` of a UTC instant or calendar date. */
-function yearMonth(date: Date): string {
-  return date.toISOString().slice(0, 7);
-}
 
 /** Trips anyone may see on a profile: public and not hidden by a moderator (V8). */
 function listedTripsOf(userId: string, viewerId: string | null): Prisma.TripWhereInput {
@@ -71,7 +65,7 @@ export class UsersService {
       id: user.id,
       displayName: user.displayName,
       isDemo: user.isDemo,
-      joinedMonth: yearMonth(user.createdAt),
+      joinedMonth: toYearMonth(user.createdAt),
       publicTripCount,
       reviewCount,
     };
@@ -100,37 +94,14 @@ export class UsersService {
       },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: query.limit + 1,
-      select: {
-        id: true,
-        rating: true,
-        body: true,
-        visitedOn: true,
-        language: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-        place: { select: { id: true, name: true, category: true } },
-        author: { select: USER_CARD_SELECT },
-      },
+      select: REVIEW_SELECT,
     });
     const page = toPage(rows, query.limit, CURSOR_TUPLES.recentReviews, (row) => [
       row.createdAt,
       row.id,
     ]);
     return {
-      items: page.items.map((row) => ({
-        id: row.id,
-        place: row.place,
-        rating: row.rating,
-        body: row.body,
-        visitedMonth: yearMonth(row.visitedOn),
-        language: fromDbLocale(row.language),
-        author: row.author,
-        status: row.status,
-        createdAt: row.createdAt.toISOString(),
-        updatedAt: row.updatedAt.toISOString(),
-        isMine: row.author.id === viewerId,
-      })),
+      items: page.items.map((row) => toReview(row, viewerId)),
       nextCursor: page.nextCursor,
     };
   }

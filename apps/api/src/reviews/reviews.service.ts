@@ -7,7 +7,7 @@ import { invalidFields, placeNotFound } from '../core/http/problems.js';
 import type { SessionUser } from '../core/http/api-request.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { REVIEW_SELECT, toReview, toVisitedMonth } from './review.mapper.js';
+import { REVIEW_SELECT, toReview, toYearMonth } from './review.mapper.js';
 
 type ListQuery = EndpointInput<typeof endpoints.listPlaceReviews>['query'];
 type PutBody = EndpointInput<typeof endpoints.putMyReview>['body'];
@@ -98,7 +98,7 @@ export class ReviewsService {
    */
   async putMine(user: SessionUser, placeId: string, body: PutBody): Promise<PutReviewResult> {
     const now = this.clock.now();
-    if (body.visitedMonth > toVisitedMonth(now)) {
+    if (body.visitedMonth > toYearMonth(now)) {
       throw invalidFields([
         { pointer: '/body/visitedMonth', detail: 'The visit month is in the future.' },
       ]);

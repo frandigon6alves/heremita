@@ -1,4 +1,5 @@
-import type { Destination, TripOwner, TripPublic, UserCard } from '@heremita/shared';
+import type { Destination, TripOwner, TripPublic } from '@heremita/shared';
+import { USER_CARD_SELECT } from '../core/user-card.js';
 import type { Prisma } from '../generated/prisma/client.js';
 
 /** Prisma `select` of everything a trip payload (owner or viewer shape) is built from. */
@@ -17,7 +18,7 @@ export const TRIP_SELECT = {
   publishedAt: true,
   createdAt: true,
   updatedAt: true,
-  owner: { select: { id: true, displayName: true, isDemo: true } },
+  owner: { select: USER_CARD_SELECT },
   copiedFrom: { select: { id: true, title: true, visibility: true, moderationHiddenAt: true } },
   _count: { select: { days: true, tripPlaces: true, copies: true } },
 } as const satisfies Prisma.TripSelect;
@@ -50,10 +51,6 @@ export function fromIsoDate(date: string): Date {
   return new Date(`${date}T00:00:00.000Z`);
 }
 
-function toAuthor(owner: TripRow['owner']): UserCard {
-  return { id: owner.id, displayName: owner.displayName, isDemo: owner.isDemo };
-}
-
 /** The source of a copy, shown only while that source is public and not hidden. */
 function toCopiedFrom(source: TripRow['copiedFrom']): TripOwner['copiedFrom'] {
   if (source?.visibility !== 'public' || source.moderationHiddenAt !== null) {
@@ -75,7 +72,7 @@ export function toTripOwner(row: TripRow): TripOwner {
     defaultMode: row.defaultMode,
     visibility: row.visibility,
     shareToken: row.shareToken,
-    author: toAuthor(row.owner),
+    author: row.owner,
     copiedFrom: toCopiedFrom(row.copiedFrom),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
@@ -100,7 +97,7 @@ export function toTripPublic(row: TripRow): TripPublic {
     placeCount: row._count.tripPlaces,
     defaultMode: row.defaultMode,
     visibility: row.visibility,
-    author: toAuthor(row.owner),
+    author: row.owner,
     copiedFrom: toCopiedFrom(row.copiedFrom),
     publishedAt: row.publishedAt?.toISOString() ?? null,
     copyCount: row._count.copies,

@@ -1,4 +1,5 @@
 import { LIMITS, type ReportItem } from '@heremita/shared';
+import { USER_CARD_SELECT } from '../core/user-card.js';
 import type { Prisma } from '../generated/prisma/client.js';
 
 /** Prisma `select` of everything a `ReportItem` is built from. */
@@ -10,7 +11,7 @@ export const REPORT_ITEM_SELECT = {
   status: true,
   createdAt: true,
   resolvedAt: true,
-  reporter: { select: { id: true, displayName: true, isDemo: true } },
+  reporter: { select: USER_CARD_SELECT },
   review: { select: { id: true, body: true, status: true } },
   trip: { select: { id: true, title: true, moderationHiddenAt: true } },
 } as const satisfies Prisma.ReportSelect;

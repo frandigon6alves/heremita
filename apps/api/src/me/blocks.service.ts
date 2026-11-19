@@ -4,6 +4,7 @@ import { CLOCK, type Clock } from '../core/clock/clock.js';
 import { CURSOR_TUPLES, decodeCursor, toPage } from '../core/cursor.js';
 import { ApiProblem } from '../core/http/api-problem.js';
 import { userNotFound } from '../core/http/problems.js';
+import { USER_CARD_SELECT } from '../core/user-card.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 type ListBlocksQuery = EndpointInput<typeof endpoints.listBlocks>['query'];
@@ -33,7 +34,7 @@ export class BlocksService {
       take: query.limit + 1,
       select: {
         createdAt: true,
-        blocked: { select: { id: true, displayName: true, isDemo: true } },
+        blocked: { select: USER_CARD_SELECT },
       },
     });
     const page = toPage(rows, query.limit, CURSOR_TUPLES.blocks, (row) => [
