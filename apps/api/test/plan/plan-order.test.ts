@@ -182,7 +182,8 @@ async function runSequence(owner: TestUser, seed: number, steps: number): Promis
 }
 
 describe('plan order (V17)', () => {
-  it('keeps_positions_dense_through_random_operation_sequences', async () => {
+  // 240 requests in a row: about 1.5 s on a laptop, over 5 s on a CI runner.
+  it('keeps_positions_dense_through_random_operation_sequences', { timeout: 30_000 }, async () => {
     for (const seed of [1, 7, 2026]) {
       await runSequence(await createUser(t), seed, 80);
     }
