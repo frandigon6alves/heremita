@@ -1,5 +1,6 @@
 import type {
   DayOwner,
+  DayViewer,
   PlaceSummary,
   RatingSummary,
   TravelMode,
@@ -79,5 +80,16 @@ export function toDayOwner(
     mode: day.modeOverride ?? trip.defaultMode,
     modeOverride: day.modeOverride,
     stops,
+  };
+}
+
+/** The viewer shape leaves the owner's dates out. */
+export function toDayViewer(day: DayOwner): DayViewer {
+  return {
+    id: day.id,
+    number: day.number,
+    mode: day.mode,
+    modeOverride: day.modeOverride,
+    stops: day.stops,
   };
 }

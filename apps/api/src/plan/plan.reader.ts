@@ -12,12 +12,37 @@ import { ProviderCacheService } from '../providers/core/provider-cache.service.j
 import { toTripOwner, toTripPublic, TRIP_SELECT } from '../trips/trip.mapper.js';
 import {
   toDayOwner,
+  toDayViewer,
   toTripPlaceOwner,
   toTripPlaceViewer,
   TRIP_PLACE_SELECT,
+  type TripPlaceRow,
 } from './plan.mapper.js';
 import type { RouteStop } from '../routing/planned-legs.js';
 import { keyedLegs, summariseDayRoute } from './route-summaries.js';
+
+type PlanStop = RouteStop & { dayId: string; tripPlaceId: string };
+
+/** Each day's stops in visit order (`stops` arrive sorted by day, then position), with their place's location. */
+function groupStopsByDay(
+  tripPlaces: readonly TripPlaceRow[],
+  stops: readonly Omit<PlanStop, 'location'>[],
+): Map<string, PlanStop[]> {
+  const locations = new Map(
+    tripPlaces.map((row) => [row.id, { lng: row.place.lng, lat: row.place.lat }]),
+  );
+  const stopsByDay = new Map<string, PlanStop[]>();
+  for (const stop of stops) {
+    const location = locations.get(stop.tripPlaceId);
+    // The snapshot holds every trip place its stops reference (composite FK).
+    if (location) {
+      const dayStops = stopsByDay.get(stop.dayId) ?? [];
+      dayStops.push({ ...stop, location });
+      stopsByDay.set(stop.dayId, dayStops);
+    }
+  }
+  return stopsByDay;
+}
 
 /**
  * The planner read (E24, E26): trip, trip places with place and rating
@@ -70,19 +95,7 @@ export class PlanReader {
       tripPlaces.map((row) => row.place.id),
       viewer?.id ?? null,
     );
-    const locations = new Map(
-      tripPlaces.map((row) => [row.id, { lng: row.place.lng, lat: row.place.lat }]),
-    );
-    const stopsByDay = new Map<string, (RouteStop & { tripPlaceId: string })[]>();
-    for (const stop of stops) {
-      const location = locations.get(stop.tripPlaceId);
-      // The snapshot holds every trip place its stops reference (composite FK).
-      if (location) {
-        const dayStops = stopsByDay.get(stop.dayId) ?? [];
-        dayStops.push({ ...stop, location });
-        stopsByDay.set(stop.dayId, dayStops);
-      }
-    }
+    const stopsByDay = groupStopsByDay(tripPlaces, stops);
     const planDays = days.map((day) => {
       const dayStops = stopsByDay.get(day.id) ?? [];
       const planDay = toDayOwner(
@@ -117,13 +130,7 @@ export class PlanReader {
       trip: toTripPublic(trip),
       planVersion: trip.planVersion,
       places: tripPlaces.map((row) => toTripPlaceViewer(row, ratingOf(ratings, row.place.id))),
-      days: planDays.map(({ planDay }) => ({
-        id: planDay.id,
-        number: planDay.number,
-        mode: planDay.mode,
-        modeOverride: planDay.modeOverride,
-        stops: planDay.stops,
-      })),
+      days: planDays.map(({ planDay }) => toDayViewer(planDay)),
       routes,
     };
   }
