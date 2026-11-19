@@ -15,7 +15,7 @@ allowBuilds:
 # Versions shared by more than one workspace are declared once here and
 # referenced from each package.json as "catalog:".
 catalog:
-  '@types/node': ^24.19.2
+  '@types/node': ^26.6.6
   '@types/pg': ^8.23.1
   # The API's driver; the web e2e global setup recreates the e2e database with it.
   pg: ^8.23.1
