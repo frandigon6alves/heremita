@@ -2,20 +2,6 @@
   "place": {
     "metaTitle": "{name}: reseñas",
     "mapLabel": "Mapa de {name}",
-    "categories": {
-      "sight": "Atracción",
-      "food": "Restaurante",
-      "cafe": "Cafetería",
-      "nightlife": "Vida nocturna",
-      "lodging": "Alojamiento",
-      "shopping": "Compras",
-      "nature": "Naturaleza",
-      "beach": "Playa",
-      "culture": "Cultura",
-      "transport": "Transporte",
-      "activity": "Actividad",
-      "other": "Lugar"
-    },
     "reviewsHeading": "Reseñas",
     "write": "Escribir una reseña",
     "editMine": "Editar mi reseña"

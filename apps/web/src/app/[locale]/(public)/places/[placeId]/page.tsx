@@ -38,6 +38,7 @@ export default async function PlacePage({
   const locale = await getLocale();
   const t = await getTranslations('reviews.place');
   const tSummary = await getTranslations('reviews.summary');
+  const tCategories = await getTranslations('common.categories');
   const [detail, firstPage, viewer] = await Promise.all([
     loadPlace(placeId),
     loadFirstReviews(placeId, sort),
@@ -45,7 +46,7 @@ export default async function PlacePage({
     getViewer().catch(() => null),
   ]);
   const { place, rating, myReview } = detail;
-  const subtitle = [t(`categories.${place.category}`), place.label].filter(Boolean).join(' · ');
+  const subtitle = [tCategories(place.category), place.label].filter(Boolean).join(' · ');
 
   return (
     <main id="main" className={styles.main}>

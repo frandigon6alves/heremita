@@ -32,6 +32,7 @@ export function ResultCard({
   communitySlot,
 }: ResultCardProps) {
   const t = useTranslations('itinerary');
+  const tCategories = useTranslations('common.categories');
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export function ResultCard({
             {result.name}
           </h3>
           <p className={styles.detail}>
-            {[t(`categories.${result.category}`), result.label].filter(Boolean).join(' · ')}
+            {[tCategories(result.category), result.label].filter(Boolean).join(' · ')}
           </p>
         </div>
       </header>

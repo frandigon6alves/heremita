@@ -111,20 +111,6 @@
     "planChanged": "El viaje cambió en otro sitio; se muestra la versión actual.",
     "restoreIncomplete": "{name} volvió, pero no a todos los días en los que estaba."
   },
-  "categories": {
-    "sight": "Atracción",
-    "food": "Restaurante",
-    "cafe": "Cafetería",
-    "nightlife": "Vida nocturna",
-    "lodging": "Alojamiento",
-    "shopping": "Compras",
-    "nature": "Naturaleza",
-    "beach": "Playa",
-    "culture": "Cultura",
-    "transport": "Transporte",
-    "activity": "Actividad",
-    "other": "Lugar"
-  },
   "route": {
     "leg": "{duration} · {distance}",
     "legEstimated": "≈ {duration} (estimación) · {distance}",

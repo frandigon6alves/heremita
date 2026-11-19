@@ -82,5 +82,19 @@
     "tooMany": "Muitas tentativas. Aguarde um pouco e tente de novo.",
     "tooManySeconds": "{seconds, plural, =0 {Muitas tentativas. Tente de novo agora.} one {Muitas tentativas. Tente de novo em # segundo.} other {Muitas tentativas. Tente de novo em # segundos.}}",
     "tooManyMinutes": "{minutes, plural, =0 {Muitas tentativas. Tente de novo agora.} one {Muitas tentativas. Tente de novo em # minuto.} other {Muitas tentativas. Tente de novo em # minutos.}}"
+  },
+  "categories": {
+    "sight": "Atração",
+    "food": "Restaurante",
+    "cafe": "Café",
+    "nightlife": "Vida noturna",
+    "lodging": "Hospedagem",
+    "shopping": "Compras",
+    "nature": "Natureza",
+    "beach": "Praia",
+    "culture": "Cultura",
+    "transport": "Transporte",
+    "activity": "Atividade",
+    "other": "Lugar"
   }
 }

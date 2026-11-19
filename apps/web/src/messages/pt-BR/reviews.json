@@ -2,20 +2,6 @@
   "place": {
     "metaTitle": "{name}: avaliações",
     "mapLabel": "Mapa de {name}",
-    "categories": {
-      "sight": "Atração",
-      "food": "Restaurante",
-      "cafe": "Café",
-      "nightlife": "Vida noturna",
-      "lodging": "Hospedagem",
-      "shopping": "Compras",
-      "nature": "Natureza",
-      "beach": "Praia",
-      "culture": "Cultura",
-      "transport": "Transporte",
-      "activity": "Atividade",
-      "other": "Lugar"
-    },
     "reviewsHeading": "Avaliações",
     "write": "Escrever avaliação",
     "editMine": "Editar minha avaliação"

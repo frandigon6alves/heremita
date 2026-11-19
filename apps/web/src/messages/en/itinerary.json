@@ -111,20 +111,6 @@
     "planChanged": "The trip changed somewhere else; showing the current version.",
     "restoreIncomplete": "{name} is back, but not on every day it was on."
   },
-  "categories": {
-    "sight": "Sight",
-    "food": "Restaurant",
-    "cafe": "Café",
-    "nightlife": "Nightlife",
-    "lodging": "Lodging",
-    "shopping": "Shopping",
-    "nature": "Nature",
-    "beach": "Beach",
-    "culture": "Culture",
-    "transport": "Transport",
-    "activity": "Activity",
-    "other": "Place"
-  },
   "route": {
     "leg": "{duration} · {distance}",
     "legEstimated": "≈ {duration} (estimate) · {distance}",

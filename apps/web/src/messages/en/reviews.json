@@ -2,20 +2,6 @@
   "place": {
     "metaTitle": "{name}: reviews",
     "mapLabel": "Map of {name}",
-    "categories": {
-      "sight": "Sight",
-      "food": "Restaurant",
-      "cafe": "Café",
-      "nightlife": "Nightlife",
-      "lodging": "Lodging",
-      "shopping": "Shopping",
-      "nature": "Nature",
-      "beach": "Beach",
-      "culture": "Culture",
-      "transport": "Transport",
-      "activity": "Activity",
-      "other": "Place"
-    },
     "reviewsHeading": "Reviews",
     "write": "Write a review",
     "editMine": "Edit my review"
