@@ -36,6 +36,7 @@
 .statusVisible,
 .statusHidden {
   padding: 2px var(--space-2);
+  border: 1px solid transparent;
   border-radius: var(--radius-full);
   font-size: var(--text-xs);
   line-height: var(--leading-xs);
@@ -48,8 +49,9 @@
 }
 
 .statusHidden {
+  border-color: var(--color-accent);
   background: var(--color-accent-soft);
-  color: var(--color-accent);
+  color: var(--color-text);
 }
 
 .excerpt {

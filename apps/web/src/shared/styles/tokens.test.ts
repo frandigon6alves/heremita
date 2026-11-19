@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -73,7 +73,46 @@ const PAIRS: ReadonlyArray<readonly [string, string, number]> = [
   ['--color-border-control', '--color-bg', NON_TEXT],
   ['--color-focus', '--color-surface', NON_TEXT],
   ['--color-focus', '--color-bg', NON_TEXT],
+  // Text that inherits its background from the surface around it.
+  ['--color-text', '--color-bg', TEXT],
+  ['--color-bg', '--color-text', TEXT],
+  ['--color-text-muted', '--color-primary-soft', TEXT],
+  ['--color-text-muted', '--color-accent-soft', TEXT],
+  ['--color-primary', '--color-surface-raised', TEXT],
+  ['--color-primary', '--color-accent-soft', TEXT],
+  ['--color-accent', '--color-bg', TEXT],
+  ['--color-danger', '--color-bg', TEXT],
+  ['--color-danger', '--color-surface-raised', TEXT],
+  ['--color-success', '--color-bg', TEXT],
+  ['--color-warning', '--color-bg', TEXT],
+  ['--color-accent', '--color-accent-soft', NON_TEXT],
+  ['--color-border-control', '--color-surface-raised', NON_TEXT],
+  ['--color-focus', '--color-surface-raised', NON_TEXT],
 ];
+
+/** Every stylesheet of the app, as `[path, text]`. */
+const stylesheets = readdirSync(path.join(import.meta.dirname, '../..'), { recursive: true })
+  .map(String)
+  .filter((file) => file.endsWith('.css'))
+  .map((file) => [file, readFileSync(path.join(import.meta.dirname, '../..', file), 'utf8')]);
+
+/**
+ * `[file, selector, foreground, background]` of every rule that sets both a
+ * text colour token and a background token: the pairs a component paints.
+ */
+function paintedPairs(): Array<[string, string, string, string]> {
+  return stylesheets.flatMap(([file = '', text = '']) =>
+    Array.from(text.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)).flatMap(
+      ([, selector = '', body = '']) => {
+        const foreground = /(?:^|[;\s])color:\s*var\((--color-[\w-]+)\)/.exec(body)?.[1];
+        const background = /background(?:-color)?:\s*var\((--color-[\w-]+)\)/.exec(body)?.[1];
+        return foreground && background
+          ? [[file, selector.trim(), foreground, background] as [string, string, string, string]]
+          : [];
+      },
+    ),
+  );
+}
 
 const themes = {
   light: block(":root,\n[data-theme='light']"),
@@ -86,6 +125,21 @@ describe('colour tokens', () => {
       expect(contrast(hex(tokens, foreground), hex(tokens, background))).toBeGreaterThanOrEqual(
         minimum,
       );
+    });
+  }
+
+  it('finds_the_painted_pairs', () => {
+    expect(paintedPairs().length).toBeGreaterThan(10);
+  });
+
+  for (const [theme, tokens] of Object.entries(themes)) {
+    it(`${theme}: every colour a rule paints on its own background is readable`, () => {
+      const unreadable = paintedPairs().filter(([, selector, foreground, background]) => {
+        // An icon (or a swatch) needs 3:1, text 4.5:1 (V59).
+        const minimum = /icon|swatch/i.test(selector) ? NON_TEXT : TEXT;
+        return contrast(hex(tokens, foreground), hex(tokens, background)) < minimum;
+      });
+      expect(unreadable).toEqual([]);
     });
   }
 
