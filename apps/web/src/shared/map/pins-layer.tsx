@@ -238,7 +238,9 @@ export function PinsLayer({ pins, selectedId, onSelect, cluster = false }: PinsL
             duration: cameraDuration(CLUSTER_EASE_MS),
           });
         }
-      });
+      })
+      // The cluster went away (new data, style swap) before it answered: the tap just does nothing.
+      .catch(() => undefined);
   });
 
   useEffect(() => {

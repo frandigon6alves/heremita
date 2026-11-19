@@ -298,6 +298,37 @@ describe('PinsLayer', () => {
     });
   });
 
+  it('ignores_a_cluster_that_is_gone_before_its_zoom_answers', async () => {
+    const onSelect = vi.fn();
+    const { map } = renderInMap(
+      <PinsLayer pins={pins} selectedId={null} onSelect={onSelect} cluster />,
+    );
+    const source = map.getSource('h-places');
+    if (!source) {
+      throw new Error('pins source missing');
+    }
+    source.getClusterExpansionZoom = () => Promise.reject(new Error('cluster gone'));
+    map.renderedFeatures = [
+      {
+        id: 7,
+        layer: { id: 'h-places-cluster' },
+        geometry: { type: 'Point', coordinates: [-9.15, 38.7] },
+        properties: { cluster_id: 7, point_count: 3 },
+      },
+    ];
+    const unhandled = vi.fn();
+    process.on('unhandledRejection', unhandled);
+
+    await act(async () => {
+      map.fire('click', { point: { x: 1, y: 1 } });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    process.off('unhandledRejection', unhandled);
+
+    expect(unhandled).not.toHaveBeenCalled();
+    expect(map.cameraCalls).toEqual([]);
+  });
+
   it('rebuilds_cleanly_when_clustering_is_switched', () => {
     const { map, rerender } = renderInMap(
       <PinsLayer pins={pins} selectedId={CASTLE} onSelect={vi.fn()} cluster />,
