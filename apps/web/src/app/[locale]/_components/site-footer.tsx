@@ -1,5 +1,6 @@
 import { getLocale, getTranslations } from 'next-intl/server';
 import Link from 'next/link';
+import { getViewer } from '@/lib/api/server';
 import { routes } from '@/lib/routes';
 import { LanguageSwitcher } from './language-switcher';
 import styles from './site-chrome.module.css';
@@ -8,6 +9,8 @@ import styles from './site-chrome.module.css';
 export async function SiteFooter() {
   const locale = await getLocale();
   const t = await getTranslations('common');
+  // API trouble while reading the session: the links still switch the page's language.
+  const viewer = await getViewer().catch(() => null);
 
   return (
     <footer className={styles.footer}>
@@ -32,7 +35,7 @@ export async function SiteFooter() {
       </nav>
       <div className={styles.language}>
         <span className={styles.languageLabel}>{t('footer.language')}</span>
-        <LanguageSwitcher />
+        <LanguageSwitcher signedIn={viewer !== null} />
       </div>
     </footer>
   );
