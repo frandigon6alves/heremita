@@ -1,22 +1,21 @@
 import { http, HttpResponse, delay } from 'msw';
-import { setupServer } from 'msw/node';
 import { screen } from '@testing-library/react';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { queryKeys } from '@/lib/api/query-keys';
 import { SignupForm } from './signup-form';
-import { ME, problemResponse, renderAuth } from './test-support';
+import { buildMe, problemResponse, setupApiServer } from '../../../test/msw/handlers';
+import { renderWithProviders } from '../../../test/render';
+
+const ME = buildMe();
 
 const router = vi.hoisted(() => ({ replace: vi.fn(), refresh: vi.fn() }));
 vi.mock('next/navigation', () => ({ useRouter: () => router }));
 
-const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
+const server = setupApiServer();
 beforeEach(() => {
   router.replace.mockReset();
   router.refresh.mockReset();
 });
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
 
 const VALID = { name: 'Ana', email: 'ana@example.com', password: 'a long passphrase' };
 
@@ -33,7 +32,7 @@ function submitButton() {
   return screen.getByRole('button', { name: /Create account|Creating…/ });
 }
 
-async function fillValid(user: ReturnType<typeof renderAuth>['user']) {
+async function fillValid(user: ReturnType<typeof renderWithProviders>['user']) {
   await user.type(nameField(), VALID.name);
   await user.type(emailField(), VALID.email);
   await user.type(passwordField(), VALID.password);
@@ -41,7 +40,7 @@ async function fillValid(user: ReturnType<typeof renderAuth>['user']) {
 
 describe('SignupForm', () => {
   it('shows_a_field_error_after_leaving_the_field_wired_to_the_input', async () => {
-    const { user } = renderAuth(<SignupForm />);
+    const { user } = renderWithProviders(<SignupForm />);
 
     await user.type(passwordField(), 'short');
     await user.tab();
@@ -56,7 +55,7 @@ describe('SignupForm', () => {
   });
 
   it('shows_no_error_before_the_field_is_left', async () => {
-    const { user } = renderAuth(<SignupForm />);
+    const { user } = renderWithProviders(<SignupForm />);
 
     await user.type(passwordField(), 'short');
 
@@ -65,7 +64,7 @@ describe('SignupForm', () => {
   });
 
   it('clears_the_error_as_soon_as_the_value_becomes_valid', async () => {
-    const { user } = renderAuth(<SignupForm />);
+    const { user } = renderWithProviders(<SignupForm />);
     await user.type(emailField(), 'ana');
     await user.tab();
     expect(screen.getByRole('alert')).toHaveTextContent('Enter an e-mail address');
@@ -77,7 +76,7 @@ describe('SignupForm', () => {
   });
 
   it('rejects_the_email_as_password_with_the_shared_schema', async () => {
-    const { user } = renderAuth(<SignupForm />);
+    const { user } = renderWithProviders(<SignupForm />);
     await user.type(nameField(), 'Ana');
     await user.type(emailField(), 'longaddress1@example.com');
     await user.type(passwordField(), 'longaddress1');
@@ -90,7 +89,7 @@ describe('SignupForm', () => {
   });
 
   it('allows_pasting_into_the_password', async () => {
-    const { user } = renderAuth(<SignupForm />);
+    const { user } = renderWithProviders(<SignupForm />);
 
     await user.click(passwordField());
     await user.paste('pasted passphrase 123');
@@ -109,7 +108,7 @@ describe('SignupForm', () => {
         return HttpResponse.json(ME, { status: 201 });
       }),
     );
-    const { user, queryClient } = renderAuth(<SignupForm />, { locale: 'pt-BR' });
+    const { user, queryClient } = renderWithProviders(<SignupForm />, { locale: 'pt-BR' });
 
     await user.type(screen.getByRole('textbox', { name: 'Nome' }), '  Ana ');
     await user.type(screen.getByRole('textbox', { name: 'E-mail' }), ' Ana@Example.com');
@@ -129,7 +128,7 @@ describe('SignupForm', () => {
 
   it('goes_to_next_after_sign_up_when_given', async () => {
     server.use(http.post('*/api/v1/users', () => HttpResponse.json(ME, { status: 201 })));
-    const { user } = renderAuth(<SignupForm next="/en/t/trip-1?copy=1" />);
+    const { user } = renderWithProviders(<SignupForm next="/en/t/trip-1?copy=1" />);
 
     await fillValid(user);
     await user.click(submitButton());
@@ -141,10 +140,10 @@ describe('SignupForm', () => {
     server.use(
       http.post('*/api/v1/users', async () => {
         await delay(50);
-        return problemResponse(500, 'internal_error');
+        return problemResponse('internal_error');
       }),
     );
-    const { user } = renderAuth(<SignupForm />);
+    const { user } = renderWithProviders(<SignupForm />);
     await fillValid(user);
 
     await user.click(submitButton());
@@ -157,12 +156,12 @@ describe('SignupForm', () => {
   it('maps_422_pointers_to_their_fields', async () => {
     server.use(
       http.post('*/api/v1/users', () =>
-        problemResponse(422, 'validation_failed', {
+        problemResponse('validation_failed', {
           errors: [{ pointer: '/body/password', detail: 'Password is too common' }],
         }),
       ),
     );
-    const { user } = renderAuth(<SignupForm />);
+    const { user } = renderWithProviders(<SignupForm />);
     await fillValid(user);
 
     await user.click(submitButton());
@@ -176,8 +175,8 @@ describe('SignupForm', () => {
   });
 
   it('shows_email_taken_on_the_email_field_with_a_login_link_keeping_next', async () => {
-    server.use(http.post('*/api/v1/users', () => problemResponse(409, 'email_taken')));
-    const { user } = renderAuth(<SignupForm next="/en/t/trip-1" />);
+    server.use(http.post('*/api/v1/users', () => problemResponse('email_taken')));
+    const { user } = renderWithProviders(<SignupForm next="/en/t/trip-1" />);
     await fillValid(user);
 
     await user.click(submitButton());
@@ -194,10 +193,10 @@ describe('SignupForm', () => {
   it('shows_a_form_alert_with_the_retry_after_wait_on_429', async () => {
     server.use(
       http.post('*/api/v1/users', () =>
-        problemResponse(429, 'rate_limited', {}, { 'Retry-After': '42' }),
+        problemResponse('rate_limited', {}, { 'Retry-After': '42' }),
       ),
     );
-    const { user } = renderAuth(<SignupForm />);
+    const { user } = renderWithProviders(<SignupForm />);
     await fillValid(user);
 
     await user.click(submitButton());
@@ -209,7 +208,7 @@ describe('SignupForm', () => {
   });
 
   it('reads_in_portuguese', async () => {
-    const { user } = renderAuth(<SignupForm />, { locale: 'pt-BR' });
+    const { user } = renderWithProviders(<SignupForm />, { locale: 'pt-BR' });
 
     await user.type(screen.getByLabelText('Senha'), 'curta');
     await user.tab();
