@@ -2,10 +2,13 @@
 
 import type { TravelMode } from '@heremita/shared';
 import { useLocale, useTranslations } from 'next-intl';
+import { cachedFormatter } from '@/lib/format/intl-cache';
 import { Button } from '@/shared/components/button/button';
 import type { DayRouteView } from './day-route';
 import { ModeSwitch } from './mode-switch';
 import styles from './route-status.module.css';
+
+const CONJUNCTION: Intl.ListFormatOptions = { type: 'conjunction' };
 
 interface RouteStatusProps {
   view: DayRouteView;
@@ -63,7 +66,7 @@ export function RouteStatus({
       {!failed && unreachable.length > 0 ? (
         <p className={styles.banner}>
           {t('partial', {
-            names: new Intl.ListFormat(locale, { type: 'conjunction' }).format(unreachable),
+            names: cachedFormatter(Intl.ListFormat, locale, CONJUNCTION).format(unreachable),
             mode,
           })}
         </p>

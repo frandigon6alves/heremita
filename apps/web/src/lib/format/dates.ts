@@ -1,4 +1,5 @@
 import type { Locale } from '@heremita/shared';
+import { cachedFormatter } from './intl-cache';
 
 /**
  * Calendar dates (`YYYY-MM-DD`) and months (`YYYY-MM`) of the contract are not
@@ -23,7 +24,7 @@ export function formatCalendarDate(
   locale: Locale,
   options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short' },
 ): string {
-  return new Intl.DateTimeFormat(locale, { ...options, timeZone: TIME_ZONE }).format(
+  return cachedFormatter(Intl.DateTimeFormat, locale, { ...options, timeZone: TIME_ZONE }).format(
     utcMidnight(isoDate),
   );
 }

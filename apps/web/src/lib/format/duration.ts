@@ -1,4 +1,5 @@
 import type { Locale } from '@heremita/shared';
+import { cachedFormatter } from './intl-cache';
 
 const SECONDS_PER_MINUTE = 60;
 const MINUTES_PER_HOUR = 60;
@@ -9,9 +10,11 @@ interface HoursMinutes {
 }
 
 function unit(locale: Locale, name: 'hour' | 'minute', value: number): string {
-  return new Intl.NumberFormat(locale, { style: 'unit', unit: name, unitDisplay: 'short' }).format(
-    value,
-  );
+  return cachedFormatter(Intl.NumberFormat, locale, {
+    style: 'unit',
+    unit: name,
+    unitDisplay: 'short',
+  }).format(value);
 }
 
 /** Browsers without `Intl.DurationFormat` (it shipped in 2025): one unit each, as "1 h 5 min". */
@@ -43,5 +46,5 @@ export function formatDuration(seconds: number, locale: Locale): string {
   if (typeof Intl.DurationFormat !== 'function') {
     return formatWithoutDurationFormat(locale, duration);
   }
-  return new Intl.DurationFormat(locale, { style: 'short' }).format(duration);
+  return cachedFormatter(Intl.DurationFormat, locale, { style: 'short' }).format(duration);
 }
