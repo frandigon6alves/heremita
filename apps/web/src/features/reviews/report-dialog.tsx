@@ -1,18 +1,20 @@
 'use client';
 
 import {
-  cleanText,
+  createReportBodySchema,
   endpoints,
   LIMITS,
   reportReasonSchema,
-  type ReportReason,
+  type CreateReportBody,
   type ReportTargetType,
 } from '@heremita/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useId, useState, type FormEvent } from 'react';
+import { useId } from 'react';
+import { useForm } from 'react-hook-form';
 import { apiFetch } from '@/lib/api/client';
-import { problemCodeOf } from '@/lib/api/failure';
+import { hasCode } from '@/lib/api/failure';
 import { Button } from '@/shared/components/button/button';
 import { Dialog, DialogActions, initialFocus } from '@/shared/components/dialog/dialog';
 import { FormAlert } from '@/shared/components/form-alert/form-alert';
@@ -21,6 +23,8 @@ import { showToast } from '@/shared/components/toast/toast-store';
 import styles from './report-dialog.module.css';
 
 const REASONS = reportReasonSchema.options;
+const reportFormSchema = createReportBodySchema.omit({ target: true });
+type ReportFields = Omit<CreateReportBody, 'target'>;
 
 export interface ReportDialogProps {
   open: boolean;
@@ -30,58 +34,56 @@ export interface ReportDialogProps {
 }
 
 /**
- * Report form (E49): a reason (required) and optional details. Sends once;
- * a duplicate report, vanished content or own content is explained in the
- * dialog, success closes it with a toast.
+ * Report form (E49): a reason (required) and optional details, checked with
+ * the shared schema. Sends once; a duplicate report, vanished content or own
+ * content is explained in the dialog, success closes it with a toast.
  */
 export function ReportDialog({ open, onClose, target }: ReportDialogProps) {
   const t = useTranslations('reviews.report');
   const tActions = useTranslations('common.actions');
+  const legendId = useId();
   const reasonErrorId = useId();
-  const [reason, setReason] = useState<ReportReason | null>(null);
-  const [details, setDetails] = useState('');
-  const [reasonMissing, setReasonMissing] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ReportFields, unknown, ReportFields>({
+    resolver: zodResolver(reportFormSchema),
+    mode: 'onTouched',
+    defaultValues: { details: '' },
+  });
   const report = useMutation({
-    mutationFn: (body: { reason: ReportReason; details: string | undefined }) =>
-      apiFetch(endpoints.createReport, { body: { target, ...body } }),
+    mutationFn: ({ reason, details }: ReportFields) =>
+      apiFetch(endpoints.createReport, {
+        body: { target, reason, details: details === '' ? undefined : details },
+      }),
     onSuccess: () => {
       close();
       showToast({ message: t('sent') });
     },
   });
 
-  const cleanedDetails = cleanText(details);
-  const detailsTooLong = cleanedDetails.length > LIMITS.REPORT_DETAILS_MAX;
-
   function close() {
-    setReason(null);
-    setDetails('');
-    setReasonMissing(false);
+    reset();
     report.reset();
     onClose();
   }
 
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setReasonMissing(reason === null);
-    if (reason === null || detailsTooLong) {
-      return;
+  function failureMessage(error: unknown): string {
+    if (hasCode(error, 'already_reported')) {
+      return t('alreadyReported');
     }
-    report.mutate({ reason, details: cleanedDetails === '' ? undefined : cleanedDetails });
+    if (hasCode(error, 'not_found')) {
+      return t('gone');
+    }
+    if (hasCode(error, 'cannot_report_own')) {
+      return t('own');
+    }
+    return t('failed');
   }
 
-  function failureMessage(error: unknown): string {
-    switch (problemCodeOf(error)) {
-      case 'already_reported':
-        return t('alreadyReported');
-      case 'not_found':
-        return t('gone');
-      case 'cannot_report_own':
-        return t('own');
-      default:
-        return t('failed');
-    }
-  }
+  const reasonInvalid = errors.reason !== undefined;
 
   return (
     <Dialog
@@ -89,29 +91,33 @@ export function ReportDialog({ open, onClose, target }: ReportDialogProps) {
       onClose={close}
       title={target.type === 'review' ? t('titleReview') : t('titleTrip')}
     >
-      <form className={styles.form} noValidate onSubmit={submit}>
+      <form
+        className={styles.form}
+        noValidate
+        onSubmit={(event) => void handleSubmit((body) => report.mutate(body))(event)}
+      >
         <fieldset
           className={styles.reasons}
-          aria-describedby={reasonMissing ? reasonErrorId : undefined}
+          role="radiogroup"
+          aria-labelledby={legendId}
+          aria-describedby={reasonInvalid ? reasonErrorId : undefined}
+          aria-invalid={reasonInvalid ? true : undefined}
         >
-          <legend className={styles.legend}>{t('reason')}</legend>
+          <legend id={legendId} className={styles.legend}>
+            {t('reason')}
+          </legend>
           {REASONS.map((value, index) => (
             <label key={value} className={styles.reason}>
               <input
                 type="radio"
-                name="reason"
                 value={value}
-                checked={reason === value}
-                onChange={() => {
-                  setReason(value);
-                  setReasonMissing(false);
-                }}
+                {...register('reason')}
                 {...(index === 0 ? initialFocus : {})}
               />
               {t(`reasons.${value}`)}
             </label>
           ))}
-          {reasonMissing ? (
+          {reasonInvalid ? (
             <p id={reasonErrorId} className={styles.error} role="alert">
               {t('reasonRequired')}
             </p>
@@ -121,10 +127,11 @@ export function ReportDialog({ open, onClose, target }: ReportDialogProps) {
           label={t('details')}
           hint={t('detailsHint', { max: LIMITS.REPORT_DETAILS_MAX })}
           error={
-            detailsTooLong ? t('detailsTooLong', { max: LIMITS.REPORT_DETAILS_MAX }) : undefined
+            errors.details === undefined
+              ? undefined
+              : t('detailsTooLong', { max: LIMITS.REPORT_DETAILS_MAX })
           }
-          value={details}
-          onChange={(event) => setDetails(event.target.value)}
+          {...register('details')}
         />
         {report.isError ? (
           <FormAlert error={report.error} message={failureMessage(report.error)} />

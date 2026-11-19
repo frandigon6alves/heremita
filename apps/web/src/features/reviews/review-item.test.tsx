@@ -1,4 +1,4 @@
-import { endpoints } from '@heremita/shared';
+import { endpoints, LIMITS } from '@heremita/shared';
 import { screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getSnapshot, resetToasts } from '@/shared/components/toast/toast-store';
@@ -48,10 +48,35 @@ describe('ReviewItem report', () => {
     await openMenuItem(user, 'Report');
     await user.click(screen.getByRole('button', { name: 'Send report' }));
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Choose a reason.');
-    expect(screen.getByRole('group', { name: 'Reason' })).toHaveAccessibleDescription(
-      'Choose a reason.',
+    expect(await screen.findByRole('alert')).toHaveTextContent('Choose a reason.');
+    const reasons = screen.getByRole('radiogroup', { name: 'Reason' });
+    expect(reasons).toHaveAttribute('aria-invalid', 'true');
+    expect(reasons).toHaveAccessibleDescription('Choose a reason.');
+    expect(screen.getByRole('radio', { name: 'Spam or advertising' })).toHaveFocus();
+  });
+
+  it('marks_details_over_the_limit_and_sends_nothing', async () => {
+    const bodies: unknown[] = [];
+    server.use(
+      onEndpoint(endpoints.createReport, async ({ request }) => {
+        bodies.push(await request.json());
+        return okResponse(endpoints.createReport, { id: '0195f0c8-0000-7000-8000-0000000f0003' });
+      }),
     );
+    const { user } = renderItem();
+
+    await openMenuItem(user, 'Report');
+    await user.click(screen.getByRole('radio', { name: 'Spam or advertising' }));
+    const details = screen.getByRole('textbox', { name: 'Details (optional)' });
+    await user.click(details);
+    await user.paste('x'.repeat(LIMITS.REPORT_DETAILS_MAX + 1));
+    await user.click(screen.getByRole('button', { name: 'Send report' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      `Use at most ${LIMITS.REPORT_DETAILS_MAX} characters.`,
+    );
+    expect(details).toHaveAttribute('aria-invalid', 'true');
+    expect(bodies).toEqual([]);
   });
 
   it('sends_reason_and_cleaned_details_then_closes_with_a_toast', async () => {
