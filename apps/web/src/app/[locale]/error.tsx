@@ -1,16 +1,16 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { ApiProblemError } from '@/lib/api/problem';
 import { routes } from '@/lib/routes';
 import { StatusPage } from './_components/status-page';
 import styles from './_components/status-page.module.css';
 
-/** A reference the user can quote: the API error code, or the server render's digest. */
+/**
+ * A reference the user can quote: the digest of the failed server render.
+ * Server errors reach the browser with nothing else; `instrumentation.ts`
+ * logs the digest next to the request id the API saw.
+ */
 function errorReference(error: unknown): string | undefined {
-  if (error instanceof ApiProblemError) {
-    return error.problem.code;
-  }
   if (error instanceof Error && 'digest' in error && typeof error.digest === 'string') {
     return error.digest;
   }

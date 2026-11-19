@@ -43,3 +43,21 @@ describe('proxy locale negotiation', () => {
     expect(redirectTarget(visit('/es/explore', { 'accept-language': 'pt-BR' }))).toBeNull();
   });
 });
+
+describe('proxy request id', () => {
+  const forwardedId = (response: Response) =>
+    response.headers.get('x-middleware-request-x-request-id');
+
+  it('gives_every_page_request_an_id_the_render_and_onrequesterror_share', () => {
+    expect(forwardedId(visit('/en/explore'))).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+    );
+  });
+
+  it('keeps_a_valid_id_from_a_hop_in_front_and_replaces_an_invalid_one', () => {
+    expect(forwardedId(visit('/en/explore', { 'x-request-id': 'edge-0001-abcd' }))).toBe(
+      'edge-0001-abcd',
+    );
+    expect(forwardedId(visit('/en/explore', { 'x-request-id': 'bad id!' }))).not.toBe('bad id!');
+  });
+});

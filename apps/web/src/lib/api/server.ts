@@ -5,23 +5,21 @@ import { endpoints, type EndpointDef, type EndpointOutput, type Me } from '@here
 import { cookies, headers } from 'next/headers';
 import { cache } from 'react';
 import { env } from '@/env';
-import { errorFromResponse, isUnauthenticated, REQUEST_ID_HEADER } from './problem';
+import { errorFromResponse, isUnauthenticated } from './problem';
 import { endpointPath, type RequestArgs, type UntypedOptions } from './request';
+import { REQUEST_ID_HEADER, requestIdOrNew } from './request-id';
 
 /** A server render must not hang on the API: past this the page shows its error state. */
 export const SERVER_FETCH_TIMEOUT_MS = 5000;
 
-/** The format the API accepts for an incoming request id (it generates one otherwise). */
-const REQUEST_ID_PATTERN = /^[A-Za-z0-9-]{8,64}$/;
-
 /**
  * One request id per page render, shared by every API call of that render:
- * the incoming one when a proxy set a valid one, else a fresh UUID.
+ * the one `proxy.ts` put on the request (so `onRequestError` logs the same),
+ * else a fresh UUID (prefetches skip the proxy).
  */
-const renderRequestId = cache(async (): Promise<string> => {
-  const incoming = (await headers()).get(REQUEST_ID_HEADER);
-  return incoming !== null && REQUEST_ID_PATTERN.test(incoming) ? incoming : crypto.randomUUID();
-});
+const renderRequestId = cache(async (): Promise<string> =>
+  requestIdOrNew((await headers()).get(REQUEST_ID_HEADER)),
+);
 
 /**
  * The browser's address, vouched for with `SERVER_FETCH_SECRET` so the API keys

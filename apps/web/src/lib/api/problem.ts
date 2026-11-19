@@ -3,9 +3,7 @@ import {
   type ProblemDetails,
   type ProblemFieldError,
 } from '@heremita/shared';
-
-/** Header the API echoes on every response, to find the request in its logs. */
-export const REQUEST_ID_HEADER = 'X-Request-Id';
+import { REQUEST_ID_HEADER } from './request-id';
 
 /** The API answered with an RFC 9457 problem document. */
 export class ApiProblemError extends Error {
