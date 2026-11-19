@@ -6,8 +6,6 @@ import { MyTripsPage } from '@/features/trips/my-trips-page';
 import { TripList } from '@/features/trips/trip-list';
 import { WarmMapChunk } from '@/features/trips/warm-map-chunk';
 import { serverFetch } from '@/lib/api/server';
-import { SiteFooter } from '../../_components/site-footer';
-import { SiteHeader } from '../../_components/site-header';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('trips.mine');
@@ -21,12 +19,10 @@ export default async function MyTripsRoute() {
 
   return (
     <ClientMessages namespaces={['trips', 'map']}>
-      <SiteHeader />
       <MyTripsPage>
         <TripList initialPage={firstPage} />
         <WarmMapChunk />
       </MyTripsPage>
-      <SiteFooter />
     </ClientMessages>
   );
 }

@@ -1,14 +1,6 @@
 import { ClientMessages } from '@/i18n/client-messages';
-import { SiteFooter } from '../../_components/site-footer';
-import { SiteHeader } from '../../_components/site-header';
 
-/** Explore: public, with the site header and footer. */
+/** Explore: public. */
 export default function ExploreLayout({ children }: LayoutProps<'/[locale]/explore'>) {
-  return (
-    <ClientMessages namespaces={['explore']}>
-      <SiteHeader />
-      {children}
-      <SiteFooter />
-    </ClientMessages>
-  );
+  return <ClientMessages namespaces={['explore']}>{children}</ClientMessages>;
 }

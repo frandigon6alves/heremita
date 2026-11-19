@@ -13,6 +13,9 @@ import { Toaster } from '@/shared/components/toast/toaster';
 import { atkinson, fraunces } from '@/shared/styles/fonts';
 import { THEME_SCRIPT } from '@/shared/theme/theme';
 import { Providers } from './_components/providers';
+import { SiteChrome } from './_components/site-chrome';
+import { SiteFooter } from './_components/site-footer';
+import { SiteHeader } from './_components/site-header';
 import '@/shared/styles/tokens.css';
 import '@/shared/styles/reset.css';
 import '@/shared/styles/base.css';
@@ -69,7 +72,9 @@ export default async function LocaleLayout({ children }: LayoutProps<'/[locale]'
         <ClientMessages namespaces={[]}>
           <Providers>
             <OfflineStatus />
-            {children}
+            <SiteChrome header={<SiteHeader />} footer={<SiteFooter />}>
+              {children}
+            </SiteChrome>
             <Toaster />
           </Providers>
         </ClientMessages>

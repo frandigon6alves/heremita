@@ -5,8 +5,6 @@ import { Landing } from '@/features/explore/landing';
 import { getViewer, serverFetch } from '@/lib/api/server';
 import { routes } from '@/lib/routes';
 import { routing } from '@/i18n/routing';
-import { SiteFooter } from '../_components/site-footer';
-import { SiteHeader } from '../_components/site-header';
 
 /** Public trips in the landing's community strip. */
 const COMMUNITY_STRIP_SIZE = 6;
@@ -33,11 +31,5 @@ export default async function LandingPage() {
     ),
   ]);
 
-  return (
-    <>
-      <SiteHeader />
-      <Landing signedIn={viewer !== null} communityTrips={community?.items ?? []} />
-      <SiteFooter />
-    </>
-  );
+  return <Landing signedIn={viewer !== null} communityTrips={community?.items ?? []} />;
 }
