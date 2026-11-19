@@ -2,22 +2,13 @@ import 'server-only';
 import type { ReviewSort } from '@heremita/shared';
 import { apiRoutes } from '@heremita/shared/api-routes';
 import { isOneOf, REVIEW_SORTS } from '@heremita/shared/plain';
-import { notFound } from 'next/navigation';
 import { cache } from 'react';
-import { ApiProblemError } from '@/lib/api/problem';
-import { serverFetch } from '@/lib/api/server';
+import { serverFetch, serverFetchOrNotFound } from '@/lib/api/server';
 
 /** E44 once per render (metadata + page); an unknown or custom place is a 404 page. */
-export const loadPlace = cache(async (placeId: string) => {
-  try {
-    return await serverFetch(apiRoutes.getPlace, { params: { placeId } });
-  } catch (error) {
-    if (error instanceof ApiProblemError && error.status === 404) {
-      notFound();
-    }
-    throw error;
-  }
-});
+export const loadPlace = cache((placeId: string) =>
+  serverFetchOrNotFound(apiRoutes.getPlace, { params: { placeId } }),
+);
 
 /** `?sort=` of the place page; anything else reads as the default. */
 export function parseSort(value: string | string[] | undefined): ReviewSort {

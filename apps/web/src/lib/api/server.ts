@@ -4,9 +4,10 @@ import { isIP } from 'node:net';
 import type { EndpointOutput, Endpoints, Me } from '@heremita/shared';
 import { apiRoutes, type ApiRoute, type GetEndpointName } from '@heremita/shared/api-routes';
 import { cookies, headers } from 'next/headers';
+import { notFound } from 'next/navigation';
 import { cache } from 'react';
 import { env } from '@/env';
-import { errorFromResponse, isUnauthenticated } from './problem';
+import { ApiProblemError, errorFromResponse, isUnauthenticated } from './problem';
 import { endpointPath, type RequestArgs, type UntypedOptions } from './request';
 import { REQUEST_ID_HEADER, requestIdOrNew } from './request-id';
 
@@ -89,6 +90,21 @@ export async function serverFetch<const N extends GetEndpointName>(
     throw await errorFromResponse(response);
   }
   return (await response.json()) as EndpointOutput<Endpoints[N]>;
+}
+
+/** {@link serverFetch} of the resource a page is about: a 404 answer renders the 404 page. */
+export async function serverFetchOrNotFound<const N extends GetEndpointName>(
+  route: ApiRoute<N>,
+  ...args: RequestArgs<Endpoints[N]>
+): Promise<EndpointOutput<Endpoints[N]>> {
+  try {
+    return await serverFetch(route, ...args);
+  } catch (error) {
+    if (error instanceof ApiProblemError && error.status === 404) {
+      notFound();
+    }
+    throw error;
+  }
 }
 
 /**

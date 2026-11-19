@@ -30,8 +30,14 @@ const testEnv = vi.hoisted(() => ({
   SERVER_FETCH_SECRET: null as string | null,
 }));
 vi.mock('@/env', () => ({ env: testEnv }));
+const NOT_FOUND = new Error('NEXT_NOT_FOUND');
+vi.mock('next/navigation', () => ({
+  notFound: () => {
+    throw NOT_FOUND;
+  },
+}));
 
-const { getViewer, serverFetch } = await import('./server');
+const { getViewer, serverFetch, serverFetchOrNotFound } = await import('./server');
 
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
@@ -164,6 +170,26 @@ describe('serverFetch', () => {
     ).rejects.toMatchObject({
       code: 'trip_not_found',
     });
+  });
+});
+
+describe('serverFetchOrNotFound', () => {
+  it('renders_the_404_page_when_the_api_answers_404', async () => {
+    server.use(
+      http.get('http://api.test/api/v1/trips/:tripId', () => problem(404, 'trip_not_found')),
+    );
+
+    await expect(
+      serverFetchOrNotFound(apiRoutes.getTrip, { params: { tripId: 't1' } }),
+    ).rejects.toBe(NOT_FOUND);
+  });
+
+  it('throws_other_failures', async () => {
+    server.use(http.get('http://api.test/api/v1/trips/:tripId', () => problem(500, 'internal')));
+
+    await expect(
+      serverFetchOrNotFound(apiRoutes.getTrip, { params: { tripId: 't1' } }),
+    ).rejects.toBeInstanceOf(ApiProblemError);
   });
 });
 
