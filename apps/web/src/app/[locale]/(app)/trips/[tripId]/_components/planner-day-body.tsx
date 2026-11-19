@@ -17,7 +17,7 @@ import {
 } from '@/features/itinerary/plan-view';
 import { RouteStatus } from '@/features/itinerary/route-status';
 import { StopLeg } from '@/features/itinerary/stop-leg';
-import { StopList } from '@/features/itinerary/stop-list';
+import { EditableStopList } from '@/features/itinerary/editable-stop-list';
 import type { OpenSource } from '@/features/itinerary/stop-row';
 import type { SelectedDayRoute } from '@/features/itinerary/use-selection-route';
 import { Button } from '@/shared/components/button/button';
@@ -77,7 +77,7 @@ export function PlannerDayBody({
           disabled={offline}
         />
       ) : null}
-      <StopList
+      <EditableStopList
         plan={plan}
         dayId={selection}
         selectedPlaceId={null}
