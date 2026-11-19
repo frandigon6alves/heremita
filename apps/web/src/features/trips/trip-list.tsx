@@ -11,23 +11,10 @@ import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { ErrorState } from '@/shared/components/error-state/error-state';
 import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { LinkButton } from '@/shared/components/link-button/link-button';
-import { Skeleton, SkeletonBlock } from '@/shared/components/skeleton/skeleton';
 import { Shell } from '@/shared/icons/icons';
 import { TripCard } from './trip-card';
+import { TripListSkeleton } from './trip-list-skeleton';
 import styles from './trip-list.module.css';
-
-/** Same space as the first cards, while they load. */
-export function TripListSkeleton() {
-  return (
-    <Skeleton>
-      <div className={styles.grid}>
-        <SkeletonBlock height="8.5rem" />
-        <SkeletonBlock height="8.5rem" />
-        <SkeletonBlock height="8.5rem" />
-      </div>
-    </Skeleton>
-  );
-}
 
 export interface TripListProps {
   /** First page rendered on the server; without it the list loads in the browser. */
