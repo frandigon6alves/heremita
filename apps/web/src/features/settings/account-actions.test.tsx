@@ -4,6 +4,7 @@ import { delay } from 'msw';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { queryKeys } from '@/lib/api/query-keys';
 import { getSnapshot, resetToasts } from '@/shared/components/toast/toast-store';
+import { readDraft, writeDraft } from '@/shared/storage/session-drafts';
 import {
   buildMe,
   failWith,
@@ -52,10 +53,12 @@ describe('AccountActions', () => {
       }),
     );
     const { user, queryClient } = renderActions('pt-BR');
+    writeDraft('note:1', 'Private note');
 
     await user.click(screen.getByRole('button', { name: 'Sair de todos os dispositivos' }));
 
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/pt-BR'));
+    expect(readDraft('note:1')).toBeNull();
     expect(called).toBe(true);
     expect(router.refresh).toHaveBeenCalled();
     expect(queryClient.getQueryData(queryKeys.viewer)).toBeUndefined();
@@ -108,6 +111,7 @@ describe('AccountActions', () => {
       }),
     );
     const { user, queryClient } = renderActions();
+    writeDraft('note:1', 'Private note');
     const dialog = await openDeleteDialog(user);
 
     await user.type(within(dialog).getByLabelText('Password'), PASSWORD);
@@ -116,6 +120,7 @@ describe('AccountActions', () => {
     expect(await within(dialog).findByRole('button', { name: 'Deleting…' })).toBeDisabled();
     expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled();
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/en'));
+    expect(readDraft('note:1')).toBeNull();
     expect(bodies).toEqual([{ password: PASSWORD }]);
     expect(queryClient.getQueryData(queryKeys.viewer)).toBeUndefined();
     expect(getSnapshot().toasts.at(-1)?.message).toBe('Your account was deleted.');

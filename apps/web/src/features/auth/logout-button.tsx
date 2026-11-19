@@ -10,6 +10,7 @@ import { isUnauthenticated } from '@/lib/api/problem';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
 import { showToast } from '@/shared/components/toast/toast-store';
+import { clearDrafts } from '@/shared/storage/session-drafts';
 
 interface LogoutButtonProps {
   className?: string;
@@ -40,6 +41,7 @@ export function LogoutButton({ className }: LogoutButtonProps) {
     }
     // Nothing of the previous viewer stays in memory.
     queryClient.clear();
+    clearDrafts();
     router.replace(routes.landing(locale));
     router.refresh();
   };

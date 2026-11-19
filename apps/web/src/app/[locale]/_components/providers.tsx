@@ -4,16 +4,20 @@ import { isServer, QueryClient, QueryClientProvider } from '@tanstack/react-quer
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import type { ReactNode } from 'react';
 import { makeQueryClient, type Navigation } from '@/lib/api/query-client';
+import { clearDrafts } from '@/shared/storage/session-drafts';
 
 let browserQueryClient: QueryClient | undefined;
 
 /**
  * A lost session leaves with a full page load: the login page starts from a
- * clean cache, and nothing of the previous viewer stays in memory.
+ * clean cache, and nothing of the previous viewer stays in memory or in drafts.
  */
 const browserNavigation: Navigation = {
   location: () => ({ pathname: window.location.pathname, search: window.location.search }),
-  redirect: (url) => window.location.assign(url),
+  redirect: (url) => {
+    clearDrafts();
+    window.location.assign(url);
+  },
 };
 
 function getQueryClient(): QueryClient {

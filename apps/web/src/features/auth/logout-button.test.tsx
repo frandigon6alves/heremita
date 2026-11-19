@@ -4,6 +4,7 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { queryKeys } from '@/lib/api/query-keys';
 import { getSnapshot, resetToasts } from '@/shared/components/toast/toast-store';
+import { readDraft, writeDraft } from '@/shared/storage/session-drafts';
 import { LogoutButton } from './logout-button';
 import { ME, problemResponse, renderAuth } from './test-support';
 
@@ -33,10 +34,12 @@ describe('LogoutButton', () => {
     );
     const { user, queryClient } = renderAuth(<LogoutButton />, { locale: 'pt-BR' });
     queryClient.setQueryData(queryKeys.viewer, ME);
+    writeDraft('note:1', 'Private note');
 
     await user.click(screen.getByRole('button', { name: 'Sair' }));
 
     await vi.waitFor(() => expect(router.replace).toHaveBeenCalledWith('/pt-BR'));
+    expect(readDraft('note:1')).toBeNull();
     expect(method).toBe('DELETE');
     expect(router.refresh).toHaveBeenCalled();
     expect(queryClient.getQueryData(queryKeys.viewer)).toBeUndefined();

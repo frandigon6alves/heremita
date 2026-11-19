@@ -10,6 +10,7 @@ import { isUnauthenticated } from '@/lib/api/problem';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
 import { showToast } from '@/shared/components/toast/toast-store';
+import { clearDrafts } from '@/shared/storage/session-drafts';
 import { DeleteAccountDialog } from './delete-account-dialog';
 import styles from './settings.module.css';
 
@@ -46,6 +47,7 @@ export function AccountActions({ logOut }: AccountActionsProps) {
       }
     }
     queryClient.clear();
+    clearDrafts();
     router.replace(routes.landing(locale));
     router.refresh();
   };

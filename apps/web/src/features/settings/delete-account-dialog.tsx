@@ -18,6 +18,7 @@ import { Button } from '@/shared/components/button/button';
 import { Dialog, DialogActions, initialFocus } from '@/shared/components/dialog/dialog';
 import { PasswordField } from '@/shared/components/password-field/password-field';
 import { showToast } from '@/shared/components/toast/toast-store';
+import { clearDrafts } from '@/shared/storage/session-drafts';
 import { FailureAlert } from './failure-alert';
 import { submitOutcome, type SubmitOutcome } from './submit-failure';
 import styles from './settings.module.css';
@@ -87,6 +88,7 @@ export function DeleteAccountDialog({ open, onClose }: DeleteAccountDialogProps)
     setLeaving(true);
     showToast({ message: t('deleted') });
     queryClient.clear();
+    clearDrafts();
     router.replace(routes.landing(locale));
     router.refresh();
   });
