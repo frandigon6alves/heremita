@@ -54,7 +54,8 @@
   "onlineAgain": "Vuelves a tener conexión.",
   "toast": {
     "region": "Notificaciones",
-    "dismiss": "Descartar"
+    "dismiss": "Descartar",
+    "withAction": "{message} — {action} disponible en las notificaciones."
   },
   "theme": {
     "system": "Sistema",

@@ -54,7 +54,8 @@
   "onlineAgain": "Você está online de novo.",
   "toast": {
     "region": "Notificações",
-    "dismiss": "Dispensar"
+    "dismiss": "Dispensar",
+    "withAction": "{message} — {action} disponível nas notificações."
   },
   "theme": {
     "system": "Sistema",

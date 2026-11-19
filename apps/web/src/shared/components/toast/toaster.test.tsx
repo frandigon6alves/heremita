@@ -1,7 +1,13 @@
 import { act, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithIntl } from '@/test-utils/render';
-import { announce, DEFAULT_TOAST_DURATION_MS, resetToasts, showToast } from './toast-store';
+import {
+  ACTION_TOAST_DURATION_MS,
+  announce,
+  DEFAULT_TOAST_DURATION_MS,
+  resetToasts,
+  showToast,
+} from './toast-store';
 import { Toaster } from './toaster';
 
 function liveRegion(): HTMLElement {
@@ -94,6 +100,36 @@ describe('Toaster', () => {
       vi.advanceTimersByTime(1);
     });
     expect(screen.queryByText('Link copied', { selector: 'p' })).not.toBeInTheDocument();
+  });
+
+  it('keeps_a_toast_with_a_button_for_at_least_ten_seconds', () => {
+    renderToaster();
+    act(() => {
+      showToast({ message: 'Removed from Day 2', action: { label: 'Undo', onAction: vi.fn() } });
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(ACTION_TOAST_DURATION_MS - 1);
+    });
+    expect(ACTION_TOAST_DURATION_MS).toBeGreaterThanOrEqual(10_000);
+    expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(screen.queryByRole('button', { name: 'Undo' })).not.toBeInTheDocument();
+  });
+
+  it('announces_the_button_of_a_toast', () => {
+    renderToaster();
+
+    act(() => {
+      showToast({ message: 'Removed from Day 2', action: { label: 'Undo', onAction: vi.fn() } });
+    });
+
+    expect(liveRegion()).toHaveTextContent(
+      'Removed from Day 2 — Undo available in the notifications.',
+    );
   });
 
   it('stays_while_focus_is_inside_it', async () => {

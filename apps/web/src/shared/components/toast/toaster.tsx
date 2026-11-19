@@ -69,7 +69,13 @@ export function Toaster() {
   return (
     <>
       <div className={styles.liveRegion} role="status" aria-live="polite" aria-atomic="true">
-        {announcement ? <span key={announcement.id}>{announcement.text}</span> : null}
+        {announcement ? (
+          <span key={announcement.id}>
+            {announcement.action === undefined
+              ? announcement.text
+              : t('withAction', { message: announcement.text, action: announcement.action })}
+          </span>
+        ) : null}
       </div>
       {toasts.length > 0 ? (
         <section className={styles.toaster} aria-label={t('region')}>

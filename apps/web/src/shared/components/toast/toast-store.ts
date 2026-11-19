@@ -19,6 +19,8 @@ export interface Toast extends Required<Pick<ToastOptions, 'message'>> {
 export interface Announcement {
   id: number;
   text: string;
+  /** Label of the toast's button, read out after the text so it can be found. */
+  action?: string;
 }
 
 export interface ToastState {
@@ -26,8 +28,10 @@ export interface ToastState {
   announcement: Announcement | null;
 }
 
-/** Long enough to read a short sentence and reach its Undo button. */
+/** Long enough to read a short sentence. */
 export const DEFAULT_TOAST_DURATION_MS = 6000;
+/** A toast with a button (Undo, Retry) stays longer: reaching it by keyboard or screen reader takes time (WCAG 2.2.1). */
+export const ACTION_TOAST_DURATION_MS = 10_000;
 const MAX_VISIBLE = 3;
 
 let state: ToastState = { toasts: [], announcement: null };
@@ -64,17 +68,17 @@ export function announce(text: string): void {
   setState({ ...state, announcement: { id: nextId++, text } });
 }
 
-/** Shows a toast and announces it. Returns its id for `dismissToast`. */
+/** Shows a toast and announces it with its button. Returns its id for `dismissToast`. */
 export function showToast({
   message,
   action,
-  durationMs = DEFAULT_TOAST_DURATION_MS,
+  durationMs = action ? ACTION_TOAST_DURATION_MS : DEFAULT_TOAST_DURATION_MS,
 }: ToastOptions): number {
   const id = nextId++;
   const toast: Toast = { id, message, action, durationMs };
   setState({
     toasts: [...state.toasts, toast].slice(-MAX_VISIBLE),
-    announcement: { id, text: message },
+    announcement: { id, text: message, action: action?.label },
   });
   return id;
 }
