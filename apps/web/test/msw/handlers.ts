@@ -11,7 +11,7 @@ import {
 } from '@heremita/shared';
 import { http, HttpResponse, type HttpResponseResolver } from 'msw';
 import { setupServer, type SetupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll } from 'vitest';
+import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 
 /** Request id every mocked API response carries, so error states can show it. */
 export const TEST_REQUEST_ID = 'req-test-0001';
@@ -122,11 +122,31 @@ export function buildMe(overrides: Partial<Me> = {}): Me {
 /**
  * An MSW server for one test file, started before its tests and reset after
  * each one. Any request without a handler fails the test (no silent network).
+ * A test ends only once every call it made has been answered: an answer that
+ * arrived later (a failed save's toast, a rollback) would land in the next test.
  */
 export function setupApiServer(): SetupServer {
   const server = setupServer();
+  const unanswered = new Set<string>();
+  server.events.on('request:start', ({ requestId, request }) => {
+    unanswered.add(requestId);
+    request.signal.addEventListener('abort', () => unanswered.delete(requestId));
+  });
+  server.events.on('request:end', ({ requestId }) => unanswered.delete(requestId));
+  server.events.on('unhandledException', ({ requestId }) => unanswered.delete(requestId));
   beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
-  afterEach(() => server.resetHandlers());
+  afterEach(async () => {
+    try {
+      await vi.waitFor(() => {
+        if (unanswered.size > 0) {
+          throw new Error(`${unanswered.size} API call(s) still unanswered after the test.`);
+        }
+      });
+    } finally {
+      unanswered.clear();
+      server.resetHandlers();
+    }
+  });
   afterAll(() => server.close());
   return server;
 }

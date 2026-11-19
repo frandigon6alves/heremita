@@ -7,6 +7,7 @@ import {
   applyAddStop,
   applyCreateDay,
   applyDeleteDay,
+  applyDeleteTripPlace,
   applyMoveStop,
   applyRemoveStop,
 } from '@/features/itinerary/apply-plan-ops';
@@ -194,7 +195,10 @@ describe('PlannerScreen read path', () => {
 
   it('stays_on_the_opening_day_when_its_last_stop_is_removed', async () => {
     const plan = applyRemoveStop(applyRemoveStop(buildPlan(), stopId(2)), stopId(3));
-    record(endpoints.deleteStop, () => okResponse(endpoints.deleteStop, { planVersion: 8 }));
+    record(endpoints.deleteStop, () => {
+      serverPlan = applyRemoveStop(serverPlan, stopId(1));
+      return okResponse(endpoints.deleteStop, { planVersion: 8 });
+    });
     const { user } = renderPlanner(plan);
     await screen.findByRole('button', { name: 'Actions for Castelo de São Jorge' });
 
@@ -358,9 +362,10 @@ describe('PlannerScreen removals', () => {
         place.id === tripPlaceId(1) ? { ...place, note: 'Go early' } : place,
       ),
     };
-    record(endpoints.deleteTripPlace, () =>
-      okResponse(endpoints.deleteTripPlace, { planVersion: 8 }),
-    );
+    record(endpoints.deleteTripPlace, () => {
+      serverPlan = applyDeleteTripPlace(serverPlan, tripPlaceId(1));
+      return okResponse(endpoints.deleteTripPlace, { planVersion: 8 });
+    });
     const readds = record(endpoints.addTripPlace, () =>
       okResponse(endpoints.addTripPlace, {
         tripPlace: { ...buildTripPlace(1), id: tripPlaceId(9) },
