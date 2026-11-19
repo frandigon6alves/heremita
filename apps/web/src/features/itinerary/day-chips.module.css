@@ -1,3 +1,7 @@
+.chips {
+  display: contents;
+}
+
 .add {
   flex: none;
   border-radius: var(--radius-full);

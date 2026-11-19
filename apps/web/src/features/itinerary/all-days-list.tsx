@@ -41,6 +41,7 @@ export function AllDaysList({ plan, selectedPlaceId, onOpen, readOnly = false }:
     return (
       <li key={key}>
         <StopRow
+          rowId={key}
           name={entry.place.name}
           detail={detailOf(entry.place)}
           order={order}

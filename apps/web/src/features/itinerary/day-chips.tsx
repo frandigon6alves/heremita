@@ -5,6 +5,7 @@ import { ChipRow, type Chip } from '@/shared/components/chip-row/chip-row';
 import { IconButton } from '@/shared/components/icon-button/icon-button';
 import { Plus } from '@/shared/icons/icons';
 import { ALL_DAYS, dayColorToken, IDEAS, type DaySelection, type PlanLike } from './plan-view';
+import { dayChipsProps } from './row-focus';
 import styles from './day-chips.module.css';
 
 interface DayChipsProps {
@@ -36,23 +37,25 @@ export function DayChips({
   ];
 
   return (
-    <ChipRow
-      label={t('label')}
-      chips={chips}
-      selectedId={selected}
-      onSelect={onSelect}
-      trailing={
-        onAddDay ? (
-          <IconButton
-            className={styles.add}
-            label={t('add')}
-            icon={<Plus size={20} />}
-            variant="secondary"
-            disabled={addDisabled}
-            onClick={onAddDay}
-          />
-        ) : null
-      }
-    />
+    <div className={styles.chips} {...dayChipsProps}>
+      <ChipRow
+        label={t('label')}
+        chips={chips}
+        selectedId={selected}
+        onSelect={onSelect}
+        trailing={
+          onAddDay ? (
+            <IconButton
+              className={styles.add}
+              label={t('add')}
+              icon={<Plus size={20} />}
+              variant="secondary"
+              disabled={addDisabled}
+              onClick={onAddDay}
+            />
+          ) : null
+        }
+      />
+    </div>
   );
 }

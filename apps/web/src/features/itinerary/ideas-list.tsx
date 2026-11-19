@@ -1,10 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useRef } from 'react';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { MapPin } from '@/shared/icons/icons';
 import type { PlanEditor } from './plan-editor';
 import { findPlace, ideaIds, isPendingId, type PlanLike } from './plan-view';
+import { focusAfterLeaving } from './row-focus';
 import { IdeaActions } from './stop-actions';
 import { dayOptions } from './stop-list';
 import { StopRow, type OpenSource } from './stop-row';
@@ -22,6 +24,7 @@ interface IdeasListProps {
 export function IdeasList({ plan, selectedPlaceId, onOpen, editor }: IdeasListProps) {
   const t = useTranslations('itinerary');
   const detailOf = usePlaceDetail();
+  const listRef = useRef<HTMLUListElement>(null);
   const ids = ideaIds(plan);
 
   if (ids.length === 0) {
@@ -36,7 +39,7 @@ export function IdeasList({ plan, selectedPlaceId, onOpen, editor }: IdeasListPr
   }
 
   return (
-    <ul className={styles.list} aria-label={t('list.ideasLabel')}>
+    <ul ref={listRef} className={styles.list} aria-label={t('list.ideasLabel')}>
       {ids.map((id) => {
         const entry = findPlace(plan, id);
         if (!entry) {
@@ -44,9 +47,11 @@ export function IdeasList({ plan, selectedPlaceId, onOpen, editor }: IdeasListPr
         }
         const name = entry.place.name;
         const pending = isPendingId(id);
+        const leave = () => focusAfterLeaving(listRef.current, id);
         return (
           <li key={id}>
             <StopRow
+              rowId={id}
               name={name}
               detail={detailOf(entry.place)}
               selected={id === selectedPlaceId}
@@ -58,13 +63,18 @@ export function IdeasList({ plan, selectedPlaceId, onOpen, editor }: IdeasListPr
                     name={name}
                     days={dayOptions(plan)}
                     disabled={editor.disabled || pending}
-                    onSchedule={(dayId, index) =>
-                      editor.actions.schedule({ tripPlaceId: id, name, dayId, index })
-                    }
-                    onScheduleNewDay={() =>
-                      void editor.actions.scheduleOnNewDay({ tripPlaceId: id, name })
-                    }
-                    onDeleteFromTrip={() => editor.actions.deleteFromTrip(id)}
+                    onSchedule={(dayId, index) => {
+                      leave();
+                      editor.actions.schedule({ tripPlaceId: id, name, dayId, index });
+                    }}
+                    onScheduleNewDay={() => {
+                      leave();
+                      void editor.actions.scheduleOnNewDay({ tripPlaceId: id, name });
+                    }}
+                    onDeleteFromTrip={() => {
+                      leave();
+                      editor.actions.deleteFromTrip(id);
+                    }}
                   />
                 ) : null
               }

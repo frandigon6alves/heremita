@@ -375,6 +375,44 @@ describe('PlannerScreen removals', () => {
   });
 });
 
+describe('PlannerScreen focus after a row leaves', () => {
+  it('moves_focus_to_the_next_row_when_a_stop_is_removed', async () => {
+    record(endpoints.deleteStop, () => okResponse(endpoints.deleteStop, { planVersion: 8 }));
+    const { user } = renderPlanner();
+    await screen.findByRole('button', { name: 'Actions for Miradouro da Graça' });
+
+    await user.click(rowItem('Miradouro da Graça', 'Remove from day'));
+
+    expect(screen.getByRole('button', { name: /^Time Out Market/ })).toHaveFocus();
+  });
+
+  it('moves_focus_to_the_previous_row_when_the_last_stop_moves_to_another_day', async () => {
+    record(endpoints.putStopPlacement, () =>
+      okResponse(endpoints.putStopPlacement, { planVersion: 8 }),
+    );
+    const { user } = renderPlanner();
+    await screen.findByRole('button', { name: 'Actions for Time Out Market' });
+
+    await user.click(rowItem('Time Out Market', 'Day 2'));
+
+    expect(screen.getByRole('button', { name: /^Miradouro da Graça/ })).toHaveFocus();
+  });
+
+  it('moves_focus_to_the_day_chip_when_the_only_idea_is_scheduled', async () => {
+    record(endpoints.addStop, () =>
+      okResponse(endpoints.addStop, {
+        stop: { id: stopId(9), tripPlaceId: tripPlaceId(5), modeToNext: null },
+        planVersion: 8,
+      }),
+    );
+    const { user } = renderPlanner(buildPlan(), `/en/trips/${TRIP_ID}?day=ideas`);
+
+    await user.click(rowItem('LX Factory', 'Day 1'));
+
+    expect(screen.getByRole('button', { name: 'Ideas', pressed: true })).toHaveFocus();
+  });
+});
+
 describe('PlannerScreen undo of a delete', () => {
   it('keeps_the_restored_place_when_a_later_day_refuses_it_and_retries_only_that_day', async () => {
     const twoDays = applyAddStop(buildPlan(), dayId(2), {

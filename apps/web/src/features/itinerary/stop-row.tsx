@@ -1,11 +1,14 @@
 'use client';
 
 import type { MouseEvent, ReactNode } from 'react';
+import { rowFocusProps } from './row-focus';
 import styles from './stop-row.module.css';
 
 export type OpenSource = 'pointer' | 'keyboard';
 
 interface StopRowProps {
+  /** Trip place or stop id: where focus lands when a neighbour leaves the list. */
+  rowId: string;
   name: string;
   /** Category and address line under the name. */
   detail: string | null;
@@ -23,6 +26,7 @@ interface StopRowProps {
 
 /** One place in the list: order badge, name (opens its card), owner controls. */
 export function StopRow({
+  rowId,
   name,
   detail,
   order,
@@ -59,6 +63,7 @@ export function StopRow({
         className={styles.name}
         aria-current={selected ? 'true' : undefined}
         onClick={handleClick}
+        {...rowFocusProps(rowId)}
       >
         <span className={styles.title}>{name}</span>
         {detail ? <span className={styles.detail}>{detail}</span> : null}

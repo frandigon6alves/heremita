@@ -1,12 +1,13 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { lazy, Suspense, type ReactNode } from 'react';
+import { lazy, Suspense, useRef, type ReactNode } from 'react';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { DragHandle } from '@/shared/components/sortable-list/drag-handle';
 import { MapPinPlus } from '@/shared/icons/icons';
 import type { PlanEditor } from './plan-editor';
 import { dayColorToken, findPlace, isPendingId, type PlanLike } from './plan-view';
+import { focusAfterLeaving } from './row-focus';
 import { StopActions, type DayOption } from './stop-actions';
 import { StopRow, type OpenSource } from './stop-row';
 import { usePlaceDetail } from './use-place-detail';
@@ -47,6 +48,7 @@ export function StopList({
 }: StopListProps) {
   const t = useTranslations('itinerary');
   const detailOf = usePlaceDetail();
+  const listRef = useRef<HTMLDivElement>(null);
   const day = plan.days.find((candidate) => candidate.id === dayId);
   if (!day) {
     return null;
@@ -79,9 +81,11 @@ export function StopList({
     const pending = isPendingId(stop.id) || isPendingId(entry.id);
     const name = entry.place.name;
     const leg = index < day.stops.length - 1 ? legAfter?.(stop.id) : null;
+    const leave = () => focusAfterLeaving(listRef.current, stop.id);
     return (
       <>
         <StopRow
+          rowId={stop.id}
           name={name}
           detail={detailOf(entry.place)}
           order={index + 1}
@@ -99,20 +103,30 @@ export function StopList({
                   total={day.stops.length}
                   days={dayOptions(plan)}
                   disabled={editor.disabled || pending}
-                  onMove={(toDayId, toIndex) =>
-                    editor.actions.move({ stopId: stop.id, name, dayId: toDayId, index: toIndex })
-                  }
-                  onMoveToNewDay={() => void editor.actions.moveToNewDay({ stopId: stop.id, name })}
-                  onRemoveFromDay={() =>
+                  onMove={(toDayId, toIndex) => {
+                    if (toDayId !== day.id) {
+                      leave();
+                    }
+                    editor.actions.move({ stopId: stop.id, name, dayId: toDayId, index: toIndex });
+                  }}
+                  onMoveToNewDay={() => {
+                    leave();
+                    void editor.actions.moveToNewDay({ stopId: stop.id, name });
+                  }}
+                  onRemoveFromDay={() => {
+                    leave();
                     editor.actions.removeFromDay({
                       stopId: stop.id,
                       name,
                       dayId: day.id,
                       index,
                       tripPlaceId: entry.id,
-                    })
-                  }
-                  onDeleteFromTrip={() => editor.actions.deleteFromTrip(entry.id)}
+                    });
+                  }}
+                  onDeleteFromTrip={() => {
+                    leave();
+                    editor.actions.deleteFromTrip(entry.id);
+                  }}
                 />
                 <DragHandle label={t('row.drag', { name })} />
               </>
@@ -137,28 +151,30 @@ export function StopList({
   }
 
   return (
-    <Suspense fallback={readOnlyList}>
-      <SortableList
-        items={day.stops.map((stop) => stop.id)}
-        label={label}
-        disabled={editor.disabled}
-        renderItem={(stopId) => row(stopId, true)}
-        onMove={({ id, to }) =>
-          editor.actions.move({ stopId: id, name: nameOf(id), dayId: day.id, index: to })
-        }
-        announcements={{
-          instructions: t('drag.instructions'),
-          roleDescription: t('drag.roleDescription'),
-          pickedUp: (id, position, total) =>
-            t('drag.pickedUp', { name: nameOf(id), position, total }),
-          movedTo: (id, position, total) =>
-            t('drag.movedTo', { name: nameOf(id), position, total }),
-          dropped: (id, position, total) =>
-            t('drag.dropped', { name: nameOf(id), position, total }),
-          cancelled: (id, position, total) =>
-            t('drag.cancelled', { name: nameOf(id), position, total }),
-        }}
-      />
-    </Suspense>
+    <div ref={listRef}>
+      <Suspense fallback={readOnlyList}>
+        <SortableList
+          items={day.stops.map((stop) => stop.id)}
+          label={label}
+          disabled={editor.disabled}
+          renderItem={(stopId) => row(stopId, true)}
+          onMove={({ id, to }) =>
+            editor.actions.move({ stopId: id, name: nameOf(id), dayId: day.id, index: to })
+          }
+          announcements={{
+            instructions: t('drag.instructions'),
+            roleDescription: t('drag.roleDescription'),
+            pickedUp: (id, position, total) =>
+              t('drag.pickedUp', { name: nameOf(id), position, total }),
+            movedTo: (id, position, total) =>
+              t('drag.movedTo', { name: nameOf(id), position, total }),
+            dropped: (id, position, total) =>
+              t('drag.dropped', { name: nameOf(id), position, total }),
+            cancelled: (id, position, total) =>
+              t('drag.cancelled', { name: nameOf(id), position, total }),
+          }}
+        />
+      </Suspense>
+    </div>
   );
 }
