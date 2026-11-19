@@ -128,7 +128,8 @@
       "legend": "Medio de transporte",
       "walk": "A pie",
       "bike": "Bicicleta",
-      "drive": "Auto"
+      "drive": "Auto",
+      "applyHint": "Las flechas eligen un modo; Intro o Espacio lo aplican."
     }
   },
   "optimise": {

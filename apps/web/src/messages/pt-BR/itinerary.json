@@ -128,7 +128,8 @@
       "legend": "Modo de transporte",
       "walk": "A pé",
       "bike": "Bicicleta",
-      "drive": "Carro"
+      "drive": "Carro",
+      "applyHint": "As setas escolhem um modo; Enter ou Espaço o aplicam."
     }
   },
   "optimise": {

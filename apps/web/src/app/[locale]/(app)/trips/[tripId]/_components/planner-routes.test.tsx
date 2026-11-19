@@ -227,6 +227,48 @@ describe('PlannerScreen routes', () => {
     expect(screen.getByRole('radio', { name: 'Bike' })).toBeChecked();
   });
 
+  it('arrow_keys_move_the_mode_without_saving_and_enter_applies_it', async () => {
+    serve(buildPlan());
+    const calls = record(endpoints.updateDay, () =>
+      okResponse(endpoints.updateDay, { planVersion: 8 }),
+    );
+    const { user, urlUpdates } = renderPlanner();
+    await screen.findAllByText('12 min · 900 m');
+    const updatesBefore = urlUpdates.length;
+
+    await user.click(screen.getByRole('radio', { name: 'Walk' }));
+    await user.keyboard('{ArrowRight}{ArrowRight}');
+    await act(() => delay(50));
+
+    expect(screen.getByRole('radio', { name: 'Drive' })).toBeChecked();
+    expect(screen.getByRole('group', { name: 'Travel mode' })).toHaveAccessibleDescription(
+      'Arrow keys pick a mode; Enter or Space applies it.',
+    );
+    expect(calls).toEqual([]);
+    expect(urlUpdates).toHaveLength(updatesBefore);
+
+    await user.keyboard('{ArrowLeft}{Enter}');
+
+    await waitFor(() => expect(calls.map((call) => call.body)).toEqual([{ modeOverride: 'bike' }]));
+    expect(urlUpdates.at(-1)?.queryString).toBe('?mode=bike');
+  });
+
+  it('leaving_the_mode_switch_forgets_a_mode_moved_to_with_the_arrows', async () => {
+    serve(buildPlan());
+    const calls = record(endpoints.updateDay, () =>
+      okResponse(endpoints.updateDay, { planVersion: 8 }),
+    );
+    const { user } = renderPlanner();
+    await screen.findAllByText('12 min · 900 m');
+
+    await user.click(screen.getByRole('radio', { name: 'Walk' }));
+    await user.keyboard('{ArrowRight}');
+    await user.tab();
+
+    expect(screen.getByRole('radio', { name: 'Walk' })).toBeChecked();
+    expect(calls).toEqual([]);
+  });
+
   it('a_mode_saved_on_one_day_does_not_carry_over_to_the_next', async () => {
     serve(
       applyAddStop(buildPlan(), dayId(2), {

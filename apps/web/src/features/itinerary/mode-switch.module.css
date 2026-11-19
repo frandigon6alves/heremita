@@ -1,0 +1,4 @@
+/* Only listens to the keys and focus of its radios: no box of its own. */
+.modeSwitch {
+  display: contents;
+}

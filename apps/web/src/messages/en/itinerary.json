@@ -128,7 +128,8 @@
       "legend": "Travel mode",
       "walk": "Walk",
       "bike": "Bike",
-      "drive": "Drive"
+      "drive": "Drive",
+      "applyHint": "Arrow keys pick a mode; Enter or Space applies it."
     }
   },
   "optimise": {

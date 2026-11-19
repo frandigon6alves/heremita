@@ -19,6 +19,8 @@ export interface SegmentedControlProps<V extends string> {
   value: V;
   onChange: (value: V) => void;
   disabled?: boolean;
+  /** Read after the legend (how the choice is made), never shown. */
+  description?: string;
 }
 
 /**
@@ -33,17 +35,26 @@ export function SegmentedControl<V extends string>({
   value,
   onChange,
   disabled = false,
+  description,
 }: SegmentedControlProps<V>) {
   const name = useId();
+  const descriptionId = `${name}-description`;
 
   return (
-    <fieldset className={styles.group} disabled={disabled}>
+    <fieldset
+      className={styles.group}
+      disabled={disabled}
+      aria-describedby={description === undefined ? undefined : descriptionId}
+    >
       {showLegend ? (
         <legend className={styles.legend}>{legend}</legend>
       ) : (
         <legend>
           <VisuallyHidden>{legend}</VisuallyHidden>
         </legend>
+      )}
+      {description === undefined ? null : (
+        <VisuallyHidden id={descriptionId}>{description}</VisuallyHidden>
       )}
       <div className={styles.segments}>
         {options.map((option) => (
