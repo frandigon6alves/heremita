@@ -24,8 +24,8 @@
   "preferences": {
     "language": "Language",
     "theme": "Theme",
-    "languageNotSaved": "Language not saved. Try again.",
-    "themeNotSaved": "Theme not saved. Try again."
+    "save": "Save preferences",
+    "failed": "Preferences not saved. Try again."
   },
   "password": {
     "intro": "Changing your password signs you out on every other device.",

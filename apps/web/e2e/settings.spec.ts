@@ -13,13 +13,15 @@ test('switches_english_to_spanish_to_portuguese_and_keeps_the_dark_theme', async
   await checkOnceHydrated(
     page.getByRole('group', { name: 'Theme' }).getByRole('radio', { name: 'Dark' }),
   );
+  await page.getByRole('button', { name: 'Save preferences' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.getByText('Saved', { exact: true })).toBeVisible();
 
   // Saving the language loads the page again under the new prefix.
-  await page
-    .getByRole('group', { name: 'Language' })
-    .getByRole('radio', { name: 'Español' })
-    .click();
+  await checkOnceHydrated(
+    page.getByRole('group', { name: 'Language' }).getByRole('radio', { name: 'Español' }),
+  );
+  await page.getByRole('button', { name: 'Save preferences' }).click();
   await expect(page).toHaveURL(/\/es\/settings#preferences$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Configuración' })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'es');
@@ -28,10 +30,10 @@ test('switches_english_to_spanish_to_portuguese_and_keeps_the_dark_theme', async
   ).toBeChecked();
   await expectAccessible(page);
 
-  await page
-    .getByRole('group', { name: 'Idioma' })
-    .getByRole('radio', { name: 'Português (Brasil)' })
-    .click();
+  await checkOnceHydrated(
+    page.getByRole('group', { name: 'Idioma' }).getByRole('radio', { name: 'Português (Brasil)' }),
+  );
+  await page.getByRole('button', { name: 'Guardar preferencias' }).click();
   await expect(page).toHaveURL(/\/pt-BR\/settings#preferences$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Configurações' })).toBeVisible();
   await page.reload();

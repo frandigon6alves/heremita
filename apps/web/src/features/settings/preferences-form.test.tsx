@@ -1,9 +1,8 @@
 import { endpoints, type Locale } from '@heremita/shared';
-import { act, screen, waitFor, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { delay } from 'msw';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { queryKeys } from '@/lib/api/query-keys';
-import { getSnapshot, resetToasts } from '@/shared/components/toast/toast-store';
 import {
   buildMe,
   failWith,
@@ -16,14 +15,16 @@ import { PreferencesForm } from './preferences-form';
 
 const router = vi.hoisted(() => ({ replace: vi.fn(), refresh: vi.fn() }));
 vi.mock('next/navigation', () => ({ useRouter: () => router }));
+const loadDocument = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/load-document', () => ({ loadDocument }));
 
 const server = setupApiServer();
 beforeEach(() => {
   router.refresh.mockReset();
+  loadDocument.mockReset();
   document.documentElement.setAttribute('data-theme', 'light');
 });
 afterEach(() => {
-  act(() => resetToasts());
   document.documentElement.removeAttribute('data-theme');
   localStorage.clear();
 });
@@ -45,6 +46,10 @@ function renderForm(locale: Locale = 'en') {
   return renderWithProviders(<PreferencesForm />, { locale, viewer: buildMe({ theme: 'light' }) });
 }
 
+function saveButton() {
+  return screen.getByRole('button', { name: /Save preferences|Salvar preferências/ });
+}
+
 describe('PreferencesForm', () => {
   it('shows_the_account_theme_and_the_page_language', () => {
     renderForm('pt-BR');
@@ -55,19 +60,48 @@ describe('PreferencesForm', () => {
     expect(screen.getByRole('group', { name: 'Idioma' })).toBeInTheDocument();
   });
 
-  it('applies_a_theme_at_once_and_saves_it_to_the_account', async () => {
+  it('saves_nothing_while_the_arrow_keys_move_through_the_choices', async () => {
+    const bodies = recordPatches();
+    const { user } = renderForm();
+
+    await user.click(screen.getByRole('radio', { name: 'English' }));
+    await user.keyboard('{ArrowDown}{ArrowDown}');
+    await user.click(screen.getByRole('radio', { name: 'Light' }));
+    await user.keyboard('{ArrowRight}');
+    await delay(20);
+
+    expect(screen.getByRole('radio', { name: 'Português (Brasil)' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Dark' })).toBeChecked();
+    expect(bodies).toEqual([]);
+    expect(loadDocument).not.toHaveBeenCalled();
+    expect(document.documentElement).toHaveAttribute('data-theme', 'light');
+  });
+
+  it('applies_the_chosen_theme_when_saved_and_saves_it_to_the_account', async () => {
     const bodies = recordPatches(50);
     const { user, queryClient } = renderForm();
 
     await user.click(screen.getByRole('radio', { name: 'Dark' }));
+    await user.click(saveButton());
 
     expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
-    expect(screen.getByRole('radio', { name: 'Dark' })).toBeChecked();
     expect(screen.getByText('Saving…')).toBeInTheDocument();
     expect(await screen.findByText('Saved')).toBeInTheDocument();
     expect(bodies).toEqual([{ theme: 'dark' }]);
     expect(queryClient.getQueryData(queryKeys.viewer)).toMatchObject({ theme: 'dark' });
+    expect(screen.getByRole('radio', { name: 'Dark' })).toBeChecked();
     expect(router.refresh).toHaveBeenCalled();
+    expect(loadDocument).not.toHaveBeenCalled();
+  });
+
+  it('saves_a_choice_made_with_the_keyboard_on_enter', async () => {
+    const bodies = recordPatches();
+    const { user } = renderForm();
+
+    await user.click(screen.getByRole('radio', { name: 'Light' }));
+    await user.keyboard('{ArrowRight}{Enter}');
+
+    await waitFor(() => expect(bodies).toEqual([{ theme: 'dark' }]));
   });
 
   it('keeps_the_chosen_theme_when_a_viewer_refetch_was_in_flight', async () => {
@@ -82,49 +116,26 @@ describe('PreferencesForm', () => {
     void queryClient.refetchQueries({ queryKey: queryKeys.viewer });
 
     await user.click(screen.getByRole('radio', { name: 'Dark' }));
+    await user.click(saveButton());
     await delay(150);
 
     expect(queryClient.getQueryData(queryKeys.viewer)).toMatchObject({ theme: 'dark' });
     expect(screen.getByRole('radio', { name: 'Dark' })).toBeChecked();
   });
 
-  it('chooses_a_theme_with_the_keyboard', async () => {
-    const bodies = recordPatches();
-    const { user } = renderForm();
-
-    await user.click(screen.getByRole('radio', { name: 'Light' }));
-    await user.keyboard('{ArrowRight}');
-
-    await waitFor(() => expect(bodies).toContainEqual({ theme: 'dark' }));
-    expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
-  });
-
-  it('rolls_the_theme_back_when_saving_fails', async () => {
+  it('rolls_the_theme_back_and_keeps_the_choice_when_saving_fails', async () => {
     server.use(failWith(endpoints.updateMe, 'internal_error'));
     const { user, queryClient } = renderForm();
 
     await user.click(screen.getByRole('radio', { name: 'System' }));
+    await user.click(saveButton());
 
     expect(await screen.findByText('Not saved')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('Preferences not saved. Try again.');
+    expect(screen.getByRole('alert')).toHaveTextContent('Code: internal_error');
     expect(document.documentElement).toHaveAttribute('data-theme', 'light');
-    expect(screen.getByRole('radio', { name: 'Light' })).toBeChecked();
     expect(queryClient.getQueryData(queryKeys.viewer)).toMatchObject({ theme: 'light' });
-    const toast = getSnapshot().toasts.at(-1);
-    expect(toast?.message).toBe('Theme not saved. Try again.');
-    expect(toast?.action?.label).toBe('Try again');
-  });
-
-  it('retries_a_failed_theme_from_the_toast', async () => {
-    server.use(failWith(endpoints.updateMe, 'internal_error'));
-    const { user } = renderForm();
-    await user.click(screen.getByRole('radio', { name: 'Dark' }));
-    await screen.findByText('Not saved');
-    const bodies = recordPatches();
-
-    act(() => getSnapshot().toasts.at(-1)?.action?.onAction());
-
-    await waitFor(() => expect(bodies).toEqual([{ theme: 'dark' }]));
-    expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
+    expect(screen.getByRole('radio', { name: 'System' })).toBeChecked();
   });
 
   it('saves_the_language_before_leaving_for_the_other_locale', async () => {
@@ -132,12 +143,33 @@ describe('PreferencesForm', () => {
     const { user } = renderForm('pt-BR');
 
     await user.click(screen.getByRole('radio', { name: 'English' }));
+    await user.click(saveButton());
 
-    expect(screen.getByRole('radio', { name: 'English' })).toBeChecked();
+    await waitFor(() => expect(loadDocument).toHaveBeenCalledWith('/en/settings#preferences'));
+    expect(bodies).toEqual([{ locale: 'en' }]);
     expect(screen.getByRole('group', { name: 'Idioma' })).toBeDisabled();
-    await waitFor(() => expect(bodies).toEqual([{ locale: 'en' }]));
-    expect(await screen.findByText('Salvo')).toBeInTheDocument();
-    expect(screen.getByRole('group', { name: 'Idioma' })).toBeDisabled();
+  });
+
+  it('saves_language_and_theme_in_one_request', async () => {
+    const bodies = recordPatches();
+    const { user } = renderForm();
+
+    await user.click(screen.getByRole('radio', { name: 'Español' }));
+    await user.click(screen.getByRole('radio', { name: 'Dark' }));
+    await user.click(saveButton());
+
+    await waitFor(() => expect(loadDocument).toHaveBeenCalledWith('/es/settings#preferences'));
+    expect(bodies).toEqual([{ locale: 'es', theme: 'dark' }]);
+  });
+
+  it('sends_nothing_when_nothing_changed', async () => {
+    const bodies = recordPatches();
+    const { user } = renderForm();
+
+    await user.click(saveButton());
+    await delay(20);
+
+    expect(bodies).toEqual([]);
   });
 
   it('offers_every_language_named_in_itself', () => {
@@ -149,24 +181,16 @@ describe('PreferencesForm', () => {
     ).toEqual(['English', 'Español', 'Português (Brasil)']);
   });
 
-  it('saves_spanish_as_the_language', async () => {
-    const bodies = recordPatches();
-    const { user } = renderForm();
-
-    await user.click(screen.getByRole('radio', { name: 'Español' }));
-
-    await waitFor(() => expect(bodies).toEqual([{ locale: 'es' }]));
-  });
-
   it('stays_on_the_language_when_saving_it_fails', async () => {
     server.use(failWith(endpoints.updateMe, 'internal_error'));
     const { user } = renderForm('pt-BR');
 
     await user.click(screen.getByRole('radio', { name: 'English' }));
+    await user.click(saveButton());
 
     expect(await screen.findByText('Não salvo')).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: 'Português (Brasil)' })).toBeChecked();
     expect(screen.getByRole('group', { name: 'Idioma' })).toBeEnabled();
-    expect(getSnapshot().toasts.at(-1)?.message).toBe('Idioma não salvo. Tente de novo.');
+    expect(screen.getByRole('alert')).toHaveTextContent('Preferências não salvas. Tente de novo.');
+    expect(loadDocument).not.toHaveBeenCalled();
   });
 });

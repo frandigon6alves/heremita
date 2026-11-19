@@ -24,8 +24,8 @@
   "preferences": {
     "language": "Idioma",
     "theme": "Tema",
-    "languageNotSaved": "Idioma no guardado. Vuelve a intentarlo.",
-    "themeNotSaved": "Tema no guardado. Vuelve a intentarlo."
+    "save": "Guardar preferencias",
+    "failed": "Preferencias no guardadas. Vuelve a intentarlo."
   },
   "password": {
     "intro": "Al cambiar la contraseña se cierra tu sesión en todos los demás dispositivos.",
