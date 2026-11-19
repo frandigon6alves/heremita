@@ -140,6 +140,25 @@ describe('ReviewForm', () => {
     expect(screen.getByRole('textbox', { name: 'Your opinion' })).toHaveValue(BODY);
   });
 
+  it('sends_the_save_through_the_mutation_cache_so_a_lost_session_goes_to_login', async () => {
+    server.use(failWith(endpoints.putMyReview, 'unauthenticated'));
+    const { user, queryClient } = renderForm();
+    const failed = vi.fn();
+    queryClient.getMutationCache().subscribe((event) => {
+      if (event.type === 'updated' && event.action.type === 'error') {
+        failed(event.action.error);
+      }
+    });
+
+    await fillIn(user);
+    await user.click(screen.getByRole('button', { name: 'Publish' }));
+
+    await waitFor(() =>
+      expect(failed).toHaveBeenCalledWith(expect.objectContaining({ code: 'unauthenticated' })),
+    );
+    expect(push).not.toHaveBeenCalled();
+  });
+
   it('counts_characters', async () => {
     const { user } = renderForm();
 

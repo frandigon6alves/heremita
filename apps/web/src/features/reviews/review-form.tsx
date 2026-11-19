@@ -85,10 +85,15 @@ export function ReviewForm({ placeId, myReview, currentMonth }: ReviewFormProps)
     router.push(routes.place(locale, placeId));
   }
 
+  const save = useMutation({
+    mutationFn: (review: PutReviewBody) =>
+      apiFetch(endpoints.putMyReview, { params: { placeId }, body: review }),
+  });
+
   const onSubmit = handleSubmit(async (review) => {
     setFailure(null);
     try {
-      await apiFetch(endpoints.putMyReview, { params: { placeId }, body: review });
+      await save.mutateAsync(review);
       await backToPlace(myReview === null ? t('published') : t('updated'));
     } catch (error) {
       const fields = bodyFieldsOf(error, FIELDS);
