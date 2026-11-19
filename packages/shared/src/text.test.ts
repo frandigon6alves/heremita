@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { cleanText, textSchema } from './text.js';
+import { cleanText } from './clean-text.js';
+import { textSchema } from './text.js';
 
 describe('cleanText', () => {
   it('strips_c0_and_c1_control_characters_but_keeps_line_feeds', () => {

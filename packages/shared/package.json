@@ -10,6 +10,22 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./plain": {
+      "types": "./dist/plain.d.ts",
+      "default": "./dist/plain.js"
+    },
+    "./api-routes": {
+      "types": "./dist/api/route-table.d.ts",
+      "default": "./dist/api/route-table.js"
+    },
+    "./problem": {
+      "types": "./dist/problem.d.ts",
+      "default": "./dist/problem.js"
+    },
+    "./zod-config": {
+      "types": "./dist/zod-config.d.ts",
+      "default": "./dist/zod-config.js"
+    },
     "./openapi": {
       "types": "./dist/openapi/document.d.ts",
       "default": "./dist/openapi/document.js"

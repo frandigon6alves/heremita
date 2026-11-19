@@ -9,10 +9,10 @@ import {
   yearMonthSchema,
 } from './common.js';
 import { LIMITS } from './limits.js';
+import { REVIEW_SORTS } from './options.js';
 import { textSchema } from './text.js';
 
-export const reviewSortSchema = z.enum(['recent', 'lowest']);
-export type ReviewSort = z.infer<typeof reviewSortSchema>;
+export const reviewSortSchema = z.enum(REVIEW_SORTS);
 
 export const reviewStatusSchema = z.enum(['published', 'hidden']);
 export type ReviewStatus = z.infer<typeof reviewStatusSchema>;

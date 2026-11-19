@@ -10,6 +10,7 @@ import {
   type PlaceCategory,
 } from './common.js';
 import { LIMITS } from './limits.js';
+import { PLACE_SEARCH_INTENTS } from './options.js';
 import { reviewSchema } from './reviews.js';
 
 /** Canonical key of an OpenStreetMap object: `osm:<N|W|R>:<id>`, e.g. `osm:W:1370081491`. */
@@ -165,7 +166,7 @@ const categoriesQuerySchema = z
   })
   .meta({ description: 'Comma-separated place categories', examples: ['sight,food'] });
 
-export const placeSearchIntentSchema = z.enum(['autocomplete', 'submit']);
+export const placeSearchIntentSchema = z.enum(PLACE_SEARCH_INTENTS);
 
 /** Either `q` has at least `SEARCH_Q_MIN` characters or `categories` is set (category browsing). */
 export const searchPlacesQuerySchema = z

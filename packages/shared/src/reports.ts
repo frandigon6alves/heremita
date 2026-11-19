@@ -1,22 +1,15 @@
 import { z } from 'zod';
 import { cursorSchema, idSchema, limitQuery, timestampSchema, userCardSchema } from './common.js';
 import { LIMITS } from './limits.js';
+import { REPORT_REASONS, REPORT_STATUSES } from './options.js';
 import { textSchema } from './text.js';
 
-export const reportReasonSchema = z.enum([
-  'spam',
-  'offensive',
-  'misleading',
-  'personal_data',
-  'other',
-]);
-export type ReportReason = z.infer<typeof reportReasonSchema>;
+export const reportReasonSchema = z.enum(REPORT_REASONS);
 
 export const reportTargetTypeSchema = z.enum(['review', 'trip']);
 export type ReportTargetType = z.infer<typeof reportTargetTypeSchema>;
 
-export const reportStatusSchema = z.enum(['open', 'actioned', 'dismissed']);
-export type ReportStatus = z.infer<typeof reportStatusSchema>;
+export const reportStatusSchema = z.enum(REPORT_STATUSES);
 
 export const createReportBodySchema = z
   .strictObject({

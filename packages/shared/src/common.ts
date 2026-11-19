@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { LIMITS } from './limits.js';
+import { LOCALES, THEMES, TRAVEL_MODES } from './options.js';
 
 /**
  * Opaque identifier (UUIDv7 in practice); format-checked so a garbage id never
@@ -17,18 +18,12 @@ export const isoDateSchema = z.iso.date();
 /** Calendar month `YYYY-MM`. */
 export const yearMonthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
 
-/** UI languages: English is the official one, Spanish and Brazilian Portuguese are translations. */
-export const localeSchema = z.enum(['en', 'es', 'pt-BR']);
-export type Locale = z.infer<typeof localeSchema>;
+/** `LOCALES`; `Locale` and `DEFAULT_LOCALE` live in `options.ts`. */
+export const localeSchema = z.enum(LOCALES);
 
-/** The language of a visitor nothing else tells us about. */
-export const DEFAULT_LOCALE: Locale = 'en';
+export const themeSchema = z.enum(THEMES);
 
-export const themeSchema = z.enum(['system', 'light', 'dark']);
-export type Theme = z.infer<typeof themeSchema>;
-
-export const travelModeSchema = z.enum(['walk', 'bike', 'drive']);
-export type TravelMode = z.infer<typeof travelModeSchema>;
+export const travelModeSchema = z.enum(TRAVEL_MODES);
 
 export const placeCategorySchema = z.enum([
   'sight',
