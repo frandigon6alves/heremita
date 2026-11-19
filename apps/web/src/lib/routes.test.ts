@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  localeAlternates,
   isPublicPath,
   isSafeNextPath,
   loginRedirectFor,
@@ -150,5 +151,15 @@ describe('safeNext', () => {
 
   it('drops_a_repeated_parameter', () => {
     expect(safeNext(['/en/trips', '/en/settings'])).toBeUndefined();
+  });
+});
+
+describe('localeAlternates', () => {
+  it('maps_every_locale_to_its_path', () => {
+    expect(localeAlternates((locale) => routes.about(locale))).toEqual({
+      en: '/en/about',
+      es: '/es/about',
+      'pt-BR': '/pt-BR/about',
+    });
   });
 });

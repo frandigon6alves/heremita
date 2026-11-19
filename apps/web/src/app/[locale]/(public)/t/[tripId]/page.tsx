@@ -3,11 +3,10 @@ import { getLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { ClientMessages } from '@/i18n/client-messages';
-import { routing } from '@/i18n/routing';
 import { loadPlan } from '@/features/itinerary/load-plan';
 import { planQueryFrom, preconnectBasemap } from '@/features/itinerary/page-setup';
 import { getViewer } from '@/lib/api/server';
-import { routes } from '@/lib/routes';
+import { localeAlternates, routes } from '@/lib/routes';
 import { PublicTripViewer } from '../_components/trip-viewer-screen';
 
 export async function generateMetadata({
@@ -18,11 +17,7 @@ export async function generateMetadata({
   return {
     title: plan.trip.title,
     description: plan.trip.description ?? undefined,
-    alternates: {
-      languages: Object.fromEntries(
-        routing.locales.map((locale) => [locale, routes.publicTrip(locale, tripId)]),
-      ),
-    },
+    alternates: { languages: localeAlternates((locale) => routes.publicTrip(locale, tripId)) },
   };
 }
 

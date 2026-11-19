@@ -3,8 +3,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { Landing } from '@/features/explore/landing';
 import { getViewer, serverFetch } from '@/lib/api/server';
-import { routes } from '@/lib/routes';
-import { routing } from '@/i18n/routing';
+import { localeAlternates, routes } from '@/lib/routes';
 
 /** Public trips in the landing's community strip. */
 const COMMUNITY_STRIP_SIZE = 6;
@@ -13,11 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('explore.landing');
   return {
     description: t('metaDescription'),
-    alternates: {
-      languages: Object.fromEntries(
-        routing.locales.map((locale) => [locale, routes.landing(locale)]),
-      ),
-    },
+    alternates: { languages: localeAlternates((locale) => routes.landing(locale)) },
   };
 }
 

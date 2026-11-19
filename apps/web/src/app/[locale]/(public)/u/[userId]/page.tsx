@@ -3,8 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { ProfileHeader } from '@/features/explore/profile-header';
 import { UserTrips } from '@/features/explore/user-trips';
 import { UserReviewList } from '@/features/reviews/user-review-list';
-import { routes } from '@/lib/routes';
-import { routing } from '@/i18n/routing';
+import { localeAlternates, routes } from '@/lib/routes';
 import { loadFirstPages, loadProfile } from './load-profile';
 import styles from './profile-page.module.css';
 
@@ -17,11 +16,7 @@ export async function generateMetadata({
     title: profile.displayName,
     // A profile with nothing public is thin content: kept out of search engines.
     robots: { index: profile.publicTripCount + profile.reviewCount > 0 },
-    alternates: {
-      languages: Object.fromEntries(
-        routing.locales.map((locale) => [locale, routes.profile(locale, userId)]),
-      ),
-    },
+    alternates: { languages: localeAlternates((locale) => routes.profile(locale, userId)) },
   };
 }
 

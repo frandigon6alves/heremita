@@ -4,8 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { ExploreResults } from '@/features/explore/explore-results';
 import { ExploreSearch } from '@/features/explore/explore-search';
 import { serverFetch } from '@/lib/api/server';
-import { routes } from '@/lib/routes';
-import { routing } from '@/i18n/routing';
+import { localeAlternates, routes } from '@/lib/routes';
 import { searchText } from './search-text';
 import styles from './explore-page.module.css';
 
@@ -14,11 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t('metaTitle'),
     description: t('metaDescription'),
-    alternates: {
-      languages: Object.fromEntries(
-        routing.locales.map((locale) => [locale, routes.explore(locale)]),
-      ),
-    },
+    alternates: { languages: localeAlternates((locale) => routes.explore(locale)) },
   };
 }
 

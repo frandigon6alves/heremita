@@ -54,6 +54,14 @@ export const routes = {
   moderation: (locale: Locale) => `/${locale}/moderation`,
 } as const;
 
+/** `alternates.languages` of a page's metadata: the same page in every locale. */
+export function localeAlternates(pathOf: (locale: Locale) => string): Record<Locale, string> {
+  return Object.fromEntries(routing.locales.map((locale) => [locale, pathOf(locale)])) as Record<
+    Locale,
+    string
+  >;
+}
+
 /**
  * Open-redirect guard for `?next=`: only a path of this app, under one of its
  * locale prefixes, is accepted. A backslash is refused too, because browsers

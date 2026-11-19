@@ -7,8 +7,7 @@ import { RatingSummary } from '@/features/reviews/rating-summary';
 import { ReviewList } from '@/features/reviews/review-list';
 import { WriteReviewCta } from '@/features/reviews/write-review-cta';
 import { getViewer } from '@/lib/api/server';
-import { routes } from '@/lib/routes';
-import { routing } from '@/i18n/routing';
+import { localeAlternates, routes } from '@/lib/routes';
 import styles from './place-page.module.css';
 
 export async function generateMetadata({
@@ -21,11 +20,7 @@ export async function generateMetadata({
     title: t('metaTitle', { name: place.name }),
     // A place page without any review is thin content: kept out of search engines.
     robots: { index: rating.count > 0 },
-    alternates: {
-      languages: Object.fromEntries(
-        routing.locales.map((locale) => [locale, routes.place(locale, placeId)]),
-      ),
-    },
+    alternates: { languages: localeAlternates((locale) => routes.place(locale, placeId)) },
   };
 }
 
