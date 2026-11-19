@@ -1,5 +1,6 @@
 import { endpoints, type TripPlanViewer } from '@heremita/shared';
 import { act, screen, waitFor, within } from '@testing-library/react';
+import { delay } from 'msw';
 import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -106,6 +107,7 @@ beforeEach(() => {
 
 afterEach(() => {
   act(() => resetToasts());
+  window.sessionStorage.clear();
   push.mockReset();
   Reflect.deleteProperty(HTMLElement.prototype, 'hidePopover');
   Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
@@ -192,6 +194,14 @@ describe('TripViewerScreen', () => {
     );
   });
 
+  it('signed_out_copy_remembers_that_this_tab_asked_for_it', async () => {
+    const { user } = renderViewer({ shared: true });
+
+    await user.click(screen.getByRole('link', { name: 'Copy' }));
+
+    expect(window.sessionStorage.getItem('hm-copy-intent')).toBe(`share:${TOKEN}`);
+  });
+
   it('signed_in_copy_creates_a_copy_and_offers_to_open_it', async () => {
     const copies = recordCopies(endpoints.copyTrip);
     const { user } = renderViewer({ signedIn: true });
@@ -206,8 +216,9 @@ describe('TripViewerScreen', () => {
     expect(push).toHaveBeenCalledWith(`/en/trips/${COPY.id}`);
   });
 
-  it('resumes_the_copy_after_login_once_and_drops_the_param', async () => {
+  it('resumes_the_copy_this_tab_started_after_login_once_and_drops_the_param', async () => {
     const copies = recordCopies(endpoints.copySharedTrip);
+    window.sessionStorage.setItem('hm-copy-intent', `share:${TOKEN}`);
     const { urlUpdates } = renderViewer({ signedIn: true, shared: true, query: '?copy=1' });
 
     expect(
@@ -215,6 +226,17 @@ describe('TripViewerScreen', () => {
     ).toBeInTheDocument();
     expect(copies).toEqual([`/api/v1/shared/${TOKEN}/copies`]);
     expect(urlUpdates.at(-1)?.queryString).toBe('');
+  });
+
+  it('ignores_a_copy_param_this_tab_did_not_ask_for', async () => {
+    const copies = recordCopies(endpoints.copyTrip);
+    window.sessionStorage.setItem('hm-copy-intent', `share:${TOKEN}`);
+    const { urlUpdates } = renderViewer({ signedIn: true, query: '?copy=1' });
+
+    await waitFor(() => expect(urlUpdates.at(-1)?.queryString).toBe(''));
+    await act(() => delay(50));
+    expect(copies).toEqual([]);
+    expect(screen.getByRole('button', { name: 'Copy' })).toBeEnabled();
   });
 
   it('signed_in_report_opens_the_report_dialog_for_the_trip', async () => {

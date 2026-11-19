@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useEffectEvent, useState, type CSSProperties } from 'react';
 import { DayChips } from '@/features/itinerary/day-chips';
 import { DaySummary } from '@/features/itinerary/day-summary';
 import {
@@ -26,6 +26,7 @@ import { usePlannerParams } from '@/features/itinerary/use-planner-params';
 import { useSelectionRoute } from '@/features/itinerary/use-selection-route';
 import { ReportDialog } from '@/features/reviews/report-dialog';
 import { CopyTripButton } from '@/features/trips/copy-trip-button';
+import { useCopyTrip } from '@/features/trips/use-copy-trip';
 import { planQuery, sharedPlanQuery } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { AppBar } from '@/shared/components/app-bar/app-bar';
@@ -40,6 +41,7 @@ import { TripMap } from '@/shared/map/trip-map';
 import { useMapPadding } from '@/shared/map/use-map-padding';
 import { CommunitySlot } from '../../../(app)/trips/[tripId]/_components/community-slot';
 import { initialMapView } from '../../../(app)/trips/[tripId]/_components/initial-map-view';
+import { rememberCopyIntent, takeCopyIntent } from './copy-intent';
 import styles from './trip-viewer-screen.module.css';
 
 const PANEL_QUERY = '(min-width: 768px)';
@@ -131,19 +133,21 @@ function TripViewerScreen({ source, plan, signedIn, path }: TripViewerScreenProp
   const [focusCard, setFocusCard] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [mapView] = useState(() => initialMapView(plan));
-  const copyRef = useRef<HTMLDivElement>(null);
-  const resumed = useRef(false);
+  const copyTrip = useCopyTrip(source);
 
-  // Back from login with `?copy=1`: finish the copy the viewer asked for, once
-  // (the URL update is async, so a Strict Mode re-run still sees the param).
-  useEffect(() => {
-    if (copy === null || !signedIn || resumed.current) {
-      return;
+  // Back from login with `?copy=1`: finish the copy this tab asked for. The
+  // intent is spent on the first run, so a Strict Mode re-run copies nothing.
+  const resumeCopy = useEffectEvent(() => {
+    if (takeCopyIntent(source)) {
+      copyTrip.mutate();
     }
-    resumed.current = true;
     void setCopy(null, { history: 'replace' });
-    copyRef.current?.querySelector('button')?.click();
-  }, [copy, signedIn, setCopy]);
+  });
+  useEffect(() => {
+    if (copy !== null && signedIn) {
+      resumeCopy();
+    }
+  }, [copy, signedIn]);
 
   function openPlace(tripPlaceId: string, source: OpenSource) {
     setFocusCard(source === 'keyboard');
@@ -178,13 +182,12 @@ function TripViewerScreen({ source, plan, signedIn, path }: TripViewerScreenProp
       <AppBar
         end={
           signedIn ? (
-            <div ref={copyRef}>
-              <CopyTripButton source={source} label={t('readOnly.copy')} />
-            </div>
+            <CopyTripButton copy={copyTrip} label={t('readOnly.copy')} />
           ) : (
             <Link
               href={routes.login(locale, { next: withCopy(path) })}
               className={buttonClassName({ variant: 'primary' })}
+              onClick={() => rememberCopyIntent(source)}
             >
               <Copy size={20} />
               {t('readOnly.copy')}

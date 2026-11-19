@@ -10,6 +10,7 @@ import { DeleteTripButton } from './delete-trip-button';
 import type { DestinationPicker } from './destination';
 import { ShareLink } from './share-link';
 import { TripDetailsForm } from './trip-details-form';
+import { useCopyTrip } from './use-copy-trip';
 import { VisibilitySettings } from './visibility-settings';
 import styles from './trip-settings.module.css';
 
@@ -28,6 +29,7 @@ export function TripSettings({ initialTrip, renderDestination }: TripSettingsPro
   const { data } = useQuery({ ...tripQuery(initialTrip.id), initialData: initialTrip });
   // Only the owner reaches this page; a viewer shape would mean the cache changed hands.
   const trip = data.viewerRole === 'owner' ? data : initialTrip;
+  const copy = useCopyTrip({ tripId: initialTrip.id });
 
   return (
     <div className={styles.sections}>
@@ -52,7 +54,7 @@ export function TripSettings({ initialTrip, renderDestination }: TripSettingsPro
         </h2>
         <p className={styles.note}>{t('duplicate.body')}</p>
         <div className={styles.buttons}>
-          <CopyTripButton source={{ tripId: trip.id }} label={t('duplicate.button')} />
+          <CopyTripButton copy={copy} label={t('duplicate.button')} />
         </div>
       </section>
       <section aria-labelledby="danger-heading" className={`${styles.section} ${styles.danger}`}>
