@@ -97,7 +97,6 @@ export const queryKeys = {
     list: (q: string) => ['explore', { q: q.trim() }] as const,
   },
   users: {
-    user: (userId: string) => ['users', userId] as const,
     trips: (userId: string) => ['users', userId, 'trips'] as const,
     reviews: (userId: string) => ['users', userId, 'reviews'] as const,
   },
@@ -260,14 +259,6 @@ export const reversePlacesQuery = (input: ReverseInput) => {
   });
 };
 
-/** E44. */
-export const placeQuery = (placeId: string) =>
-  queryOptions({
-    queryKey: queryKeys.places.place(placeId),
-    queryFn: ({ signal }) => apiFetch(endpoints.getPlace, { params: { placeId }, signal }),
-    staleTime: 5 * MINUTE,
-  });
-
 /** E45. */
 export const placeReviewsQuery = (placeId: string, sort: ReviewSort) =>
   infiniteQueryOptions({
@@ -299,14 +290,6 @@ export const exploreQuery = (q: string) => {
     staleTime: MINUTE,
   });
 };
-
-/** E15. */
-export const userProfileQuery = (userId: string) =>
-  queryOptions({
-    queryKey: queryKeys.users.user(userId),
-    queryFn: ({ signal }) => apiFetch(endpoints.getUserProfile, { params: { userId }, signal }),
-    staleTime: MINUTE,
-  });
 
 /** E16. */
 export const userTripsQuery = (userId: string) =>

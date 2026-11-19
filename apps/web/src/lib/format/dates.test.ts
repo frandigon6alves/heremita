@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { addDays, formatCalendarDate, formatRelativeTime, formatYearMonth } from './dates';
+import { addDays, formatCalendarDate, formatYearMonth } from './dates';
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -41,22 +41,5 @@ describe('addDays', () => {
     expect(addDays('2026-12-30', 3)).toBe('2027-01-02');
     expect(addDays('2028-02-28', 1)).toBe('2028-02-29');
     expect(addDays('2026-03-14', 0)).toBe('2026-03-14');
-  });
-});
-
-describe('formatRelativeTime', () => {
-  const now = new Date('2026-11-18T12:00:00Z');
-
-  it.each([
-    ['2026-11-18T11:59:30Z', 'en', '30 seconds ago'],
-    ['2026-11-18T11:55:00Z', 'en', '5 minutes ago'],
-    ['2026-11-17T12:00:00Z', 'en', 'yesterday'],
-    ['2026-11-15T12:00:00Z', 'pt-BR', 'há 3 dias'],
-    ['2026-08-18T12:00:00Z', 'pt-BR', 'há 3 meses'],
-    ['2026-11-17T12:00:00Z', 'es', 'ayer'],
-    ['2026-11-15T12:00:00Z', 'es', 'hace 3 días'],
-    ['2024-11-18T12:00:00Z', 'en', '2 years ago'],
-  ] as const)('formats_%s_as_%s', (timestamp, locale, expected) => {
-    expect(formatRelativeTime(timestamp, now, locale)).toBe(expected);
   });
 });

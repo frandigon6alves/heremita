@@ -40,18 +40,6 @@ export function Copy(props: IconProps) {
   );
 }
 
-export function Crosshair(props: IconProps) {
-  return (
-    <Icon {...props}>
-      <circle cx="12" cy="12" r="10" />
-      <line x1="22" x2="18" y1="12" y2="12" />
-      <line x1="6" x2="2" y1="12" y2="12" />
-      <line x1="12" x2="12" y1="6" y2="2" />
-      <line x1="12" x2="12" y1="22" y2="18" />
-    </Icon>
-  );
-}
-
 export function Ellipsis(props: IconProps) {
   return (
     <Icon {...props}>
@@ -95,19 +83,6 @@ export function GripVertical(props: IconProps) {
   );
 }
 
-export function Languages(props: IconProps) {
-  return (
-    <Icon {...props}>
-      <path d="m5 8 6 6" />
-      <path d="m4 14 6-6 2-3" />
-      <path d="M2 5h12" />
-      <path d="M7 2h1" />
-      <path d="m22 22-5-10-5 10" />
-      <path d="M14 18h6" />
-    </Icon>
-  );
-}
-
 export function ListOrdered(props: IconProps) {
   return (
     <Icon {...props}>
@@ -117,19 +92,6 @@ export function ListOrdered(props: IconProps) {
       <path d="M4 10h2" />
       <path d="M4 6h1v4" />
       <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" />
-    </Icon>
-  );
-}
-
-export function LocateFixed(props: IconProps) {
-  return (
-    <Icon {...props}>
-      <line x1="2" x2="5" y1="12" y2="12" />
-      <line x1="19" x2="22" y1="12" y2="12" />
-      <line x1="12" x2="12" y1="2" y2="5" />
-      <line x1="12" x2="12" y1="19" y2="22" />
-      <circle cx="12" cy="12" r="7" />
-      <circle cx="12" cy="12" r="3" />
     </Icon>
   );
 }
@@ -150,14 +112,6 @@ export function MapPinPlus(props: IconProps) {
       <circle cx="12" cy="10" r="3" />
       <path d="M16 18h6" />
       <path d="M19 15v6" />
-    </Icon>
-  );
-}
-
-export function Moon(props: IconProps) {
-  return (
-    <Icon {...props}>
-      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
     </Icon>
   );
 }
@@ -226,37 +180,12 @@ export function Star(props: IconProps) {
   );
 }
 
-export function Sun(props: IconProps) {
-  return (
-    <Icon {...props}>
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2" />
-      <path d="M12 20v2" />
-      <path d="m4.93 4.93 1.41 1.41" />
-      <path d="m17.66 17.66 1.41 1.41" />
-      <path d="M2 12h2" />
-      <path d="M20 12h2" />
-      <path d="m6.34 17.66-1.41 1.41" />
-      <path d="m19.07 4.93-1.41 1.41" />
-    </Icon>
-  );
-}
-
 export function Trash(props: IconProps) {
   return (
     <Icon {...props}>
       <path d="M3 6h18" />
       <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
       <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-    </Icon>
-  );
-}
-
-export function Undo2(props: IconProps) {
-  return (
-    <Icon {...props}>
-      <path d="M9 14 4 9l5-5" />
-      <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" />
     </Icon>
   );
 }

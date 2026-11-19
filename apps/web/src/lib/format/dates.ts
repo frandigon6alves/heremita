@@ -7,12 +7,7 @@ import type { Locale } from '@heremita/shared';
  */
 const TIME_ZONE = 'UTC';
 
-const SECOND = 1000;
-const MINUTE = 60 * SECOND;
-const HOUR = 60 * MINUTE;
-const DAY = 24 * HOUR;
-const MONTH = 30 * DAY;
-const YEAR = 365 * DAY;
+const DAY = 24 * 60 * 60 * 1000;
 
 function utcMidnight(isoDate: string): Date {
   const [year, month, day] = isoDate.split('-').map(Number);
@@ -41,27 +36,4 @@ export function formatYearMonth(yearMonth: string, locale: Locale): string {
 /** The calendar date `days` after `isoDate` (a trip's day N date from its start date). */
 export function addDays(isoDate: string, days: number): string {
   return new Date(utcMidnight(isoDate).getTime() + days * DAY).toISOString().slice(0, 10);
-}
-
-const RELATIVE_STEPS: ReadonlyArray<[Intl.RelativeTimeFormatUnit, number]> = [
-  ['year', YEAR],
-  ['month', MONTH],
-  ['day', DAY],
-  ['hour', HOUR],
-  ['minute', MINUTE],
-];
-
-/**
- * "3 days ago" / "hace 3 días" / "há 3 dias" for a timestamp. `now` comes from the server
- * render and is passed down, so server HTML and hydration agree.
- */
-export function formatRelativeTime(timestamp: string, now: Date, locale: Locale): string {
-  const elapsed = new Date(timestamp).getTime() - now.getTime();
-  const format = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-  for (const [unit, size] of RELATIVE_STEPS) {
-    if (Math.abs(elapsed) >= size) {
-      return format.format(Math.round(elapsed / size), unit);
-    }
-  }
-  return format.format(Math.round(elapsed / SECOND), 'second');
 }
