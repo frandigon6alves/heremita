@@ -4,28 +4,17 @@ import type { MyTripCard, Page } from '@heremita/shared';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { ApiProblemError, HttpError } from '@/lib/api/problem';
 import { myTripsQuery } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { ErrorState } from '@/shared/components/error-state/error-state';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { LinkButton } from '@/shared/components/link-button/link-button';
 import { Skeleton, SkeletonBlock } from '@/shared/components/skeleton/skeleton';
 import { Shell } from '@/shared/icons/icons';
-import { FormAlert } from './form-alert';
 import { TripCard } from './trip-card';
 import styles from './trip-list.module.css';
-
-function codeOf(error: unknown): string | undefined {
-  return error instanceof ApiProblemError ? error.code : undefined;
-}
-
-function requestIdOf(error: unknown): string | undefined {
-  return error instanceof ApiProblemError || error instanceof HttpError
-    ? (error.requestId ?? undefined)
-    : undefined;
-}
 
 /** Same space as the first cards, while they load. */
 export function TripListSkeleton() {
@@ -60,12 +49,7 @@ export function TripList({ initialPage }: TripListProps) {
   }
   if (trips.isError && trips.data === undefined) {
     return (
-      <ErrorState
-        title={t('failed')}
-        onRetry={() => void trips.refetch()}
-        code={codeOf(trips.error)}
-        requestId={requestIdOf(trips.error)}
-      />
+      <ErrorState title={t('failed')} onRetry={() => void trips.refetch()} error={trips.error} />
     );
   }
 
@@ -100,11 +84,7 @@ export function TripList({ initialPage }: TripListProps) {
         ))}
       </ul>
       {trips.isFetchNextPageError ? (
-        <FormAlert
-          message={t('moreFailed')}
-          code={codeOf(trips.error)}
-          requestId={requestIdOf(trips.error)}
-        />
+        <FormAlert error={trips.error} message={t('moreFailed')} />
       ) : null}
       {trips.hasNextPage ? (
         <Button

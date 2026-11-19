@@ -4,7 +4,9 @@ import { LIMITS, type TravelMode, type TripOwner, type UpdateTripBody } from '@h
 import { useTranslations } from 'next-intl';
 import { useState, type ReactNode } from 'react';
 import { useForm, useWatch, type FieldErrors, type Resolver } from 'react-hook-form';
+import { bodyPathsOf } from '@/lib/api/failure';
 import { Button } from '@/shared/components/button/button';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { SegmentedControl } from '@/shared/components/segmented-control/segmented-control';
 import { StatusLine } from '@/shared/components/status-line/status-line';
 import { TextArea } from '@/shared/components/text-area/text-area';
@@ -15,8 +17,6 @@ import {
   destinationFromPlace,
   type DestinationPicker,
 } from './destination';
-import { FormAlert } from './form-alert';
-import { submitFailure, type SubmitFailure } from './submit-failure';
 import { useTripUpdate } from './use-trip-update';
 import {
   detailsFromTrip,
@@ -29,8 +29,6 @@ import styles from './trip-form.module.css';
 
 const SERVER = 'server';
 const MODES: readonly TravelMode[] = ['walk', 'bike', 'drive'];
-
-type FormFailure = Exclude<SubmitFailure, { kind: 'fields' }>;
 
 export interface TripDetailsFormProps {
   trip: TripOwner;
@@ -48,7 +46,7 @@ export function TripDetailsForm({ trip, renderDestination }: TripDetailsFormProp
   const tForm = useTranslations('trips.form');
   const tModes = useTranslations('trips.modes');
   const online = useOnline();
-  const [failure, setFailure] = useState<FormFailure | null>(null);
+  const [failure, setFailure] = useState<{ error: unknown } | null>(null);
   const [saved, setSaved] = useState(false);
   const resolver: Resolver<TripDetailsValues, unknown, UpdateTripBody | null> = (values) => {
     const parsed = parseTripDetails(values, trip);
@@ -90,16 +88,13 @@ export function TripDetailsForm({ trip, renderDestination }: TripDetailsFormProp
       reset(detailsFromTrip(updated));
       setSaved(true);
     } catch (error) {
-      const outcome = submitFailure(error);
-      if (outcome.kind !== 'fields') {
-        setFailure(outcome);
-        return;
-      }
       const fields = new Set(
-        outcome.paths.map(tripDetailsFieldOf).filter((field) => field !== null),
+        bodyPathsOf(error)
+          .map(tripDetailsFieldOf)
+          .filter((field) => field !== null),
       );
       if (fields.size === 0) {
-        setFailure({ kind: 'unexpected', code: 'validation_failed', requestId: null });
+        setFailure({ error });
       }
       [...fields].forEach((field, index) =>
         setError(field, { type: SERVER }, { shouldFocus: index === 0 }),
@@ -192,11 +187,7 @@ export function TripDetailsForm({ trip, renderDestination }: TripDetailsFormProp
         </p>
       )}
       {failure === null ? null : (
-        <FormAlert
-          message={failure.kind === 'offline' ? t('offline') : t('failed')}
-          code={failure.kind === 'unexpected' ? failure.code : null}
-          requestId={failure.kind === 'unexpected' ? failure.requestId : null}
-        />
+        <FormAlert error={failure.error} message={t('failed')} offlineMessage={t('offline')} />
       )}
       <div className={styles.actions}>
         <Button type="submit" variant="primary" busy={isSubmitting} disabled={!online}>

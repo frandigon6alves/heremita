@@ -7,9 +7,11 @@ import { useRouter } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { useForm, useWatch, type FieldErrors, type Resolver } from 'react-hook-form';
 import { apiFetch } from '@/lib/api/client';
+import { bodyPathsOf, hasCode } from '@/lib/api/failure';
 import { queryKeys } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { SegmentedControl } from '@/shared/components/segmented-control/segmented-control';
 import { TextField } from '@/shared/components/text-field/text-field';
 import { useOnline } from '@/shared/hooks/use-online';
@@ -18,7 +20,6 @@ import {
   destinationFromPlace,
   type DestinationPicker,
 } from './destination';
-import { FormAlert } from './form-alert';
 import {
   chosenDayCount,
   newTripFieldOf,
@@ -27,13 +28,10 @@ import {
   type NewTripField,
   type NewTripValues,
 } from './new-trip-model';
-import { submitFailure, type SubmitFailure } from './submit-failure';
 import styles from './trip-form.module.css';
 
 /** A field the API refused although it passed the shared schema here. */
 const SERVER = 'server';
-
-type FormFailure = Exclude<SubmitFailure, { kind: 'fields' }>;
 
 const resolver: Resolver<NewTripValues, unknown, CreateTripBody> = (values) => {
   const parsed = parseNewTrip(values);
@@ -64,7 +62,7 @@ export function TripForm({ renderDestination }: TripFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const online = useOnline();
-  const [failure, setFailure] = useState<FormFailure | null>(null);
+  const [failure, setFailure] = useState<{ error: unknown } | null>(null);
   // Stays true after success: the button keeps its busy state until the planner shows.
   const [leaving, setLeaving] = useState(false);
   const {
@@ -106,18 +104,13 @@ export function TripForm({ renderDestination }: TripFormProps) {
       setLeaving(true);
       router.push(routes.planner(locale, trip.id, { day: 'ideas' }));
     } catch (error) {
-      const outcome = submitFailure(error);
-      if (outcome.kind !== 'fields') {
-        setFailure(outcome);
-        return;
-      }
       const fields = new Set(
-        outcome.paths
+        bodyPathsOf(error)
           .map((path) => newTripFieldOf(path, getValues('dates')))
           .filter((field) => field !== null),
       );
       if (fields.size === 0) {
-        setFailure({ kind: 'unexpected', code: 'validation_failed', requestId: null });
+        setFailure({ error });
       }
       [...fields].forEach((field, index) =>
         setError(field, { type: SERVER }, { shouldFocus: index === 0 }),
@@ -232,25 +225,20 @@ export function TripForm({ renderDestination }: TripFormProps) {
           />
         )}
       </div>
-      {failure === null ? null : <TripFormAlert failure={failure} />}
+      {failure === null ? null : (
+        <FormAlert
+          error={failure.error}
+          message={
+            hasCode(failure.error, 'limit_reached')
+              ? t('errors.limitReached', { max: LIMITS.TRIPS_PER_USER })
+              : t('errors.unexpected')
+          }
+          offlineMessage={t('errors.offline')}
+        />
+      )}
       <Button type="submit" variant="primary" size="large" block busy={pending} disabled={!online}>
         {pending ? t('submitting') : t('submit')}
       </Button>
     </form>
   );
-}
-
-function TripFormAlert({ failure }: { failure: FormFailure }) {
-  const t = useTranslations('trips.form.errors');
-
-  switch (failure.kind) {
-    case 'limit':
-      return <FormAlert message={t('limitReached', { max: LIMITS.TRIPS_PER_USER })} />;
-    case 'offline':
-      return <FormAlert message={t('offline')} />;
-    case 'unexpected':
-      return (
-        <FormAlert message={t('unexpected')} code={failure.code} requestId={failure.requestId} />
-      );
-  }
 }

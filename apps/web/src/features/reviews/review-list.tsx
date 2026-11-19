@@ -7,10 +7,9 @@ import { placeReviewsQuery } from '@/lib/api/query-keys';
 import { Button } from '@/shared/components/button/button';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { ErrorState } from '@/shared/components/error-state/error-state';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { SegmentedControl } from '@/shared/components/segmented-control/segmented-control';
 import { Skeleton, SkeletonBlock } from '@/shared/components/skeleton/skeleton';
-import { FailureAlert } from './failure-alert';
-import { problemCodeOf, requestIdOf } from './failure-reference';
 import { ReviewItem } from './review-item';
 import { useReviewSort } from './use-review-sort';
 import styles from './review-list.module.css';
@@ -81,8 +80,7 @@ export function ReviewList({
           headingLevel={3}
           title={t('failed')}
           onRetry={() => void reviews.refetch()}
-          code={problemCodeOf(reviews.error) ?? undefined}
-          requestId={requestIdOf(reviews.error) ?? undefined}
+          error={reviews.error}
         />
       );
     }
@@ -99,7 +97,7 @@ export function ReviewList({
           ))}
         </ol>
         {reviews.isFetchNextPageError ? (
-          <FailureAlert message={t('moreFailed')} error={reviews.error} />
+          <FormAlert error={reviews.error} message={t('moreFailed')} />
         ) : null}
         {reviews.hasNextPage ? (
           <Button

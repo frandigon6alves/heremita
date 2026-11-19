@@ -3,10 +3,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api/client';
+import { classifyFailure, hasCode, type Failure } from '@/lib/api/failure';
 import { queryKeys } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { showToast } from '@/shared/components/toast/toast-store';
-import { submitFailure } from './submit-failure';
 
 /** The trip to copy: by id (own or public trip, E25) or by share link (E28). */
 export type CopySource = { tripId: string } | { shareToken: string };
@@ -18,6 +18,7 @@ export type CopySource = { tripId: string } | { shareToken: string };
 export function useCopyTrip(source: CopySource) {
   const t = useTranslations('trips.copy');
   const tActions = useTranslations('common.actions');
+  const tFailures = useTranslations('common.failures');
   const locale = useLocale();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -40,18 +41,28 @@ export function useCopyTrip(source: CopySource) {
       await queryClient.invalidateQueries({ queryKey: queryKeys.trips.mine });
     },
     onError: (error) => {
-      const failure = submitFailure(error);
-      if (failure.kind === 'limit') {
+      if (hasCode(error, 'limit_reached')) {
         showToast({ message: t('limitReached') });
         return;
       }
       showToast({
-        message: failure.kind === 'offline' ? t('offline') : t('failed'),
+        message: copyFailureMessage(classifyFailure(error).kind),
         action: { label: tActions('retry'), onAction: () => copy.mutate() },
       });
     },
   });
   return copy;
+
+  function copyFailureMessage(kind: Failure['kind']): string {
+    switch (kind) {
+      case 'offline':
+        return t('offline');
+      case 'tooMany':
+        return tFailures('tooMany');
+      case 'failed':
+        return t('failed');
+    }
+  }
 }
 
 export type CopyTrip = ReturnType<typeof useCopyTrip>;

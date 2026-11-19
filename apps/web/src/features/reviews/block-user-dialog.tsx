@@ -6,8 +6,8 @@ import { useTranslations } from 'next-intl';
 import { apiFetch } from '@/lib/api/client';
 import { queryKeys } from '@/lib/api/query-keys';
 import { ConfirmDialog } from '@/shared/components/dialog/confirm-dialog';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { showToast } from '@/shared/components/toast/toast-store';
-import { FailureAlert } from './failure-alert';
 
 export interface BlockUserDialogProps {
   open: boolean;
@@ -51,7 +51,7 @@ export function BlockUserDialog({ open, onClose, user }: BlockUserDialogProps) {
     >
       <p>{t('body', { name: user.displayName })}</p>
       {block.isError ? (
-        <FailureAlert message={t('failed', { name: user.displayName })} error={block.error} />
+        <FormAlert error={block.error} message={t('failed', { name: user.displayName })} />
       ) : null}
     </ConfirmDialog>
   );

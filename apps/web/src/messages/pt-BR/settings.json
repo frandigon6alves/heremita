@@ -76,10 +76,5 @@
       "passwordTooLong": "Use no máximo {max} caracteres.",
       "passwordWrong": "Senha incorreta."
     }
-  },
-  "failures": {
-    "offline": "Você está offline. Conecte-se e tente de novo.",
-    "tooMany": "Muitas tentativas. Espere um minuto e tente de novo.",
-    "failed": "Algo deu errado. Tente de novo."
   }
 }

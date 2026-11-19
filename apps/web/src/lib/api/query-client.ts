@@ -1,12 +1,8 @@
 import { MutationCache, QueryCache, QueryClient, type QueryKey } from '@tanstack/react-query';
 import { loginRedirectFor } from '@/lib/routes';
+import { isNetworkError } from './failure';
 import { isUnauthenticated } from './problem';
 import { queryKeys } from './query-keys';
-
-/** `fetch` rejects with a TypeError only when the request never got an HTTP answer. */
-function isNetworkError(error: unknown): boolean {
-  return error instanceof TypeError;
-}
 
 /**
  * Queries are retried at most once, and only when the network failed: an HTTP

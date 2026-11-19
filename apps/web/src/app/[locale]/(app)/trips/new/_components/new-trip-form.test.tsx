@@ -205,6 +205,34 @@ describe('NewTripForm', () => {
     expect(screen.getByRole('button', { name: 'Create and open' })).toBeEnabled();
   });
 
+  it('explains_a_rate_limit_instead_of_an_unexpected_failure', async () => {
+    server.use(failWith(endpoints.createTrip, 'rate_limited', {}, { 'Retry-After': '120' }));
+    const { user } = renderForm();
+
+    await user.type(screen.getByRole('textbox', { name: 'Title' }), 'Lisboa');
+    await user.click(screen.getByRole('button', { name: 'Create and open' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Too many attempts. Try again in 2 minutes.');
+    expect(alert).toHaveTextContent('Code: rate_limited');
+  });
+
+  it('quotes_the_request_id_of_a_422_that_names_no_field_of_the_form', async () => {
+    server.use(
+      failWith(endpoints.createTrip, 'validation_failed', {
+        errors: [{ pointer: '/body/unknown', detail: 'Unexpected' }],
+      }),
+    );
+    const { user } = renderForm();
+
+    await user.type(screen.getByRole('textbox', { name: 'Title' }), 'Lisboa');
+    await user.click(screen.getByRole('button', { name: 'Create and open' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Code: validation_failed');
+    expect(alert).toHaveTextContent(`Request ID: ${TEST_REQUEST_ID}`);
+  });
+
   it('speaks_portuguese', () => {
     renderForm('pt-BR');
 

@@ -76,10 +76,5 @@
       "passwordTooLong": "Use at most {max} characters.",
       "passwordWrong": "This password is wrong."
     }
-  },
-  "failures": {
-    "offline": "You are offline. Connect and try again.",
-    "tooMany": "Too many attempts. Wait a minute and try again.",
-    "failed": "Something went wrong. Try again."
   }
 }

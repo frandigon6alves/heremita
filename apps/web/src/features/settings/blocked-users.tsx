@@ -5,16 +5,15 @@ import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-q
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api/client';
-import { ApiProblemError } from '@/lib/api/problem';
 import { myBlocksQuery, queryKeys } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
 import { DemoBadge } from '@/shared/components/demo-badge/demo-badge';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { ErrorState } from '@/shared/components/error-state/error-state';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { Skeleton, SkeletonBlock } from '@/shared/components/skeleton/skeleton';
 import { showToast } from '@/shared/components/toast/toast-store';
-import { requestIdOf } from './submit-failure';
 import styles from './settings.module.css';
 
 /**
@@ -63,8 +62,7 @@ export function BlockedUsers() {
         headingLevel={3}
         title={t('loadFailed')}
         onRetry={() => void blocks.refetch()}
-        code={blocks.error instanceof ApiProblemError ? blocks.error.code : undefined}
-        requestId={requestIdOf(blocks.error) ?? undefined}
+        error={blocks.error}
       />
     );
   }
@@ -99,9 +97,7 @@ export function BlockedUsers() {
         })}
       </ul>
       {blocks.isFetchNextPageError ? (
-        <p className={styles.alert} role="alert">
-          {t('loadMoreFailed')}
-        </p>
+        <FormAlert error={blocks.error} message={t('loadMoreFailed')} />
       ) : null}
       {blocks.hasNextPage ? (
         <Button busy={blocks.isFetchingNextPage} onClick={() => void blocks.fetchNextPage()}>

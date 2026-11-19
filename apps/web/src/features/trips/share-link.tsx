@@ -5,17 +5,16 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState, useSyncExternalStore } from 'react';
 import { apiFetch } from '@/lib/api/client';
-import { ApiProblemError } from '@/lib/api/problem';
+import { hasCode } from '@/lib/api/failure';
 import { queryKeys } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
 import { ConfirmDialog } from '@/shared/components/dialog/confirm-dialog';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { TextField } from '@/shared/components/text-field/text-field';
 import { showToast } from '@/shared/components/toast/toast-store';
 import { useOnline } from '@/shared/hooks/use-online';
 import { Copy, Share2 } from '@/shared/icons/icons';
-import { FormAlert } from './form-alert';
-import { submitFailure } from './submit-failure';
 import styles from './trip-settings.module.css';
 
 const neverChanges = () => () => undefined;
@@ -49,14 +48,13 @@ export function ShareLink({ trip, shareToken }: { trip: TripOwner; shareToken: s
     },
     onError: async (error) => {
       // Made private elsewhere meanwhile: there is no link any more to replace.
-      if (error instanceof ApiProblemError && error.code === 'trip_is_private') {
+      if (hasCode(error, 'trip_is_private')) {
         setConfirming(false);
         showToast({ message: t('nowPrivate') });
         await queryClient.invalidateQueries({ queryKey: queryKeys.trips.trip(trip.id) });
       }
     },
   });
-  const failure = rotate.isError ? submitFailure(rotate.error) : null;
 
   async function copy() {
     try {
@@ -117,13 +115,13 @@ export function ShareLink({ trip, shareToken }: { trip: TripOwner; shareToken: s
         busy={rotate.isPending}
       >
         <p>{t('rotateBody')}</p>
-        {failure === null ? null : (
+        {rotate.isError ? (
           <FormAlert
-            message={failure.kind === 'offline' ? t('rotateOffline') : t('rotateFailed')}
-            code={failure.kind === 'unexpected' ? failure.code : null}
-            requestId={failure.kind === 'unexpected' ? failure.requestId : null}
+            error={rotate.error}
+            message={t('rotateFailed')}
+            offlineMessage={t('rotateOffline')}
           />
-        )}
+        ) : null}
       </ConfirmDialog>
     </div>
   );

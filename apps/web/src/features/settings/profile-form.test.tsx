@@ -109,7 +109,7 @@ describe('ProfileForm', () => {
     expect(screen.getByRole('textbox', { name: 'Name' })).toHaveFocus();
   });
 
-  it('explains_a_failure_with_the_request_id', async () => {
+  it('explains_a_failure_with_the_code_and_request_id', async () => {
     server.use(failWith(endpoints.updateMe, 'internal_error'));
     const { user } = renderForm();
 
@@ -117,6 +117,7 @@ describe('ProfileForm', () => {
 
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent('Something went wrong. Try again.');
+    expect(alert).toHaveTextContent('Code: internal_error');
     expect(alert).toHaveTextContent(`Request ID: ${TEST_REQUEST_ID}`);
   });
 

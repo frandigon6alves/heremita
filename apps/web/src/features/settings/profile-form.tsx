@@ -8,26 +8,24 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm, type FieldError } from 'react-hook-form';
 import { apiFetch } from '@/lib/api/client';
+import { bodyFieldsOf } from '@/lib/api/failure';
 import { queryKeys } from '@/lib/api/query-keys';
 import { Button } from '@/shared/components/button/button';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { TextField } from '@/shared/components/text-field/text-field';
 import { showToast } from '@/shared/components/toast/toast-store';
-import { FailureAlert } from './failure-alert';
-import { submitOutcome, type SubmitOutcome } from './submit-failure';
 import styles from './settings.module.css';
 
 const FIELDS = ['displayName'] as const;
 /** The API refused a name that passed the shared schema here. */
 const SERVER = 'server';
 
-type FormFailure = Extract<SubmitOutcome<string>, { kind: 'form' }>;
-
 /** Display name (E9). Saved explicitly: a half-typed name never reaches other people. */
 export function ProfileForm({ displayName }: { displayName: string }) {
   const t = useTranslations('settings.profile');
   const queryClient = useQueryClient();
   const router = useRouter();
-  const [failure, setFailure] = useState<FormFailure | null>(null);
+  const [failure, setFailure] = useState<{ error: unknown } | null>(null);
   const {
     register,
     handleSubmit,
@@ -53,11 +51,10 @@ export function ProfileForm({ displayName }: { displayName: string }) {
       // The app bar shows the name from the server render.
       router.refresh();
     } catch (error) {
-      const outcome = submitOutcome(error, FIELDS);
-      if (outcome.kind === 'fields') {
+      if (bodyFieldsOf(error, FIELDS).length > 0) {
         setError('displayName', { type: SERVER }, { shouldFocus: true });
       } else {
-        setFailure(outcome);
+        setFailure({ error });
       }
     }
   });
@@ -71,9 +68,7 @@ export function ProfileForm({ displayName }: { displayName: string }) {
         autoComplete="name"
         {...register('displayName')}
       />
-      {failure === null ? null : (
-        <FailureAlert failure={failure.failure} requestId={failure.requestId} />
-      )}
+      {failure === null ? null : <FormAlert error={failure.error} />}
       <Button className={styles.submit} type="submit" variant="primary" busy={isSubmitting}>
         {isSubmitting ? t('saving') : t('save')}
       </Button>

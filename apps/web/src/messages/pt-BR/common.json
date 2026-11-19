@@ -75,5 +75,12 @@
   "error": {
     "title": "Algo deu errado",
     "body": "Tente de novo. Se continuar acontecendo, recarregue a página."
+  },
+  "failures": {
+    "offline": "Você está offline. Conecte-se e tente de novo.",
+    "failed": "Algo deu errado. Tente de novo.",
+    "tooMany": "Muitas tentativas. Aguarde um pouco e tente de novo.",
+    "tooManySeconds": "{seconds, plural, =0 {Muitas tentativas. Tente de novo agora.} one {Muitas tentativas. Tente de novo em # segundo.} other {Muitas tentativas. Tente de novo em # segundos.}}",
+    "tooManyMinutes": "{minutes, plural, =0 {Muitas tentativas. Tente de novo agora.} one {Muitas tentativas. Tente de novo em # minuto.} other {Muitas tentativas. Tente de novo em # minutos.}}"
   }
 }

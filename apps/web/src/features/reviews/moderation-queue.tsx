@@ -13,16 +13,16 @@ import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useState } from 'react';
 import { apiFetch } from '@/lib/api/client';
+import { hasCode } from '@/lib/api/failure';
 import { moderationReportsQuery, queryKeys } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { ErrorState } from '@/shared/components/error-state/error-state';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { SegmentedControl } from '@/shared/components/segmented-control/segmented-control';
 import { Skeleton, SkeletonBlock } from '@/shared/components/skeleton/skeleton';
 import { showToast } from '@/shared/components/toast/toast-store';
-import { FailureAlert } from './failure-alert';
-import { problemCodeOf, requestIdOf } from './failure-reference';
 import styles from './moderation-queue.module.css';
 
 export interface ModerationQueueProps {
@@ -78,8 +78,7 @@ export function ModerationQueue({ initialOpenPage }: ModerationQueueProps) {
           headingLevel={2}
           title={t('failed')}
           onRetry={() => void reports.refetch()}
-          code={problemCodeOf(reports.error) ?? undefined}
-          requestId={requestIdOf(reports.error) ?? undefined}
+          error={reports.error}
         />
       );
     }
@@ -96,7 +95,7 @@ export function ModerationQueue({ initialOpenPage }: ModerationQueueProps) {
           ))}
         </ol>
         {reports.isFetchNextPageError ? (
-          <FailureAlert message={t('failed')} error={reports.error} />
+          <FormAlert error={reports.error} message={t('failed')} />
         ) : null}
         {reports.hasNextPage ? (
           <Button
@@ -164,9 +163,9 @@ function ReportCard({ report }: { report: ReportItem }) {
           : t('reportedBy', { name: report.reporter.displayName, date })}
       </p>
       {decide.isError ? (
-        <FailureAlert
-          message={problemCodeOf(decide.error) === 'not_found' ? t('gone') : t('decisionFailed')}
+        <FormAlert
           error={decide.error}
+          message={hasCode(decide.error, 'not_found') ? t('gone') : t('decisionFailed')}
         />
       ) : null}
       <div

@@ -75,5 +75,12 @@
   "error": {
     "title": "Something went wrong",
     "body": "Try again. If it keeps happening, reload the page."
+  },
+  "failures": {
+    "offline": "You are offline. Connect and try again.",
+    "failed": "Something went wrong. Try again.",
+    "tooMany": "Too many attempts. Wait a moment and try again.",
+    "tooManySeconds": "{seconds, plural, =0 {Too many attempts. Try again now.} one {Too many attempts. Try again in # second.} other {Too many attempts. Try again in # seconds.}}",
+    "tooManyMinutes": "{minutes, plural, =0 {Too many attempts. Try again now.} one {Too many attempts. Try again in # minute.} other {Too many attempts. Try again in # minutes.}}"
   }
 }

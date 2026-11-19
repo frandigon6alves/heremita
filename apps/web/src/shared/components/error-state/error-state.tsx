@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
+import { problemCodeOf, requestIdOf } from '@/lib/api/failure';
 import { Button } from '../button/button';
 import styles from './error-state.module.css';
 
@@ -12,9 +13,11 @@ export interface ErrorStateProps {
   message?: ReactNode;
   /** Retries the failed request; omitted when retrying cannot help. */
   onRetry?: () => void;
-  /** Stable API error code (`ProblemDetails.code`), quoted to the operator. */
+  /** What the failed request threw: its API code and request id are quoted to report it. */
+  error?: unknown;
+  /** Overrides the code read from `error` (a failure classified elsewhere). */
   code?: string;
-  /** `X-Request-Id` of the failed response, to find it in the API logs. */
+  /** Overrides the request id read from `error`. */
   requestId?: string;
   headingLevel?: 2 | 3;
 }
@@ -27,8 +30,9 @@ export function ErrorState({
   title,
   message,
   onRetry,
-  code,
-  requestId,
+  error,
+  code = problemCodeOf(error) ?? undefined,
+  requestId = requestIdOf(error) ?? undefined,
   headingLevel = 2,
 }: ErrorStateProps) {
   const t = useTranslations('common');

@@ -13,21 +13,19 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm, type FieldError } from 'react-hook-form';
 import { apiFetch } from '@/lib/api/client';
+import { bodyFieldsOf, hasCode } from '@/lib/api/failure';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { Dialog, DialogActions, initialFocus } from '@/shared/components/dialog/dialog';
 import { PasswordField } from '@/shared/components/password-field/password-field';
 import { showToast } from '@/shared/components/toast/toast-store';
 import { clearDrafts } from '@/shared/storage/session-drafts';
-import { FailureAlert } from './failure-alert';
-import { submitOutcome, type SubmitOutcome } from './submit-failure';
 import styles from './settings.module.css';
 
 const FIELDS = ['password'] as const;
 /** E11 422 `wrong_password`. */
 const WRONG = 'wrong';
-
-type FormFailure = Extract<SubmitOutcome<string>, { kind: 'form' }>;
 
 export interface DeleteAccountDialogProps {
   open: boolean;
@@ -45,7 +43,7 @@ export function DeleteAccountDialog({ open, onClose }: DeleteAccountDialogProps)
   const locale = useLocale();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [failure, setFailure] = useState<FormFailure | null>(null);
+  const [failure, setFailure] = useState<{ error: unknown } | null>(null);
   const [leaving, setLeaving] = useState(false);
   const {
     register,
@@ -73,15 +71,14 @@ export function DeleteAccountDialog({ open, onClose }: DeleteAccountDialogProps)
     try {
       await remove.mutateAsync(body);
     } catch (error) {
-      const outcome = submitOutcome(error, FIELDS);
-      if (outcome.kind === 'fields') {
+      if (bodyFieldsOf(error, FIELDS).length > 0) {
         setError(
           'password',
-          { type: outcome.wrongPassword ? WRONG : 'server' },
+          { type: hasCode(error, 'wrong_password') ? WRONG : 'server' },
           { shouldFocus: true },
         );
       } else {
-        setFailure(outcome);
+        setFailure({ error });
       }
       return;
     }
@@ -104,9 +101,7 @@ export function DeleteAccountDialog({ open, onClose }: DeleteAccountDialogProps)
           autoComplete="current-password"
           {...register('password')}
         />
-        {failure === null ? null : (
-          <FailureAlert failure={failure.failure} requestId={failure.requestId} />
-        )}
+        {failure === null ? null : <FormAlert error={failure.error} />}
         <DialogActions>
           <Button {...initialFocus} disabled={pending} onClick={close}>
             {tActions('cancel')}

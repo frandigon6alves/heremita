@@ -12,11 +12,11 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useForm, type FieldError } from 'react-hook-form';
 import { apiFetch } from '@/lib/api/client';
+import { bodyFieldsOf, hasCode } from '@/lib/api/failure';
 import { Button } from '@/shared/components/button/button';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { PasswordField } from '@/shared/components/password-field/password-field';
 import { showToast } from '@/shared/components/toast/toast-store';
-import { FailureAlert } from './failure-alert';
-import { submitOutcome, type SubmitOutcome } from './submit-failure';
 import styles from './settings.module.css';
 
 const FIELDS = ['currentPassword', 'newPassword'] as const;
@@ -26,8 +26,6 @@ const SERVER = 'server';
 const WRONG = 'wrong';
 /** The new password is the e-mail address or its local part. */
 const IS_EMAIL = 'custom';
-
-type FormFailure = Extract<SubmitOutcome<string>, { kind: 'form' }>;
 
 function isDerivedFromEmail(password: string, email: string): boolean {
   const candidate = password.toLowerCase();
@@ -40,7 +38,7 @@ function isDerivedFromEmail(password: string, email: string): boolean {
  */
 export function PasswordForm({ email }: { email: string }) {
   const t = useTranslations('settings.password');
-  const [failure, setFailure] = useState<FormFailure | null>(null);
+  const [failure, setFailure] = useState<{ error: unknown } | null>(null);
   const {
     register,
     handleSubmit,
@@ -67,17 +65,12 @@ export function PasswordForm({ email }: { email: string }) {
       reset();
       showToast({ message: t('changed') });
     } catch (error) {
-      const outcome = submitOutcome(error, FIELDS);
-      if (outcome.kind === 'fields') {
-        outcome.fields.forEach((field, index) =>
-          setError(
-            field,
-            { type: outcome.wrongPassword ? WRONG : SERVER },
-            { shouldFocus: index === 0 },
-          ),
-        );
+      const fields = bodyFieldsOf(error, FIELDS);
+      const type = hasCode(error, 'wrong_password') ? WRONG : SERVER;
+      if (fields.length > 0) {
+        fields.forEach((field, index) => setError(field, { type }, { shouldFocus: index === 0 }));
       } else {
-        setFailure(outcome);
+        setFailure({ error });
       }
     }
   });
@@ -98,9 +91,7 @@ export function PasswordForm({ email }: { email: string }) {
         autoComplete="new-password"
         {...register('newPassword')}
       />
-      {failure === null ? null : (
-        <FailureAlert failure={failure.failure} requestId={failure.requestId} />
-      )}
+      {failure === null ? null : <FormAlert error={failure.error} />}
       <Button className={styles.submit} type="submit" variant="primary" busy={isSubmitting}>
         {isSubmitting ? t('submitting') : t('submit')}
       </Button>

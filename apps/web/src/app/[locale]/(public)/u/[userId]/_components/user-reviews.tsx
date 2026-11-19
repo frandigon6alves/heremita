@@ -4,22 +4,16 @@ import type { Page, Review } from '@heremita/shared';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { ApiProblemError, HttpError } from '@/lib/api/problem';
 import { formatYearMonth } from '@/lib/format/dates';
 import { userReviewsQuery } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { ErrorState } from '@/shared/components/error-state/error-state';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { RatingStars } from '@/shared/components/rating-stars/rating-stars';
 import { Skeleton, SkeletonBlock } from '@/shared/components/skeleton/skeleton';
 import styles from './user-reviews.module.css';
-
-function requestIdOf(error: unknown): string | undefined {
-  return error instanceof ApiProblemError || error instanceof HttpError
-    ? (error.requestId ?? undefined)
-    : undefined;
-}
 
 export interface UserReviewsProps {
   userId: string;
@@ -32,7 +26,6 @@ export interface UserReviewsProps {
  */
 export function UserReviews({ userId, initialPage }: UserReviewsProps) {
   const t = useTranslations('explore.profile');
-  const tStates = useTranslations('common.states');
   const tActions = useTranslations('common.actions');
   const locale = useLocale();
   const reviews = useInfiniteQuery({
@@ -54,8 +47,7 @@ export function UserReviews({ userId, initialPage }: UserReviewsProps) {
         headingLevel={3}
         title={t('reviewsFailed')}
         onRetry={() => void reviews.refetch()}
-        code={reviews.error instanceof ApiProblemError ? reviews.error.code : undefined}
-        requestId={requestIdOf(reviews.error)}
+        error={reviews.error}
       />
     );
   }
@@ -64,7 +56,6 @@ export function UserReviews({ userId, initialPage }: UserReviewsProps) {
   if (items.length === 0) {
     return <EmptyState headingLevel={3} title={t('reviewsEmpty')} />;
   }
-  const moreRequestId = reviews.isFetchNextPageError ? requestIdOf(reviews.error) : undefined;
 
   return (
     <div className={styles.list}>
@@ -86,14 +77,7 @@ export function UserReviews({ userId, initialPage }: UserReviewsProps) {
         ))}
       </ol>
       {reviews.isFetchNextPageError ? (
-        <p className={styles.alert} role="alert">
-          {t('reviewsMoreFailed')}{' '}
-          {moreRequestId === undefined ? null : (
-            <span className={styles.reference}>
-              {tStates('requestId', { requestId: moreRequestId })}
-            </span>
-          )}
-        </p>
+        <FormAlert error={reviews.error} message={t('reviewsMoreFailed')} />
       ) : null}
       {reviews.hasNextPage ? (
         <Button

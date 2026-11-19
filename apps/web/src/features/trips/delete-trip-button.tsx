@@ -9,12 +9,11 @@ import { apiFetch } from '@/lib/api/client';
 import { queryKeys } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { ConfirmDialog } from '@/shared/components/dialog/confirm-dialog';
 import { showToast } from '@/shared/components/toast/toast-store';
 import { useOnline } from '@/shared/hooks/use-online';
 import { Trash } from '@/shared/icons/icons';
-import { FormAlert } from './form-alert';
-import { submitFailure } from './submit-failure';
 
 /**
  * "Excluir viagem" with a confirmation dialog (E22 cannot be undone: days,
@@ -35,7 +34,6 @@ export function DeleteTripButton({ tripId, title }: { tripId: string; title: str
       await queryClient.invalidateQueries({ queryKey: queryKeys.trips.mine });
     },
   });
-  const failure = remove.isError ? submitFailure(remove.error) : null;
 
   return (
     <>
@@ -58,13 +56,9 @@ export function DeleteTripButton({ tripId, title }: { tripId: string; title: str
         busy={remove.isPending || remove.isSuccess}
       >
         <p>{t('body')}</p>
-        {failure === null ? null : (
-          <FormAlert
-            message={failure.kind === 'offline' ? t('offline') : t('failed')}
-            code={failure.kind === 'unexpected' ? failure.code : null}
-            requestId={failure.kind === 'unexpected' ? failure.requestId : null}
-          />
-        )}
+        {remove.isError ? (
+          <FormAlert error={remove.error} message={t('failed')} offlineMessage={t('offline')} />
+        ) : null}
       </ConfirmDialog>
     </>
   );

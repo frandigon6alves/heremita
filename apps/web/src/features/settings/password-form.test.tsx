@@ -126,7 +126,7 @@ describe('PasswordForm', () => {
     expect(bodies).toEqual([]);
   });
 
-  it('explains_too_many_attempts', async () => {
+  it('explains_too_many_attempts_with_the_wait_and_the_code', async () => {
     server.use(failWith(endpoints.changePassword, 'rate_limited', {}, { 'Retry-After': '30' }));
     const { user } = renderForm();
 
@@ -134,9 +134,9 @@ describe('PasswordForm', () => {
     await user.type(newField(), NEW);
     await user.click(screen.getByRole('button', { name: 'Change password' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Too many attempts. Wait a minute and try again.',
-    );
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Too many attempts. Try again in 30 seconds.');
+    expect(alert).toHaveTextContent('Code: rate_limited');
   });
 
   it('allows_pasting_into_both_fields', async () => {

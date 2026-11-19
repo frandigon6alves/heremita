@@ -12,12 +12,12 @@ import { useMutation } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useId, useState, type FormEvent } from 'react';
 import { apiFetch } from '@/lib/api/client';
+import { problemCodeOf } from '@/lib/api/failure';
 import { Button } from '@/shared/components/button/button';
 import { Dialog, DialogActions, initialFocus } from '@/shared/components/dialog/dialog';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { TextArea } from '@/shared/components/text-area/text-area';
 import { showToast } from '@/shared/components/toast/toast-store';
-import { FailureAlert } from './failure-alert';
-import { problemCodeOf } from './failure-reference';
 import styles from './report-dialog.module.css';
 
 const REASONS = reportReasonSchema.options;
@@ -78,8 +78,6 @@ export function ReportDialog({ open, onClose, target }: ReportDialogProps) {
         return t('gone');
       case 'cannot_report_own':
         return t('own');
-      case 'rate_limited':
-        return t('tooMany');
       default:
         return t('failed');
     }
@@ -129,7 +127,7 @@ export function ReportDialog({ open, onClose, target }: ReportDialogProps) {
           onChange={(event) => setDetails(event.target.value)}
         />
         {report.isError ? (
-          <FailureAlert message={failureMessage(report.error)} error={report.error} />
+          <FormAlert error={report.error} message={failureMessage(report.error)} />
         ) : null}
         <DialogActions>
           <Button disabled={report.isPending} onClick={close}>

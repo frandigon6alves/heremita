@@ -4,9 +4,9 @@ import type { Page, PublicTripCard as PublicTripCardData } from '@heremita/share
 import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
-import { ApiProblemError, HttpError } from '@/lib/api/problem';
 import { Button } from '@/shared/components/button/button';
 import { ErrorState } from '@/shared/components/error-state/error-state';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { Skeleton, SkeletonBlock } from '@/shared/components/skeleton/skeleton';
 import { PublicTripCard } from './public-trip-card';
 import styles from './public-trip-feed.module.css';
@@ -17,12 +17,6 @@ export type PublicTripPages = UseInfiniteQueryResult<InfiniteData<Page<PublicTri
 /** The server-rendered first page as TanStack's `initialData`. */
 export function firstPageData(page: Page<PublicTripCardData> | undefined) {
   return page && { pages: [page], pageParams: [null] };
-}
-
-function requestIdOf(error: unknown): string | undefined {
-  return error instanceof ApiProblemError || error instanceof HttpError
-    ? (error.requestId ?? undefined)
-    : undefined;
 }
 
 /** Same space as the first cards, while they load. */
@@ -56,7 +50,6 @@ export function PublicTripFeed({
   headingLevel = 2,
 }: PublicTripFeedProps) {
   const t = useTranslations('explore.feed');
-  const tStates = useTranslations('common.states');
   const tActions = useTranslations('common.actions');
 
   if (trips.isPending) {
@@ -68,14 +61,12 @@ export function PublicTripFeed({
         headingLevel={headingLevel}
         title={failedTitle}
         onRetry={() => void trips.refetch()}
-        code={trips.error instanceof ApiProblemError ? trips.error.code : undefined}
-        requestId={requestIdOf(trips.error)}
+        error={trips.error}
       />
     );
   }
 
   const items = trips.data.pages.flatMap((page) => page.items);
-  const moreRequestId = trips.isFetchNextPageError ? requestIdOf(trips.error) : undefined;
   if (items.length === 0) {
     return empty;
   }
@@ -89,14 +80,7 @@ export function PublicTripFeed({
         ))}
       </ul>
       {trips.isFetchNextPageError ? (
-        <p className={styles.alert} role="alert">
-          {t('moreFailed')}{' '}
-          {moreRequestId === undefined ? null : (
-            <span className={styles.reference}>
-              {tStates('requestId', { requestId: moreRequestId })}
-            </span>
-          )}
-        </p>
+        <FormAlert error={trips.error} message={t('moreFailed')} />
       ) : null}
       {trips.hasNextPage ? (
         <Button

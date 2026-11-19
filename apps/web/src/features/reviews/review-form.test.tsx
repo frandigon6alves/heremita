@@ -133,8 +133,9 @@ describe('ReviewForm', () => {
     await user.click(screen.getByRole('button', { name: 'Publish' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Too many reviews in a short time. Try again later.',
+      'Too many attempts. Try again in 1 minute.',
     );
+    expect(screen.getByRole('alert')).toHaveTextContent('Code: rate_limited');
     expect(screen.getByRole('alert')).toHaveTextContent(`Request ID: ${TEST_REQUEST_ID}`);
     expect(screen.getByRole('textbox', { name: 'Your opinion' })).toHaveValue(BODY);
   });

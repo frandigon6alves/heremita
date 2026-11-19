@@ -14,29 +14,26 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Controller, useForm, useWatch, type FieldError } from 'react-hook-form';
 import { apiFetch } from '@/lib/api/client';
-import { ApiProblemError } from '@/lib/api/problem';
+import { bodyFieldsOf, hasCode } from '@/lib/api/failure';
 import { queryKeys } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
 import { ConfirmDialog } from '@/shared/components/dialog/confirm-dialog';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { RatingInput } from '@/shared/components/rating-input/rating-input';
 import { TextArea } from '@/shared/components/text-area/text-area';
 import { TextField } from '@/shared/components/text-field/text-field';
 import { showToast } from '@/shared/components/toast/toast-store';
 import { VisuallyHidden } from '@/shared/components/visually-hidden/visually-hidden';
-import { FailureAlert } from './failure-alert';
 import { useThrottledValue } from './use-throttled-value';
 import styles from './review-form.module.css';
 
 const FIELDS = ['rating', 'visitedMonth', 'body'] as const;
-type ReviewField = (typeof FIELDS)[number];
 
 /** The API refused a field that passed the shared schema here. */
 const SERVER = 'server';
 /** Screen readers hear the character count at most this often while typing. */
 const COUNTER_ANNOUNCE_MS = 1000;
-
-type FormFailure = 'gone' | 'tooMany' | 'offline' | 'failed';
 
 export interface ReviewFormProps {
   placeId: string;
@@ -56,7 +53,7 @@ export function ReviewForm({ placeId, myReview, currentMonth }: ReviewFormProps)
   const locale = useLocale();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [failure, setFailure] = useState<{ kind: FormFailure; error: unknown } | null>(null);
+  const [failure, setFailure] = useState<{ error: unknown } | null>(null);
   const [leaving, setLeaving] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const {
@@ -94,13 +91,13 @@ export function ReviewForm({ placeId, myReview, currentMonth }: ReviewFormProps)
       await apiFetch(endpoints.putMyReview, { params: { placeId }, body: review });
       await backToPlace(myReview === null ? t('published') : t('updated'));
     } catch (error) {
-      const fields = serverFields(error);
+      const fields = bodyFieldsOf(error, FIELDS);
       if (fields.length > 0) {
         fields.forEach((field, index) =>
           setError(field, { type: SERVER }, { shouldFocus: index === 0 }),
         );
       } else {
-        setFailure({ kind: failureKind(error), error });
+        setFailure({ error });
       }
     }
   });
@@ -160,7 +157,13 @@ export function ReviewForm({ placeId, myReview, currentMonth }: ReviewFormProps)
           </VisuallyHidden>
         </div>
         <p className={styles.note}>{t('privacyNote')}</p>
-        {failure === null ? null : <FailureAlert message={t(failure.kind)} error={failure.error} />}
+        {failure === null ? null : (
+          <FormAlert
+            error={failure.error}
+            message={hasCode(failure.error, 'place_not_found') ? t('gone') : t('failed')}
+            offlineMessage={t('offline')}
+          />
+        )}
         <Button type="submit" variant="primary" size="large" block busy={pending}>
           {submitLabel()}
         </Button>
@@ -182,9 +185,7 @@ export function ReviewForm({ placeId, myReview, currentMonth }: ReviewFormProps)
             busy={remove.isPending || leaving}
           >
             <p>{t('deleteBody')}</p>
-            {remove.isError ? (
-              <FailureAlert message={t('deleteFailed')} error={remove.error} />
-            ) : null}
+            {remove.isError ? <FormAlert error={remove.error} message={t('deleteFailed')} /> : null}
           </ConfirmDialog>
         </div>
       ) : null}
@@ -215,26 +216,4 @@ export function ReviewForm({ placeId, myReview, currentMonth }: ReviewFormProps)
       ? t('bodyTooLong', { max: LIMITS.REVIEW_BODY_MAX })
       : t('bodyTooShort', { min: LIMITS.REVIEW_BODY_MIN });
   }
-}
-
-/** Fields named by the pointers of a 422 (`/body/visitedMonth` → `visitedMonth`). */
-function serverFields(error: unknown): ReviewField[] {
-  if (!(error instanceof ApiProblemError) || error.status !== 422) {
-    return [];
-  }
-  const named = error.fieldErrors.map(({ pointer }) => /^\/body\/([^/]+)/.exec(pointer)?.[1]);
-  return FIELDS.filter((field) => named.includes(field));
-}
-
-function failureKind(error: unknown): FormFailure {
-  if (error instanceof TypeError) {
-    return 'offline';
-  }
-  if (error instanceof ApiProblemError && error.code === 'place_not_found') {
-    return 'gone';
-  }
-  if (error instanceof ApiProblemError && error.status === 429) {
-    return 'tooMany';
-  }
-  return 'failed';
 }

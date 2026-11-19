@@ -75,5 +75,12 @@
   "error": {
     "title": "Algo salió mal",
     "body": "Vuelve a intentarlo. Si sigue pasando, recarga la página."
+  },
+  "failures": {
+    "offline": "Estás sin conexión. Conéctate y vuelve a intentarlo.",
+    "failed": "Algo salió mal. Vuelve a intentarlo.",
+    "tooMany": "Demasiados intentos. Espera un momento y vuelve a intentarlo.",
+    "tooManySeconds": "{seconds, plural, =0 {Demasiados intentos. Ya puedes volver a intentarlo.} one {Demasiados intentos. Vuelve a intentarlo en # segundo.} many {Demasiados intentos. Vuelve a intentarlo en # segundos.} other {Demasiados intentos. Vuelve a intentarlo en # segundos.}}",
+    "tooManyMinutes": "{minutes, plural, =0 {Demasiados intentos. Ya puedes volver a intentarlo.} one {Demasiados intentos. Vuelve a intentarlo en # minuto.} many {Demasiados intentos. Vuelve a intentarlo en # minutos.} other {Demasiados intentos. Vuelve a intentarlo en # minutos.}}"
   }
 }

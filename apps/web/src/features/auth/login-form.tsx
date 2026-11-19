@@ -7,17 +7,16 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { apiFetch } from '@/lib/api/client';
+import { bodyFieldsOf, hasCode } from '@/lib/api/failure';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
+import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { PasswordField } from '@/shared/components/password-field/password-field';
 import { TextField } from '@/shared/components/text-field/text-field';
-import { FormAlert } from './form-alert';
-import { isFormLevel, serverFormError, type FormLevelError } from './server-form-error';
 import { useSignedIn } from './use-signed-in';
 import styles from './auth-form.module.css';
 
 const FIELDS = ['email', 'password'] as const;
-type LogInField = (typeof FIELDS)[number];
 
 interface LoginFormProps {
   /** Validated `?next=`; without it the viewer lands on their trips. */
@@ -32,7 +31,7 @@ export function LoginForm({ next }: LoginFormProps) {
   const locale = useLocale();
   const t = useTranslations('auth');
   const signedIn = useSignedIn();
-  const [formError, setFormError] = useState<FormLevelError | null>(null);
+  const [formError, setFormError] = useState<{ error: unknown } | null>(null);
   // Stays true after success: the button keeps its busy state until the next page shows.
   const [leaving, setLeaving] = useState(false);
   const {
@@ -53,13 +52,13 @@ export function LoginForm({ next }: LoginFormProps) {
       setLeaving(true);
       signedIn(me, next ?? routes.trips(locale));
     } catch (error) {
-      const outcome = serverFormError<LogInField>(error, FIELDS);
-      if (outcome.kind === 'fields') {
-        outcome.fields.forEach((field, index) =>
+      const fields = bodyFieldsOf(error, FIELDS);
+      if (fields.length > 0) {
+        fields.forEach((field, index) =>
           setError(field, { type: 'server' }, { shouldFocus: index === 0 }),
         );
-      } else if (isFormLevel(outcome)) {
-        setFormError(outcome);
+      } else {
+        setFormError({ error });
       }
     }
   });
@@ -92,7 +91,16 @@ export function LoginForm({ next }: LoginFormProps) {
         autoComplete="current-password"
         {...register('password')}
       />
-      {formError === null ? null : <FormAlert error={formError} />}
+      {formError === null ? null : (
+        <FormAlert
+          error={formError.error}
+          message={
+            hasCode(formError.error, 'invalid_credentials')
+              ? t('errors.invalidCredentials')
+              : undefined
+          }
+        />
+      )}
       <Button type="submit" variant="primary" size="large" block busy={pending}>
         {pending ? t('login.submitting') : t('login.submit')}
       </Button>
