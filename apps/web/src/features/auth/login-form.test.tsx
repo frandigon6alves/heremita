@@ -75,6 +75,20 @@ describe('LoginForm', () => {
     expect(screen.getByRole('button', { name: 'Logging in…' })).toBeDisabled();
   });
 
+  it('forgets_what_was_cached_for_the_signed_out_visitor', async () => {
+    server.use(http.post('*/api/v1/sessions', () => HttpResponse.json(ME, { status: 201 })));
+    const { user, queryClient } = renderAuth(<LoginForm />);
+    const anonymousReviews = queryKeys.places.reviews('place-1', 'recent');
+    queryClient.setQueryData(anonymousReviews, { pages: [], pageParams: [] });
+    queryClient.setQueryData(queryKeys.viewer, null);
+
+    await logIn(user);
+
+    await vi.waitFor(() => expect(router.replace).toHaveBeenCalled());
+    expect(queryClient.getQueryData(anonymousReviews)).toBeUndefined();
+    expect(queryClient.getQueryData(queryKeys.viewer)).toEqual(ME);
+  });
+
   it('goes_back_to_next_after_log_in', async () => {
     server.use(http.post('*/api/v1/sessions', () => HttpResponse.json(ME, { status: 201 })));
     const { user } = renderAuth(<LoginForm next="/en/t/trip-1?copy=1" />);
