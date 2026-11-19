@@ -205,6 +205,7 @@ describe('hover states', () => {
     ['shared/components/segmented-control/segmented-control.module.css', ['.segment']],
     ['shared/components/rating-input/rating-input.module.css', ['.star']],
     ['app/[locale]/_components/site-chrome.module.css', ['.navLink', '.navPrimary', '.link']],
+    ['features/itinerary/add-here-button.module.css', ['.fab']],
   ])('%s gives %j a hover state', (file, selectors) => {
     const [, text = ''] = stylesheets.find(([name]) => name === file) ?? [];
     const { inside } = splitHoverMedia(text);

@@ -30,6 +30,13 @@
   opacity: 0.6;
 }
 
+/* A tap must not leave the hover colour stuck on touch screens. */
+@media (hover: hover) {
+  .fab:hover:not(:disabled, [aria-pressed='true']) {
+    background: var(--color-primary-hover);
+  }
+}
+
 .label {
   white-space: nowrap;
 }
