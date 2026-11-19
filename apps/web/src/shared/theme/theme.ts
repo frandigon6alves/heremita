@@ -1,4 +1,5 @@
-import { themeSchema, type Theme } from '@heremita/shared';
+import type { Theme } from '@heremita/shared';
+import { THEMES } from '@heremita/shared/plain';
 
 /** Where an anonymous viewer's theme override is kept (a per-browser convenience). */
 export const THEME_STORAGE_KEY = 'hm-theme';
@@ -8,7 +9,7 @@ export const THEME_STORAGE_KEY = 'hm-theme';
  * `data-theme` from the account (server HTML), so the script only fills it in
  * for anonymous viewers. No attribute (or "system") follows the OS.
  */
-export const THEME_SCRIPT = `(function(){var d=document.documentElement;if(d.hasAttribute('data-theme'))return;try{var t=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});if(${JSON.stringify(themeSchema.options)}.indexOf(t)>-1)d.setAttribute('data-theme',t)}catch(e){}})()`;
+export const THEME_SCRIPT = `(function(){var d=document.documentElement;if(d.hasAttribute('data-theme'))return;try{var t=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});if(${JSON.stringify(THEMES)}.indexOf(t)>-1)d.setAttribute('data-theme',t)}catch(e){}})()`;
 
 /**
  * Applies a theme at once and remembers it in this browser. Signed-in callers

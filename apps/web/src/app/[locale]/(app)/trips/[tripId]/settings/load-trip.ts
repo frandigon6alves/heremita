@@ -1,5 +1,6 @@
 import 'server-only';
-import { endpoints, type TripOwner } from '@heremita/shared';
+import type { TripOwner } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 import { ApiProblemError } from '@/lib/api/problem';
@@ -11,7 +12,7 @@ import { serverFetch } from '@/lib/api/server';
  */
 export const loadOwnTrip = cache(async (tripId: string): Promise<TripOwner> => {
   try {
-    const trip = await serverFetch(endpoints.getTrip, { params: { tripId } });
+    const trip = await serverFetch(apiRoutes.getTrip, { params: { tripId } });
     if (trip.viewerRole !== 'owner') {
       notFound();
     }

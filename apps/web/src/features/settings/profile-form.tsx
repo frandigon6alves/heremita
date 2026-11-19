@@ -1,6 +1,9 @@
 'use client';
 
-import { endpoints, LIMITS, updateMeBodySchema, type UpdateMeBody } from '@heremita/shared';
+import type { UpdateMeBody } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
+import { LIMITS } from '@heremita/shared/plain';
+import { updateMeBodySchema } from '@/lib/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
@@ -38,7 +41,7 @@ export function ProfileForm({ displayName }: { displayName: string }) {
     defaultValues: { displayName },
   });
   const save = useMutation({
-    mutationFn: (body: UpdateMeBody) => apiFetch(endpoints.updateMe, { body }),
+    mutationFn: (body: UpdateMeBody) => apiFetch(apiRoutes.updateMe, { body }),
   });
 
   const onSubmit = handleSubmit(async (body) => {

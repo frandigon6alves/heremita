@@ -1,9 +1,6 @@
-import {
-  createTripBodySchema,
-  LIMITS,
-  type CreateTripBody,
-  type DestinationInput,
-} from '@heremita/shared';
+import type { CreateTripBody, DestinationInput } from '@heremita/shared';
+import { LIMITS } from '@heremita/shared/plain';
+import { createTripBodySchema } from '@/lib/schemas';
 import { daysInRange } from './trip-dates';
 
 /** A trip is planned either with calendar dates or with a plain number of days. */

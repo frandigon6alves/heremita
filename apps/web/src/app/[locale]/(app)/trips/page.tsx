@@ -1,4 +1,4 @@
-import { endpoints } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { MyTripsPage } from '@/features/trips/my-trips-page';
@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 /** My trips: first page of E18 rendered here; "Load more" and retries run in the browser. */
 export default async function MyTripsRoute() {
   // A failed first page is not fatal: the list fetches it again and shows its own error state.
-  const firstPage = await serverFetch(endpoints.listMyTrips).catch(() => undefined);
+  const firstPage = await serverFetch(apiRoutes.listMyTrips).catch(() => undefined);
 
   return (
     <>

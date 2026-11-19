@@ -1,6 +1,8 @@
 'use client';
 
-import { endpoints, LIMITS, signUpBodySchema } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
+import { LIMITS } from '@heremita/shared/plain';
+import { signUpBodySchema } from '@/lib/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -52,7 +54,7 @@ export function SignupForm({ next }: SignupFormProps) {
   const onSubmit = handleSubmit(async (body) => {
     setFormError(null);
     try {
-      const me = await apiFetch(endpoints.signUp, { body });
+      const me = await apiFetch(apiRoutes.signUp, { body });
       setLeaving(true);
       signedIn(me, next ?? routes.newTrip(locale));
     } catch (error) {

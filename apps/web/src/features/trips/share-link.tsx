@@ -1,6 +1,7 @@
 'use client';
 
-import { endpoints, type TripOwner } from '@heremita/shared';
+import type { TripOwner } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState, useSyncExternalStore } from 'react';
@@ -39,7 +40,7 @@ export function ShareLink({ trip, shareToken }: { trip: TripOwner; shareToken: s
   const [confirming, setConfirming] = useState(false);
   const url = `${origin}${routes.sharedTrip(locale, shareToken)}`;
   const rotate = useMutation({
-    mutationFn: () => apiFetch(endpoints.rotateShareToken, { params: { tripId: trip.id } }),
+    mutationFn: () => apiFetch(apiRoutes.rotateShareToken, { params: { tripId: trip.id } }),
     onSuccess: async ({ shareToken: next }) => {
       queryClient.setQueryData(queryKeys.trips.trip(trip.id), { ...trip, shareToken: next });
       setConfirming(false);

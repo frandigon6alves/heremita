@@ -30,8 +30,7 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-hook-form": "^7.92.0",
-    "server-only": "^0.0.1",
-    "zod": "catalog:"
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",

@@ -1,6 +1,7 @@
 'use client';
 
-import { LIMITS, type LngLat, type PlaceResult } from '@heremita/shared';
+import type { LngLat, PlaceResult } from '@heremita/shared';
+import { LIMITS } from '@heremita/shared/plain';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useCombobox } from 'downshift';
 import { useLocale, useTranslations } from 'next-intl';

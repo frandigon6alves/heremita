@@ -1,6 +1,6 @@
 'use client';
 
-import { endpoints } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -38,7 +38,7 @@ export function AccountActions({ logOut }: AccountActionsProps) {
   const logOutEverywhere = async () => {
     setLoggingOut(true);
     try {
-      await apiFetch(endpoints.logOutEverywhere);
+      await apiFetch(apiRoutes.logOutEverywhere);
     } catch (error) {
       if (!isUnauthenticated(error)) {
         setLoggingOut(false);

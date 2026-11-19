@@ -1,4 +1,5 @@
 import { endpoints } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import { useQuery } from '@tanstack/react-query';
 import { screen } from '@testing-library/react';
 import { useTranslations } from 'next-intl';
@@ -93,7 +94,7 @@ describe('msw handlers', () => {
       ),
     );
 
-    const profile = await apiFetch(endpoints.getUserProfile, {
+    const profile = await apiFetch(apiRoutes.getUserProfile, {
       params: { userId: '0195f0c8-0000-7000-8000-0000000000aa' },
     });
 
@@ -103,7 +104,7 @@ describe('msw handlers', () => {
   it('answers_a_problem_with_the_status_of_its_code_and_the_request_id', async () => {
     server.use(failWith(endpoints.signUp, 'email_taken'));
 
-    const error = await apiFetch(endpoints.signUp, {
+    const error = await apiFetch(apiRoutes.signUp, {
       body: {
         displayName: 'Ana',
         email: 'ana@example.com',
@@ -119,12 +120,12 @@ describe('msw handlers', () => {
   it('answers_204_endpoints_without_a_body', async () => {
     server.use(respondWith(endpoints.logOut));
 
-    await expect(apiFetch(endpoints.logOut)).resolves.toBeUndefined();
+    await expect(apiFetch(apiRoutes.logOut)).resolves.toBeUndefined();
   });
 
   it('fails_with_a_type_error_on_a_network_error', async () => {
     server.use(networkErrorOn(endpoints.getMe));
 
-    await expect(apiFetch(endpoints.getMe)).rejects.toBeInstanceOf(TypeError);
+    await expect(apiFetch(apiRoutes.getMe)).rejects.toBeInstanceOf(TypeError);
   });
 });

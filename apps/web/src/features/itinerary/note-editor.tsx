@@ -1,6 +1,6 @@
 'use client';
 
-import { LIMITS } from '@heremita/shared';
+import { LIMITS } from '@heremita/shared/plain';
 import { useTranslations } from 'next-intl';
 import { StatusLine } from '@/shared/components/status-line/status-line';
 import { TextArea } from '@/shared/components/text-area/text-area';

@@ -1,15 +1,15 @@
-import {
-  endpoints,
-  type AddTripPlaceBody,
-  type AddTripPlaceResponse,
-  type DayOwner,
-  type PlaceSummary,
-  type RatingSummary,
-  type TripPlan,
-  type TravelMode,
-  type TripPlaceOwner,
-  type TripPlanOwner,
+import type {
+  AddTripPlaceBody,
+  AddTripPlaceResponse,
+  DayOwner,
+  PlaceSummary,
+  RatingSummary,
+  TripPlan,
+  TravelMode,
+  TripPlaceOwner,
+  TripPlanOwner,
 } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import { useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { apiFetch } from '@/lib/api/client';
@@ -146,7 +146,7 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
       const schedule = dayId === null ? null : { dayId, index };
       let response: AddTripPlaceResponse;
       try {
-        response = await apiFetch(endpoints.addTripPlace, {
+        response = await apiFetch(apiRoutes.addTripPlace, {
           params: { tripId },
           body: { place, note: note ?? null, schedule },
         });
@@ -158,7 +158,7 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
         if (schedule === null) {
           return { kind: 'existing', tripPlaceId: existing, stopId: null };
         }
-        const added = await apiFetch(endpoints.addStop, {
+        const added = await apiFetch(apiRoutes.addStop, {
           params: { tripId, dayId: schedule.dayId },
           body: { tripPlaceId: existing, index: schedule.index },
         });
@@ -167,7 +167,7 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
       const failedStops: ExtraStop[] = [];
       for (const stop of extraStops) {
         try {
-          await apiFetch(endpoints.addStop, {
+          await apiFetch(apiRoutes.addStop, {
             params: { tripId, dayId: stop.dayId },
             body: { tripPlaceId: response.tripPlace.id, index: stop.index },
           });
@@ -268,7 +268,7 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
   const moveStop = usePlanMutation<TargetedMove, unknown>({
     tripId,
     mutationFn: ({ stopId, dayId, index }) =>
-      apiFetch(endpoints.putStopPlacement, {
+      apiFetch(apiRoutes.putStopPlacement, {
         params: { tripId, stopId },
         body: { dayId, index },
       }),
@@ -285,7 +285,7 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
   const addStop = usePlanMutation<TargetedStop, unknown>({
     tripId,
     mutationFn: ({ dayId, tripPlaceId, index }) =>
-      apiFetch(endpoints.addStop, { params: { tripId, dayId }, body: { tripPlaceId, index } }),
+      apiFetch(apiRoutes.addStop, { params: { tripId, dayId }, body: { tripPlaceId, index } }),
     optimistic: (plan, { dayId, tripPlaceId, index, stopId }) =>
       applyAddStop(plan, dayId, { id: stopId, tripPlaceId, modeToNext: null }, index),
     failureMessage: ({ name, target }, error) =>
@@ -294,7 +294,7 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
 
   const removeStop = usePlanMutation<TargetedStop, unknown>({
     tripId,
-    mutationFn: ({ stopId }) => apiFetch(endpoints.deleteStop, { params: { tripId, stopId } }),
+    mutationFn: ({ stopId }) => apiFetch(apiRoutes.deleteStop, { params: { tripId, stopId } }),
     optimistic: (plan, { stopId }) => applyRemoveStop(plan, stopId),
     failureMessage: ({ name }) => t('removeFailed', { name }),
     onSuccess: (_data, variables) => {
@@ -312,7 +312,7 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
     tripId,
     changesCounts: true,
     mutationFn: ({ tripPlace }) =>
-      apiFetch(endpoints.deleteTripPlace, { params: { tripId, tripPlaceId: tripPlace.id } }),
+      apiFetch(apiRoutes.deleteTripPlace, { params: { tripId, tripPlaceId: tripPlace.id } }),
     optimistic: (plan, { tripPlace }) => applyDeleteTripPlace(plan, tripPlace.id),
     failureMessage: ({ tripPlace }) => t('deleteFailed', { name: tripPlace.place.name }),
     onSuccess: (_data, { tripPlace, stops }) => {
@@ -340,7 +340,7 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
     tripId,
     changesCounts: true,
     mutationFn: async () => {
-      const { day } = await apiFetch(endpoints.createDay, { params: { tripId }, body: {} });
+      const { day } = await apiFetch(apiRoutes.createDay, { params: { tripId }, body: {} });
       return day;
     },
     optimistic: (plan, { pendingId }) => {
@@ -370,7 +370,7 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
   const deleteDay = usePlanMutation<{ dayId: string; number: number }, unknown>({
     tripId,
     changesCounts: true,
-    mutationFn: ({ dayId }) => apiFetch(endpoints.deleteDay, { params: { tripId, dayId } }),
+    mutationFn: ({ dayId }) => apiFetch(apiRoutes.deleteDay, { params: { tripId, dayId } }),
     optimistic: (plan, { dayId }) => applyDeleteDay(plan, dayId),
     failureMessage: ({ number }) => t('deleteDayFailed', { number }),
     onSuccess: (_data, { number }) => announce(t('dayDeleted', { number })),
@@ -381,14 +381,14 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
   const dayMode = usePlanMutation<{ dayId: string; mode: TravelMode }, unknown>({
     tripId,
     mutationFn: ({ dayId, mode }) =>
-      apiFetch(endpoints.updateDay, { params: { tripId, dayId }, body: { modeOverride: mode } }),
+      apiFetch(apiRoutes.updateDay, { params: { tripId, dayId }, body: { modeOverride: mode } }),
     failureMessage: () => t('modeFailed'),
   });
 
   const legMode = usePlanMutation<{ stopId: string; mode: TravelMode | null }, unknown>({
     tripId,
     mutationFn: ({ stopId, mode }) =>
-      apiFetch(endpoints.updateStop, { params: { tripId, stopId }, body: { modeToNext: mode } }),
+      apiFetch(apiRoutes.updateStop, { params: { tripId, stopId }, body: { modeToNext: mode } }),
     optimistic: (plan, { stopId, mode }) => applyLegMode(plan, stopId, mode),
     failureMessage: () => t('modeFailed'),
   });
@@ -396,7 +396,7 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
   const order = usePlanMutation<OrderVariables, unknown>({
     tripId,
     mutationFn: ({ dayId, stopIds }) =>
-      apiFetch(endpoints.putStopOrder, {
+      apiFetch(apiRoutes.putStopOrder, {
         params: { tripId, dayId },
         body: { stopIds: [...stopIds] },
       }),

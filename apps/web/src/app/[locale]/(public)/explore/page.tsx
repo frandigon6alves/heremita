@@ -1,4 +1,4 @@
-import { endpoints } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { ExploreResults } from '@/features/explore/explore-results';
@@ -27,7 +27,7 @@ export default async function ExplorePage({ searchParams }: PageProps<'/[locale]
   const q = searchText((await searchParams).q);
   const t = await getTranslations('explore.explore');
   // A failed first page is not fatal: the results fetch it again and show their own error state.
-  const firstPage = await serverFetch(endpoints.listPublicTrips, {
+  const firstPage = await serverFetch(apiRoutes.listPublicTrips, {
     query: { q: q === '' ? undefined : q },
   }).catch(() => undefined);
 

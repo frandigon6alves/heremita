@@ -1,7 +1,8 @@
 import 'server-only';
 import { createHmac } from 'node:crypto';
 import { isIP } from 'node:net';
-import { endpoints, type EndpointDef, type EndpointOutput, type Me } from '@heremita/shared';
+import type { EndpointOutput, Endpoints, Me } from '@heremita/shared';
+import { apiRoutes, type ApiRoute, type GetEndpointName } from '@heremita/shared/api-routes';
 import { cookies, headers } from 'next/headers';
 import { cache } from 'react';
 import { env } from '@/env';
@@ -49,8 +50,6 @@ const renderClientIp = cache(async (): Promise<string | null> => {
   return isIP(last) === 0 ? null : last;
 });
 
-type GetEndpoint = EndpointDef & { method: 'GET' };
-
 /**
  * Server Components → API (server to server, `API_URL`). Read-only: mutations
  * always go browser → `/api/v1` so the API's CSRF check sees the real origin.
@@ -58,10 +57,10 @@ type GetEndpoint = EndpointDef & { method: 'GET' };
  * (signed, only when `SERVER_FETCH_SECRET` is set), nothing else of the
  * incoming request. Errors as `apiFetch`; a timeout rejects with the abort error.
  */
-export async function serverFetch<const E extends GetEndpoint>(
-  def: E,
-  ...[options]: RequestArgs<E>
-): Promise<EndpointOutput<E>> {
+export async function serverFetch<const N extends GetEndpointName>(
+  route: ApiRoute<N>,
+  ...[options]: RequestArgs<Endpoints[N]>
+): Promise<EndpointOutput<Endpoints[N]>> {
   const { params, query }: UntypedOptions = options ?? {};
   const requestHeaders: Record<string, string> = {
     Accept: 'application/json',
@@ -81,7 +80,7 @@ export async function serverFetch<const E extends GetEndpoint>(
     );
   }
 
-  const response = await fetch(`${env.API_URL}${endpointPath(def, { params, query })}`, {
+  const response = await fetch(`${env.API_URL}${endpointPath(route, { params, query })}`, {
     headers: requestHeaders,
     cache: 'no-store',
     signal: AbortSignal.timeout(SERVER_FETCH_TIMEOUT_MS),
@@ -89,7 +88,7 @@ export async function serverFetch<const E extends GetEndpoint>(
   if (!response.ok) {
     throw await errorFromResponse(response);
   }
-  return (await response.json()) as EndpointOutput<E>;
+  return (await response.json()) as EndpointOutput<Endpoints[N]>;
 }
 
 /**
@@ -102,7 +101,7 @@ export const getViewer = cache(async (): Promise<Me | null> => {
     return null;
   }
   try {
-    return await serverFetch(endpoints.getMe);
+    return await serverFetch(apiRoutes.getMe);
   } catch (error) {
     if (isUnauthenticated(error)) {
       return null;

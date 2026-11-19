@@ -80,6 +80,38 @@ export default defineConfig([
     },
   },
 
+  // Zod stays out of pages without a form: web code reads constants, option lists
+  // and API routes from the zod-free subpaths, and schemas only through
+  // src/lib/schemas.ts, which turns zod's JIT off first (CSP).
+  {
+    files: ['apps/web/src/**'],
+    ignores: [
+      'apps/web/src/lib/schemas.ts',
+      'apps/web/src/**/*.test.{ts,tsx}',
+      'apps/web/src/**/test-support.{ts,tsx}',
+      'apps/web/src/test-utils/**',
+      'apps/web/src/shared/map/testing/**',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@heremita/shared',
+              allowTypeImports: true,
+              message:
+                'Values come from @heremita/shared/plain or /api-routes; schemas from @/lib/schemas.',
+            },
+          ],
+          patterns: [
+            { regex: '^zod(/|$)', message: 'zod reaches the web app through @/lib/schemas.' },
+          ],
+        },
+      ],
+    },
+  },
+
   // E2E stays hermetic and deterministic (V72): web-first assertions, never fixed sleeps.
   {
     files: ['apps/web/e2e/**'],

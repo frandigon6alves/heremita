@@ -1,4 +1,5 @@
-import { endpoints, type Me } from '@heremita/shared';
+import type { Me } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -34,7 +35,7 @@ describe('apiFetch', () => {
   it('returns_the_success_body_of_the_endpoint', async () => {
     server.use(http.get('*/api/v1/me', () => HttpResponse.json(me)));
 
-    await expect(apiFetch(endpoints.getMe)).resolves.toEqual(me);
+    await expect(apiFetch(apiRoutes.getMe)).resolves.toEqual(me);
   });
 
   it('fills_path_params_and_query_into_the_api_url', async () => {
@@ -46,7 +47,7 @@ describe('apiFetch', () => {
       }),
     );
 
-    await apiFetch(endpoints.getDayRoute, {
+    await apiFetch(apiRoutes.getDayRoute, {
       params: { tripId: 't 1', dayId: 'd1' },
       query: { mode: 'bike' },
     });
@@ -69,7 +70,7 @@ describe('apiFetch', () => {
       }),
     );
 
-    await apiFetch(endpoints.updateMe, { body: { theme: 'dark' } });
+    await apiFetch(apiRoutes.updateMe, { body: { theme: 'dark' } });
 
     expect(received).toEqual({
       method: 'PATCH',
@@ -83,7 +84,7 @@ describe('apiFetch', () => {
       http.delete('*/api/v1/sessions/current', () => new HttpResponse(null, { status: 204 })),
     );
 
-    await expect(apiFetch(endpoints.logOut)).resolves.toBeUndefined();
+    await expect(apiFetch(apiRoutes.logOut)).resolves.toBeUndefined();
   });
 
   it('throws_the_problem_with_code_request_id_and_retry_after', async () => {
@@ -96,7 +97,7 @@ describe('apiFetch', () => {
       ),
     );
 
-    const error: unknown = await apiFetch(endpoints.getMe).catch((caught: unknown) => caught);
+    const error: unknown = await apiFetch(apiRoutes.getMe).catch((caught: unknown) => caught);
 
     expect(error).toBeInstanceOf(ApiProblemError);
     expect(error).toMatchObject({
@@ -123,7 +124,7 @@ describe('apiFetch', () => {
       ),
     );
 
-    const error: unknown = await apiFetch(endpoints.addTripPlace, {
+    const error: unknown = await apiFetch(apiRoutes.addTripPlace, {
       params: { tripId: 't1' },
       body: { place: { type: 'osm', key: 'osm:N:1' } },
     }).catch((caught: unknown) => caught);
@@ -138,7 +139,7 @@ describe('apiFetch', () => {
   it('throws_http_error_when_the_body_is_not_a_problem_document', async () => {
     server.use(http.get('*/api/v1/me', () => new HttpResponse('Bad gateway', { status: 502 })));
 
-    const error: unknown = await apiFetch(endpoints.getMe).catch((caught: unknown) => caught);
+    const error: unknown = await apiFetch(apiRoutes.getMe).catch((caught: unknown) => caught);
 
     expect(error).toBeInstanceOf(HttpError);
     expect(error).toMatchObject({ status: 502 });
@@ -147,6 +148,6 @@ describe('apiFetch', () => {
   it('rejects_with_type_error_when_the_network_fails', async () => {
     server.use(http.get('*/api/v1/me', () => HttpResponse.error()));
 
-    await expect(apiFetch(endpoints.getMe)).rejects.toBeInstanceOf(TypeError);
+    await expect(apiFetch(apiRoutes.getMe)).rejects.toBeInstanceOf(TypeError);
   });
 });

@@ -1,17 +1,18 @@
-import {
-  endpoints,
-  LIMITS,
-  type LngLat,
-  type Locale,
-  type Me,
-  type ReportStatus,
-  type ReviewSort,
-  type TravelMode,
-  placeSearchIntentSchema,
+import type {
+  LngLat,
+  Locale,
+  Me,
+  PlaceSearchIntent,
+  ReportStatus,
+  ReviewSort,
+  TravelMode,
 } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
+import { LIMITS } from '@heremita/shared/plain';
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from '@tanstack/react-query';
 import { apiFetch } from './client';
 import { isUnauthenticated } from './problem';
+import { VIEWER_QUERY_KEY } from './viewer-key';
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
@@ -36,8 +37,6 @@ export function normaliseSearchText(q: string): string {
   return q.normalize('NFKC').trim();
 }
 
-type PlaceSearchIntent = (typeof placeSearchIntentSchema.options)[number];
-
 export interface PlaceSearchInput {
   q: string;
   locale: Locale;
@@ -57,7 +56,7 @@ export interface ReverseInput extends LngLat {
  * `queryFn` is part of its key.
  */
 export const queryKeys = {
-  viewer: ['viewer'] as const,
+  viewer: VIEWER_QUERY_KEY,
   trips: {
     all: ['trips'] as const,
     mine: ['trips', 'mine'] as const,
@@ -115,7 +114,7 @@ export const viewerQuery = () =>
     queryKey: queryKeys.viewer,
     queryFn: async ({ signal }): Promise<Me | null> => {
       try {
-        return await apiFetch(endpoints.getMe, { signal });
+        return await apiFetch(apiRoutes.getMe, { signal });
       } catch (error) {
         if (isUnauthenticated(error)) {
           return null;
@@ -131,7 +130,7 @@ export const myTripsQuery = () =>
   infiniteQueryOptions({
     queryKey: queryKeys.trips.mine,
     queryFn: ({ pageParam, signal }) =>
-      apiFetch(endpoints.listMyTrips, { query: cursorQuery(pageParam), signal }),
+      apiFetch(apiRoutes.listMyTrips, { query: cursorQuery(pageParam), signal }),
     initialPageParam: FIRST_PAGE,
     getNextPageParam: nextCursor,
     staleTime: 30 * SECOND,
@@ -141,7 +140,7 @@ export const myTripsQuery = () =>
 export const tripQuery = (tripId: string) =>
   queryOptions({
     queryKey: queryKeys.trips.trip(tripId),
-    queryFn: ({ signal }) => apiFetch(endpoints.getTrip, { params: { tripId }, signal }),
+    queryFn: ({ signal }) => apiFetch(apiRoutes.getTrip, { params: { tripId }, signal }),
     staleTime: 30 * SECOND,
   });
 
@@ -149,7 +148,7 @@ export const tripQuery = (tripId: string) =>
 export const planQuery = (tripId: string) =>
   queryOptions({
     queryKey: queryKeys.trips.plan(tripId),
-    queryFn: ({ signal }) => apiFetch(endpoints.getTripPlan, { params: { tripId }, signal }),
+    queryFn: ({ signal }) => apiFetch(apiRoutes.getTripPlan, { params: { tripId }, signal }),
     staleTime: 30 * SECOND,
     refetchOnWindowFocus: true,
   });
@@ -176,7 +175,7 @@ export const dayRouteQuery = (
   queryOptions({
     queryKey: queryKeys.trips.route(tripId, dayId, planVersion, mode),
     queryFn: ({ signal }) =>
-      apiFetch(endpoints.getDayRoute, {
+      apiFetch(apiRoutes.getDayRoute, {
         params: { tripId, dayId },
         query: mode === null ? {} : { mode },
         signal,
@@ -194,7 +193,7 @@ export const orderSuggestionQuery = (
   queryOptions({
     queryKey: queryKeys.trips.orderSuggestion(tripId, dayId, planVersion, keepLast),
     queryFn: ({ signal }) =>
-      apiFetch(endpoints.getOrderSuggestion, {
+      apiFetch(apiRoutes.getOrderSuggestion, {
         params: { tripId, dayId },
         query: { keepLast: keepLast ? 'true' : 'false' },
         signal,
@@ -206,7 +205,7 @@ export const orderSuggestionQuery = (
 export const sharedPlanQuery = (shareToken: string) =>
   queryOptions({
     queryKey: queryKeys.shared.plan(shareToken),
-    queryFn: ({ signal }) => apiFetch(endpoints.getSharedPlan, { params: { shareToken }, signal }),
+    queryFn: ({ signal }) => apiFetch(apiRoutes.getSharedPlan, { params: { shareToken }, signal }),
     staleTime: 30 * SECOND,
   });
 
@@ -220,7 +219,7 @@ export const sharedDayRouteQuery = (
   queryOptions({
     queryKey: queryKeys.shared.route(shareToken, dayId, planVersion, mode),
     queryFn: ({ signal }) =>
-      apiFetch(endpoints.getSharedDayRoute, {
+      apiFetch(apiRoutes.getSharedDayRoute, {
         params: { shareToken, dayId },
         query: mode === null ? {} : { mode },
         signal,
@@ -238,7 +237,7 @@ export const placeSearchQuery = (input: PlaceSearchInput) => {
   return queryOptions({
     queryKey,
     queryFn: ({ signal }) =>
-      apiFetch(endpoints.searchPlaces, {
+      apiFetch(apiRoutes.searchPlaces, {
         query: { q, locale, intent, near: near && `${near.lng},${near.lat}`, zoom },
         signal,
       }),
@@ -254,7 +253,7 @@ export const reversePlacesQuery = (input: ReverseInput) => {
   return queryOptions({
     queryKey,
     queryFn: ({ signal }) =>
-      apiFetch(endpoints.reversePlaces, { query: { lng, lat, locale }, signal }),
+      apiFetch(apiRoutes.reversePlaces, { query: { lng, lat, locale }, signal }),
     staleTime: HOUR,
   });
 };
@@ -264,7 +263,7 @@ export const placeReviewsQuery = (placeId: string, sort: ReviewSort) =>
   infiniteQueryOptions({
     queryKey: queryKeys.places.reviews(placeId, sort),
     queryFn: ({ pageParam, signal }) =>
-      apiFetch(endpoints.listPlaceReviews, {
+      apiFetch(apiRoutes.listPlaceReviews, {
         params: { placeId },
         query: { sort, ...cursorQuery(pageParam) },
         signal,
@@ -281,7 +280,7 @@ export const exploreQuery = (q: string) => {
   return infiniteQueryOptions({
     queryKey,
     queryFn: ({ pageParam, signal }) =>
-      apiFetch(endpoints.listPublicTrips, {
+      apiFetch(apiRoutes.listPublicTrips, {
         query: { q: text === '' ? undefined : text, ...cursorQuery(pageParam) },
         signal,
       }),
@@ -296,7 +295,7 @@ export const userTripsQuery = (userId: string) =>
   infiniteQueryOptions({
     queryKey: queryKeys.users.trips(userId),
     queryFn: ({ pageParam, signal }) =>
-      apiFetch(endpoints.listUserTrips, {
+      apiFetch(apiRoutes.listUserTrips, {
         params: { userId },
         query: cursorQuery(pageParam),
         signal,
@@ -311,7 +310,7 @@ export const userReviewsQuery = (userId: string) =>
   infiniteQueryOptions({
     queryKey: queryKeys.users.reviews(userId),
     queryFn: ({ pageParam, signal }) =>
-      apiFetch(endpoints.listUserReviews, {
+      apiFetch(apiRoutes.listUserReviews, {
         params: { userId },
         query: cursorQuery(pageParam),
         signal,
@@ -326,7 +325,7 @@ export const myBlocksQuery = () =>
   infiniteQueryOptions({
     queryKey: queryKeys.me.blocks,
     queryFn: ({ pageParam, signal }) =>
-      apiFetch(endpoints.listBlocks, { query: cursorQuery(pageParam), signal }),
+      apiFetch(apiRoutes.listBlocks, { query: cursorQuery(pageParam), signal }),
     initialPageParam: FIRST_PAGE,
     getNextPageParam: nextCursor,
     staleTime: MINUTE,
@@ -337,7 +336,7 @@ export const moderationReportsQuery = (status: ReportStatus) =>
   infiniteQueryOptions({
     queryKey: queryKeys.moderation.reports(status),
     queryFn: ({ pageParam, signal }) =>
-      apiFetch(endpoints.listReports, { query: { status, ...cursorQuery(pageParam) }, signal }),
+      apiFetch(apiRoutes.listReports, { query: { status, ...cursorQuery(pageParam) }, signal }),
     initialPageParam: FIRST_PAGE,
     getNextPageParam: nextCursor,
     staleTime: 0,

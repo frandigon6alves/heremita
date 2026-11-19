@@ -1,5 +1,6 @@
 import { createHmac } from 'node:crypto';
-import { endpoints, type Me } from '@heremita/shared';
+import type { Me } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -89,7 +90,7 @@ describe('serverFetch', () => {
       }),
     );
 
-    await serverFetch(endpoints.getMe);
+    await serverFetch(apiRoutes.getMe);
 
     expect(sent?.get('cookie')).toBe('hm_session=token-1');
     expect(sent?.get('x-request-id')).toBe('incoming-1234');
@@ -107,7 +108,7 @@ describe('serverFetch', () => {
         return HttpResponse.json({ items: [], nextCursor: null });
       }),
     );
-    await serverFetch(endpoints.listPublicTrips, { query: { limit: 6 } });
+    await serverFetch(apiRoutes.listPublicTrips, { query: { limit: 6 } });
     if (!sent) {
       throw new Error('The API was not called');
     }
@@ -148,7 +149,7 @@ describe('serverFetch', () => {
       }),
     );
 
-    await serverFetch(endpoints.listPublicTrips, { query: { limit: 6 } });
+    await serverFetch(apiRoutes.listPublicTrips, { query: { limit: 6 } });
 
     expect(requestId).toMatch(/^[0-9a-f-]{36}$/);
   });
@@ -159,7 +160,7 @@ describe('serverFetch', () => {
     );
 
     await expect(
-      serverFetch(endpoints.getTrip, { params: { tripId: 't1' } }),
+      serverFetch(apiRoutes.getTrip, { params: { tripId: 't1' } }),
     ).rejects.toMatchObject({
       code: 'trip_not_found',
     });

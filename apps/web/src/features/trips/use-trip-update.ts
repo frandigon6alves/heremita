@@ -1,6 +1,7 @@
 'use client';
 
-import { endpoints, type TripOwner, type UpdateTripBody } from '@heremita/shared';
+import type { TripOwner, UpdateTripBody } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api/client';
 import { queryKeys } from '@/lib/api/query-keys';
@@ -14,7 +15,7 @@ export function useTripUpdate(tripId: string) {
 
   return useMutation({
     mutationFn: (body: UpdateTripBody) =>
-      apiFetch(endpoints.updateTrip, { params: { tripId }, body }),
+      apiFetch(apiRoutes.updateTrip, { params: { tripId }, body }),
     onSuccess: async (updated: TripOwner) => {
       queryClient.setQueryData(queryKeys.trips.trip(tripId), updated);
       await Promise.all([

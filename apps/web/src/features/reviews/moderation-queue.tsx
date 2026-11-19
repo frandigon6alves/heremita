@@ -1,13 +1,8 @@
 'use client';
 
-import {
-  endpoints,
-  reportStatusSchema,
-  type ModerationDecision,
-  type Page,
-  type ReportItem,
-  type ReportStatus,
-} from '@heremita/shared';
+import type { ModerationDecision, Page, ReportItem, ReportStatus } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
+import { REPORT_STATUSES } from '@heremita/shared/plain';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -52,7 +47,7 @@ export function ModerationQueue({ initialOpenPage }: ModerationQueueProps) {
     <div className={styles.queue}>
       <SegmentedControl
         legend={t('status')}
-        options={reportStatusSchema.options.map((value) => ({
+        options={REPORT_STATUSES.map((value) => ({
           value,
           label: t(`statuses.${value}`),
         }))}
@@ -119,7 +114,7 @@ function ReportCard({ report }: { report: ReportItem }) {
   const queryClient = useQueryClient();
   const decide = useMutation({
     mutationFn: (decision: ModerationDecision) =>
-      apiFetch(endpoints.decideReport, { params: { reportId: report.id }, body: { decision } }),
+      apiFetch(apiRoutes.decideReport, { params: { reportId: report.id }, body: { decision } }),
     onSuccess: async (_, decision) => {
       showToast({ message: decidedMessage(decision) });
       await queryClient.invalidateQueries({ queryKey: queryKeys.moderation.all });

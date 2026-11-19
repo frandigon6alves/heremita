@@ -1,6 +1,7 @@
 'use client';
 
-import { travelModeSchema, type LngLat, type TravelMode } from '@heremita/shared';
+import type { LngLat, TravelMode } from '@heremita/shared';
+import { TRAVEL_MODES } from '@heremita/shared/plain';
 import { useLocale, useTranslations } from 'next-intl';
 import { formatDistance } from '@/lib/format/distance';
 import { formatDuration } from '@/lib/format/duration';
@@ -54,7 +55,7 @@ export function LegRow({ leg, mode, toName, from, to, onModeChange, disabled }: 
   if (onModeChange) {
     sections.push({
       heading: t('legMode'),
-      items: travelModeSchema.options.map((option) => ({
+      items: TRAVEL_MODES.map((option) => ({
         id: option,
         label: t(`mode.${option}`),
         icon: <ModeIcon mode={option} />,

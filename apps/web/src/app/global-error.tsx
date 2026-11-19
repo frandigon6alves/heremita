@@ -1,6 +1,7 @@
 'use client';
 
-import { DEFAULT_LOCALE, localeSchema, type Locale } from '@heremita/shared';
+import type { Locale } from '@heremita/shared';
+import { DEFAULT_LOCALE, isOneOf, LOCALES } from '@heremita/shared/plain';
 import { usePathname } from 'next/navigation';
 import en from '@/messages/en/common.json';
 import es from '@/messages/es/common.json';
@@ -19,8 +20,7 @@ const COMMON: Record<Locale, typeof en> = { en, es, 'pt-BR': ptBR };
  */
 export default function GlobalError({ retry }: { error: unknown; retry: () => void }) {
   const firstSegment = usePathname().split('/')[1];
-  const parsed = localeSchema.safeParse(firstSegment);
-  const locale = parsed.success ? parsed.data : DEFAULT_LOCALE;
+  const locale = isOneOf(LOCALES, firstSegment) ? firstSegment : DEFAULT_LOCALE;
   const t = COMMON[locale];
 
   return (

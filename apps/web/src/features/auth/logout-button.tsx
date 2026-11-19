@@ -1,6 +1,6 @@
 'use client';
 
-import { endpoints } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -31,7 +31,7 @@ export function LogoutButton({ className }: LogoutButtonProps) {
   const logOut = async () => {
     setPending(true);
     try {
-      await apiFetch(endpoints.logOut);
+      await apiFetch(apiRoutes.logOut);
     } catch (error) {
       if (!isUnauthenticated(error)) {
         setPending(false);

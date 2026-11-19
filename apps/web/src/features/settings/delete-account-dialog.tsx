@@ -1,11 +1,9 @@
 'use client';
 
-import {
-  deleteAccountBodySchema,
-  endpoints,
-  LIMITS,
-  type DeleteAccountBody,
-} from '@heremita/shared';
+import type { DeleteAccountBody } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
+import { LIMITS } from '@heremita/shared/plain';
+import { deleteAccountBodySchema } from '@/lib/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
@@ -57,7 +55,7 @@ export function DeleteAccountDialog({ open, onClose }: DeleteAccountDialogProps)
     defaultValues: { password: '' },
   });
   const remove = useMutation({
-    mutationFn: (body: DeleteAccountBody) => apiFetch(endpoints.deleteAccount, { body }),
+    mutationFn: (body: DeleteAccountBody) => apiFetch(apiRoutes.deleteAccount, { body }),
   });
 
   const close = () => {

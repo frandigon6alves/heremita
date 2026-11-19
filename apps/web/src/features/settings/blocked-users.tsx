@@ -1,6 +1,7 @@
 'use client';
 
-import { endpoints, type UserCard } from '@heremita/shared';
+import type { UserCard } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -30,7 +31,7 @@ export function BlockedUsers() {
 
   const unblock = useMutation({
     mutationFn: (person: UserCard) =>
-      apiFetch(endpoints.unblockUser, { params: { userId: person.id } }),
+      apiFetch(apiRoutes.unblockUser, { params: { userId: person.id } }),
     onSuccess: async (_result, person) => {
       showToast({ message: t('unblocked', { name: person.displayName }) });
       await Promise.all(

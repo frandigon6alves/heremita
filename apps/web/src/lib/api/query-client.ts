@@ -2,7 +2,7 @@ import { MutationCache, QueryCache, QueryClient, type QueryKey } from '@tanstack
 import { loginRedirectFor } from '@/lib/routes';
 import { isNetworkError } from './failure';
 import { isUnauthenticated } from './problem';
-import { queryKeys } from './query-keys';
+import { VIEWER_QUERY_KEY } from './viewer-key';
 
 /**
  * Queries are retried at most once, and only when the network failed: an HTTP
@@ -30,7 +30,7 @@ export function unauthenticatedRedirect(
   location: CurrentLocation,
   queryKey?: QueryKey,
 ): string | null {
-  if (!isUnauthenticated(error) || queryKey?.[0] === queryKeys.viewer[0]) {
+  if (!isUnauthenticated(error) || queryKey?.[0] === VIEWER_QUERY_KEY[0]) {
     return null;
   }
   return loginRedirectFor(location.pathname, location.search);

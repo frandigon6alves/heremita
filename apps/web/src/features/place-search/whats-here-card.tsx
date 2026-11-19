@@ -1,6 +1,7 @@
 'use client';
 
-import { cleanText, LIMITS, type LngLat, type PlaceResult } from '@heremita/shared';
+import type { LngLat, PlaceResult } from '@heremita/shared';
+import { cleanText, LIMITS } from '@heremita/shared/plain';
 import { useQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { useId, useState, type FormEvent } from 'react';

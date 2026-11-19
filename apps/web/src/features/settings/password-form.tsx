@@ -1,11 +1,9 @@
 'use client';
 
-import {
-  changePasswordBodySchema,
-  endpoints,
-  LIMITS,
-  type ChangePasswordBody,
-} from '@heremita/shared';
+import type { ChangePasswordBody } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
+import { LIMITS } from '@heremita/shared/plain';
+import { changePasswordBodySchema } from '@/lib/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
@@ -55,7 +53,7 @@ export function PasswordForm({ email }: { email: string }) {
     defaultValues: { currentPassword: '', newPassword: '' },
   });
   const change = useMutation({
-    mutationFn: (body: ChangePasswordBody) => apiFetch(endpoints.changePassword, { body }),
+    mutationFn: (body: ChangePasswordBody) => apiFetch(apiRoutes.changePassword, { body }),
   });
 
   const onSubmit = handleSubmit(async (body) => {

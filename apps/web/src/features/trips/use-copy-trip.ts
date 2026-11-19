@@ -1,4 +1,4 @@
-import { endpoints } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -25,8 +25,8 @@ export function useCopyTrip(source: CopySource) {
   const copy = useMutation({
     mutationFn: () =>
       'tripId' in source
-        ? apiFetch(endpoints.copyTrip, { params: { tripId: source.tripId }, body: {} })
-        : apiFetch(endpoints.copySharedTrip, {
+        ? apiFetch(apiRoutes.copyTrip, { params: { tripId: source.tripId }, body: {} })
+        : apiFetch(apiRoutes.copySharedTrip, {
             params: { shareToken: source.shareToken },
             body: {},
           }),

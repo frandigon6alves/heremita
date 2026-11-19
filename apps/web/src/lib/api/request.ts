@@ -1,4 +1,5 @@
-import { API_PREFIX, type EndpointDef, type EndpointRequest } from '@heremita/shared';
+import type { EndpointDef, EndpointRequest } from '@heremita/shared';
+import { API_PREFIX } from '@heremita/shared/plain';
 
 type Request<E extends EndpointDef> = EndpointRequest<E>;
 
@@ -45,7 +46,7 @@ function isQueryValue(value: unknown): value is QueryValue {
  * `/api/v1` path of an endpoint call: `{name}` segments filled (encoded) from
  * `params`; `undefined`/`null` query values left out.
  */
-export function endpointPath(def: Pick<EndpointDef, 'path'>, { params, query }: UrlParts): string {
+export function endpointPath(def: { path: string }, { params, query }: UrlParts): string {
   const values = isRecord(params) ? params : {};
   const path = def.path.replace(/\{(\w+)\}/g, (_, name: string) => {
     const value = values[name];

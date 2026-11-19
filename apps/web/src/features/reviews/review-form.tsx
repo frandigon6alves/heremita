@@ -1,12 +1,9 @@
 'use client';
 
-import {
-  endpoints,
-  LIMITS,
-  putReviewBodySchema,
-  type PutReviewBody,
-  type Review,
-} from '@heremita/shared';
+import type { PutReviewBody, Review } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
+import { LIMITS } from '@heremita/shared/plain';
+import { putReviewBodySchema } from '@/lib/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
@@ -87,7 +84,7 @@ export function ReviewForm({ placeId, myReview, currentMonth }: ReviewFormProps)
 
   const save = useMutation({
     mutationFn: (review: PutReviewBody) =>
-      apiFetch(endpoints.putMyReview, { params: { placeId }, body: review }),
+      apiFetch(apiRoutes.putMyReview, { params: { placeId }, body: review }),
   });
 
   const onSubmit = handleSubmit(async (review) => {
@@ -108,7 +105,7 @@ export function ReviewForm({ placeId, myReview, currentMonth }: ReviewFormProps)
   });
 
   const remove = useMutation({
-    mutationFn: () => apiFetch(endpoints.deleteMyReview, { params: { placeId } }),
+    mutationFn: () => apiFetch(apiRoutes.deleteMyReview, { params: { placeId } }),
     onSuccess: async () => {
       setConfirmingDelete(false);
       await backToPlace(t('deleted'));

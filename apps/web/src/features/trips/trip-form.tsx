@@ -1,6 +1,8 @@
 'use client';
 
-import { endpoints, LIMITS, type CreateTripBody } from '@heremita/shared';
+import type { CreateTripBody } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
+import { LIMITS } from '@heremita/shared/plain';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -86,7 +88,7 @@ export function TripForm({ renderDestination }: TripFormProps) {
     },
   });
   const create = useMutation({
-    mutationFn: (body: CreateTripBody) => apiFetch(endpoints.createTrip, { body }),
+    mutationFn: (body: CreateTripBody) => apiFetch(apiRoutes.createTrip, { body }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.trips.mine }),
   });
 

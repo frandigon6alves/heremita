@@ -1,4 +1,4 @@
-import { lngLatSchema, type LngLat } from '@heremita/shared';
+import type { LngLat } from '@heremita/shared';
 
 /**
  * Typed `lat, lng` → point. Accepts `38.7139, -9.1334`, `38.7139 -9.1334`
@@ -13,7 +13,6 @@ export function parseCoordinates(text: string): LngLat | null {
   if (parts.length !== 2 || parts.some((part) => !/^[+-]?\d+(\.\d+)?$/.test(part.trim()))) {
     return null;
   }
-  const [lat, lng] = parts.map(Number);
-  const point = lngLatSchema.safeParse({ lng, lat });
-  return point.success ? point.data : null;
+  const [lat, lng] = parts.map(Number) as [number, number];
+  return Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lng, lat } : null;
 }

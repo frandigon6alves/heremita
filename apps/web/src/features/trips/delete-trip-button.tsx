@@ -1,6 +1,6 @@
 'use client';
 
-import { endpoints } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -27,7 +27,7 @@ export function DeleteTripButton({ tripId, title }: { tripId: string; title: str
   const queryClient = useQueryClient();
   const [confirming, setConfirming] = useState(false);
   const remove = useMutation({
-    mutationFn: () => apiFetch(endpoints.deleteTrip, { params: { tripId } }),
+    mutationFn: () => apiFetch(apiRoutes.deleteTrip, { params: { tripId } }),
     onSuccess: async () => {
       showToast({ message: t('done', { title }) });
       router.replace(routes.trips(locale));

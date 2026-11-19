@@ -1,8 +1,4 @@
-import {
-  problemDetailsSchema,
-  type ProblemDetails,
-  type ProblemFieldError,
-} from '@heremita/shared';
+import type { ProblemDetails, ProblemFieldError } from '@heremita/shared';
 import { REQUEST_ID_HEADER } from './request-id';
 
 /** The API answered with an RFC 9457 problem document. */
@@ -73,11 +69,16 @@ function parseRetryAfter(value: string | null): number | null {
   return /^\d+$/.test(trimmed) ? Number(trimmed) : null;
 }
 
-/** Turns a non-2xx response into an error, parsing its body with the shared problem schema. */
+/**
+ * Turns a non-2xx response into an error, parsing its body with the shared
+ * problem schema. The schema (and zod) load on the first failure only, so pages
+ * that never fail never download them.
+ */
 export async function errorFromResponse(response: Response): Promise<ResponseError> {
   const requestId = response.headers.get(REQUEST_ID_HEADER);
-  const body: unknown = await response.json().catch(() => null);
-  const parsed = problemDetailsSchema.safeParse(body);
+  const body: Promise<unknown> = response.json().catch(() => null);
+  const { problemDetailsSchema } = await import('./problem-schema');
+  const parsed = problemDetailsSchema.safeParse(await body);
   if (parsed.success) {
     return new ApiProblemError(
       parsed.data,

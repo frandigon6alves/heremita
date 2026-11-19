@@ -1,4 +1,5 @@
-import { DEFAULT_LOCALE, localeSchema, type Locale } from '@heremita/shared';
+import type { Locale } from '@heremita/shared';
+import { DEFAULT_LOCALE, LOCALES } from '@heremita/shared/plain';
 import { defineRouting } from 'next-intl/routing';
 
 /**
@@ -7,7 +8,7 @@ import { defineRouting } from 'next-intl/routing';
  * visitor used), then the best `Accept-Language` match, then English.
  */
 export const routing = defineRouting({
-  locales: localeSchema.options,
+  locales: LOCALES,
   defaultLocale: DEFAULT_LOCALE,
 });
 

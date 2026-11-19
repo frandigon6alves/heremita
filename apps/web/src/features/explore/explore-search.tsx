@@ -1,4 +1,4 @@
-import { LIMITS } from '@heremita/shared';
+import { LIMITS } from '@heremita/shared/plain';
 import { useLocale, useTranslations } from 'next-intl';
 import Form from 'next/form';
 import { routes } from '@/lib/routes';

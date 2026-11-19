@@ -1,6 +1,7 @@
 'use client';
 
-import { endpoints, type Locale } from '@heremita/shared';
+import type { Locale } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import { useMutation } from '@tanstack/react-query';
 import { useLocale } from 'next-intl';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -30,7 +31,7 @@ export function LanguageSwitcher({ signedIn }: { signedIn: boolean }) {
   const pathWithQuery = query === '' ? pathname : `${pathname}?${query}`;
   const others = routing.locales.filter((locale): locale is Locale => locale !== current);
   const save = useMutation({
-    mutationFn: (locale: Locale) => apiFetch(endpoints.updateMe, { body: { locale } }),
+    mutationFn: (locale: Locale) => apiFetch(apiRoutes.updateMe, { body: { locale } }),
   });
 
   function follow(event: MouseEvent<HTMLAnchorElement>, locale: Locale) {

@@ -1,6 +1,7 @@
 'use client';
 
-import { endpoints, type UserCard } from '@heremita/shared';
+import type { UserCard } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { apiFetch } from '@/lib/api/client';
@@ -23,7 +24,7 @@ export function BlockUserDialog({ open, onClose, user }: BlockUserDialogProps) {
   const t = useTranslations('reviews.block');
   const queryClient = useQueryClient();
   const block = useMutation({
-    mutationFn: () => apiFetch(endpoints.blockUser, { params: { userId: user.id } }),
+    mutationFn: () => apiFetch(apiRoutes.blockUser, { params: { userId: user.id } }),
     onSuccess: async () => {
       close();
       showToast({ message: t('done', { name: user.displayName }) });

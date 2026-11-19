@@ -1,10 +1,5 @@
-import {
-  updateTripBodySchema,
-  type DestinationInput,
-  type TravelMode,
-  type TripOwner,
-  type UpdateTripBody,
-} from '@heremita/shared';
+import type { DestinationInput, TravelMode, TripOwner, UpdateTripBody } from '@heremita/shared';
+import { updateTripBodySchema } from '@/lib/schemas';
 
 export interface TripDetailsValues {
   title: string;

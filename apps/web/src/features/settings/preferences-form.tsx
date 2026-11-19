@@ -1,14 +1,8 @@
 'use client';
 
-import {
-  endpoints,
-  localeSchema,
-  themeSchema,
-  type Locale,
-  type Me,
-  type Theme,
-  type UpdateMeBody,
-} from '@heremita/shared';
+import type { Locale, Me, Theme, UpdateMeBody } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
+import { LOCALES, THEMES } from '@heremita/shared/plain';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -59,7 +53,7 @@ export function PreferencesForm() {
   const [chosenTheme, setChosenTheme] = useState<Theme | null>(null);
 
   const save = useMutation({
-    mutationFn: (body: UpdateMeBody) => apiFetch(endpoints.updateMe, { body }),
+    mutationFn: (body: UpdateMeBody) => apiFetch(apiRoutes.updateMe, { body }),
     onMutate: async ({ theme }) => {
       if (theme === undefined) {
         return undefined;
@@ -112,7 +106,7 @@ export function PreferencesForm() {
       {/* Stacked radios, not a segmented control: three language names do not fit side by side on a phone. */}
       <fieldset className={styles.languages} disabled={leaving}>
         <legend className={styles.legend}>{t('language')}</legend>
-        {localeSchema.options.map((value) => (
+        {LOCALES.map((value) => (
           <label key={value} className={styles.language}>
             <input
               type="radio"
@@ -128,7 +122,7 @@ export function PreferencesForm() {
       <SegmentedControl
         legend={t('theme')}
         showLegend
-        options={themeSchema.options.map((value) => ({ value, label: tTheme(value) }))}
+        options={THEMES.map((value) => ({ value, label: tTheme(value) }))}
         value={shownTheme}
         onChange={setChosenTheme}
         disabled={leaving}

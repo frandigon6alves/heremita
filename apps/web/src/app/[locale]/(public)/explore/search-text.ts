@@ -1,4 +1,4 @@
-import { LIMITS } from '@heremita/shared';
+import { LIMITS } from '@heremita/shared/plain';
 
 /** `?q=` of Explore as E48 accepts it: one value, trimmed, at most 80 characters. */
 export function searchText(q: string | string[] | undefined): string {

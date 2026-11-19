@@ -1,6 +1,7 @@
 'use client';
 
-import { LIMITS, type TravelMode, type TripOwner, type UpdateTripBody } from '@heremita/shared';
+import type { TravelMode, TripOwner, UpdateTripBody } from '@heremita/shared';
+import { LIMITS } from '@heremita/shared/plain';
 import { useTranslations } from 'next-intl';
 import { useState, type ReactNode } from 'react';
 import { useForm, useWatch, type FieldErrors, type Resolver } from 'react-hook-form';

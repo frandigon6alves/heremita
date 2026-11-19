@@ -1,4 +1,4 @@
-import { endpoints } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import { useTranslations } from 'next-intl';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { apiFetch } from '@/lib/api/client';
@@ -39,7 +39,7 @@ export function useNoteAutosave(tripId: string, tripPlaceId: string, savedNote: 
   const mutation = usePlanMutation<{ text: string }, unknown>({
     tripId,
     mutationFn: ({ text: sent }) =>
-      apiFetch(endpoints.updateTripPlace, {
+      apiFetch(apiRoutes.updateTripPlace, {
         params: { tripId, tripPlaceId },
         body: { note: toNote(sent) },
       }),

@@ -1,10 +1,11 @@
-import { travelModeSchema, type TravelMode } from '@heremita/shared';
+import type { TravelMode } from '@heremita/shared';
+import { TRAVEL_MODES } from '@heremita/shared/plain';
 import { parseAsString, parseAsStringLiteral, useQueryStates } from 'nuqs';
 
 const plannerParams = {
   day: parseAsString,
   place: parseAsString,
-  mode: parseAsStringLiteral(travelModeSchema.options),
+  mode: parseAsStringLiteral(TRAVEL_MODES),
 };
 
 /**

@@ -1,13 +1,9 @@
 'use client';
 
-import {
-  createReportBodySchema,
-  endpoints,
-  LIMITS,
-  reportReasonSchema,
-  type CreateReportBody,
-  type ReportTargetType,
-} from '@heremita/shared';
+import type { CreateReportBody, ReportTargetType } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
+import { LIMITS, REPORT_REASONS } from '@heremita/shared/plain';
+import { createReportBodySchema } from '@/lib/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
@@ -22,7 +18,7 @@ import { TextArea } from '@/shared/components/text-area/text-area';
 import { showToast } from '@/shared/components/toast/toast-store';
 import styles from './report-dialog.module.css';
 
-const REASONS = reportReasonSchema.options;
+const REASONS = REPORT_REASONS;
 const reportFormSchema = createReportBodySchema.omit({ target: true });
 type ReportFields = Omit<CreateReportBody, 'target'>;
 
@@ -55,7 +51,7 @@ export function ReportDialog({ open, onClose, target }: ReportDialogProps) {
   });
   const report = useMutation({
     mutationFn: ({ reason, details }: ReportFields) =>
-      apiFetch(endpoints.createReport, {
+      apiFetch(apiRoutes.createReport, {
         body: { target, reason, details: details === '' ? undefined : details },
       }),
     onSuccess: () => {

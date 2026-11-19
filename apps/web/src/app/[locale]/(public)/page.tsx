@@ -1,4 +1,4 @@
-import { endpoints } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { Landing } from '@/features/explore/landing';
@@ -28,7 +28,7 @@ export default async function LandingPage() {
   const [viewer, community] = await Promise.all([
     getViewer().catch(() => null),
     // A marketing page never shows an error panel: no trips (or no answer) hides the strip.
-    serverFetch(endpoints.listPublicTrips, { query: { limit: COMMUNITY_STRIP_SIZE } }).catch(
+    serverFetch(apiRoutes.listPublicTrips, { query: { limit: COMMUNITY_STRIP_SIZE } }).catch(
       () => null,
     ),
   ]);

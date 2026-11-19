@@ -1,6 +1,7 @@
 'use client';
 
-import { LIMITS, type TravelMode, type TripPlanOwner } from '@heremita/shared';
+import type { TravelMode, TripPlanOwner } from '@heremita/shared';
+import { LIMITS } from '@heremita/shared/plain';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { AllDaysList } from '@/features/itinerary/all-days-list';

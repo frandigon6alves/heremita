@@ -1,4 +1,4 @@
-import { endpoints } from '@heremita/shared';
+import { apiRoutes } from '@heremita/shared/api-routes';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -19,7 +19,7 @@ export default async function ModerationPage() {
   }
   const t = await getTranslations('reviews.moderation');
   // A failure here leaves the queue to fetch (and explain) in the browser.
-  const firstPage = await serverFetch(endpoints.listReports, { query: { status: 'open' } }).catch(
+  const firstPage = await serverFetch(apiRoutes.listReports, { query: { status: 'open' } }).catch(
     () => undefined,
   );
 

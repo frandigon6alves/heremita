@@ -1,6 +1,7 @@
 'use client';
 
-import { travelModeSchema, type TravelMode } from '@heremita/shared';
+import type { TravelMode } from '@heremita/shared';
+import { TRAVEL_MODES } from '@heremita/shared/plain';
 import { useTranslations } from 'next-intl';
 import { SegmentedControl } from '@/shared/components/segmented-control/segmented-control';
 import { ModeIcon } from './mode-icon';
@@ -20,7 +21,7 @@ export function ModeSwitch({ value, onChange, disabled }: ModeSwitchProps) {
       value={value}
       onChange={onChange}
       disabled={disabled}
-      options={travelModeSchema.options.map((mode) => ({
+      options={TRAVEL_MODES.map((mode) => ({
         value: mode,
         label: t(mode),
         icon: <ModeIcon mode={mode} />,
