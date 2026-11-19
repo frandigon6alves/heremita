@@ -7,9 +7,10 @@ import { TripAccessService } from '../core/trip-access.service.js';
 import type { TripRef } from '../core/trip-access.js';
 import { OSM_ATTRIBUTION } from '../providers/core/contract.js';
 import { routeQuality, sumLegs } from '../providers/core/estimates.js';
-import { DayStopsReader, plannedLegs } from './day-stops.reader.js';
+import { DayStopsReader } from './day-stops.reader.js';
 import { LegRouter } from './leg-router.js';
 import { optimiseOrder, straightLineMatrix } from './optimise.js';
+import { plannedLegs } from './planned-legs.js';
 
 /** Day routes (E40, E27) and stop-order suggestions (E41). */
 @Injectable()

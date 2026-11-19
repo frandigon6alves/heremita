@@ -1,41 +1,23 @@
-import type { DayRouteSummary, LegSummary, LngLat, TravelMode } from '@heremita/shared';
-import { cacheKeys, type CachedLeg } from '../providers/core/cache-keys.js';
+import type { DayRouteSummary, LegSummary, TravelMode } from '@heremita/shared';
+import type { CachedLeg } from '../providers/core/cache-keys.js';
 import type { RoutingProviderId } from '../providers/core/contract.js';
+import {
+  legCacheKey,
+  plannedLegs,
+  type PlannedLeg,
+  type RouteStop,
+} from '../routing/planned-legs.js';
 
-/** A stop as routing sees it: where it is and the mode chosen for the leg leaving it. */
-export interface RouteStop {
-  id: string;
-  location: LngLat;
-  modeToNext: TravelMode | null;
-}
+/** A planned leg with its `leg:v1:` cache key. */
+export type KeyedLeg = PlannedLeg & { key: string };
 
-/** A leg between two consecutive stops, with its effective mode and its `leg:v1:` cache key. */
-export interface PlannedLeg {
-  fromStopId: string;
-  toStopId: string;
-  mode: TravelMode;
-  key: string;
-}
-
-/**
- * The legs of a day in visit order. A leg's mode is `stop.modeToNext ?? dayMode`
- * (`dayMode` = `day.modeOverride ?? trip.defaultMode`).
- */
-export function plannedLegs(
+/** The legs of a day in visit order, keyed for a cache read. */
+export function keyedLegs(
   router: RoutingProviderId,
   dayMode: TravelMode,
   stops: readonly RouteStop[],
-): PlannedLeg[] {
-  return stops.slice(1).map((to, index) => {
-    const from = stops[index] as RouteStop;
-    const mode = from.modeToNext ?? dayMode;
-    return {
-      fromStopId: from.id,
-      toStopId: to.id,
-      mode,
-      key: cacheKeys.leg(router, mode, from.location, to.location),
-    };
-  });
+): KeyedLeg[] {
+  return plannedLegs(stops, dayMode).map((leg) => ({ ...leg, key: legCacheKey(router, leg) }));
 }
 
 /**
@@ -44,7 +26,7 @@ export function plannedLegs(
  */
 export function summariseDayRoute(
   dayId: string,
-  legs: readonly PlannedLeg[],
+  legs: readonly KeyedLeg[],
   cached: ReadonlyMap<string, CachedLeg>,
 ): DayRouteSummary {
   const summaries = legs.map((leg): LegSummary | null => {

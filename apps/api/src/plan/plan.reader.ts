@@ -16,7 +16,8 @@ import {
   toTripPlaceViewer,
   TRIP_PLACE_SELECT,
 } from './plan.mapper.js';
-import { plannedLegs, summariseDayRoute, type RouteStop } from './route-summaries.js';
+import type { RouteStop } from '../routing/planned-legs.js';
+import { keyedLegs, summariseDayRoute } from './route-summaries.js';
 
 /**
  * The planner read (E24, E26): trip, trip places with place and rating
@@ -93,7 +94,7 @@ export class PlanReader {
           modeToNext: stop.modeToNext,
         })),
       );
-      return { planDay, legs: plannedLegs(this.router.id, planDay.mode, dayStops) };
+      return { planDay, legs: keyedLegs(this.router.id, planDay.mode, dayStops) };
     });
     const cached = await this.cache.getMany(
       planDays.flatMap((day) => day.legs.map((leg) => leg.key)),

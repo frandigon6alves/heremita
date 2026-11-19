@@ -1,14 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import type { LngLat, TravelMode } from '@heremita/shared';
+import type { TravelMode } from '@heremita/shared';
 import { dayNotFound } from '../core/http/problems.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import type { PlannedLeg } from './leg-router.js';
-
-export interface DayStop {
-  id: string;
-  location: LngLat;
-  modeToNext: TravelMode | null;
-}
+import type { RouteStop } from './planned-legs.js';
 
 /** A day's stops in visit order, with what decides each leg's mode. */
 export interface DayStops {
@@ -16,7 +10,7 @@ export interface DayStops {
   planVersion: number;
   /** `day.modeOverride ?? trip.defaultMode`. */
   dayMode: TravelMode;
-  stops: DayStop[];
+  stops: RouteStop[];
 }
 
 /** Reads a day of a trip whose access the caller already checked. */
@@ -55,25 +49,4 @@ export class DayStopsReader {
       })),
     };
   }
-}
-
-/**
- * Legs between consecutive `stops`; each leaves its stop in
- * `override ?? stop.modeToNext ?? dayMode`.
- */
-export function plannedLegs(
-  stops: readonly DayStop[],
-  dayMode: TravelMode,
-  override?: TravelMode,
-): PlannedLeg[] {
-  return stops.slice(1).map((to, i) => {
-    const from = stops[i]!;
-    return {
-      fromStopId: from.id,
-      toStopId: to.id,
-      mode: override ?? from.modeToNext ?? dayMode,
-      from: from.location,
-      to: to.location,
-    };
-  });
 }

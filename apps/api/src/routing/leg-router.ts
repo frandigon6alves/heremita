@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import type { Leg, LngLat, TravelMode } from '@heremita/shared';
-import { CACHE_TTL_MS, cacheKeys, cachedLegSchema } from '../providers/core/cache-keys.js';
+import type { Leg, TravelMode } from '@heremita/shared';
+import { CACHE_TTL_MS, cachedLegSchema } from '../providers/core/cache-keys.js';
 import {
   ProviderError,
   ROUTING_PROVIDER,
@@ -9,15 +9,7 @@ import {
 } from '../providers/core/contract.js';
 import { estimateLeg } from '../providers/core/estimates.js';
 import { ProviderCacheService, type CacheEntry } from '../providers/core/provider-cache.service.js';
-
-/** One leg to route: from a stop to the next, in its effective mode. */
-export interface PlannedLeg {
-  fromStopId: string;
-  toStopId: string;
-  mode: TravelMode;
-  from: LngLat;
-  to: LngLat;
-}
+import { legCacheKey, type PlannedLeg } from './planned-legs.js';
 
 /** Consecutive uncached legs of one mode: one provider call. */
 interface Run {
@@ -42,7 +34,7 @@ export class LegRouter {
   ) {}
 
   async route(planned: readonly PlannedLeg[], options: { upstream: boolean }): Promise<Leg[]> {
-    const keys = planned.map((leg) => cacheKeys.leg(this.router.id, leg.mode, leg.from, leg.to));
+    const keys = planned.map((leg) => legCacheKey(this.router.id, leg));
     const cached = await this.cache.getMany(keys, cachedLegSchema);
     const legs: (Leg | undefined)[] = planned.map((leg, i) => {
       const hit = cached.get(keys[i]!);

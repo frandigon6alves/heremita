@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cacheKeys, type CachedLeg } from '../providers/core/cache-keys.js';
-import { plannedLegs, summariseDayRoute, type RouteStop } from './route-summaries.js';
+import type { RouteStop } from '../routing/planned-legs.js';
+import { keyedLegs, summariseDayRoute } from './route-summaries.js';
 
 const A: RouteStop = { id: 'a', location: { lng: -9.2, lat: 38.69 }, modeToNext: null };
 const B: RouteStop = { id: 'b', location: { lng: -9.21, lat: 38.7 }, modeToNext: 'bike' };
@@ -11,34 +12,17 @@ function cachedLeg(distanceMeters: number, durationSeconds: number): CachedLeg {
   return { distanceMeters, durationSeconds, polyline: '', snapped: [snapped, snapped] };
 }
 
-describe('plannedLegs', () => {
-  it('has_no_leg_for_zero_or_one_stop', () => {
-    expect(plannedLegs('fake', 'walk', [])).toEqual([]);
-    expect(plannedLegs('fake', 'walk', [A])).toEqual([]);
-  });
-
-  it('takes_the_stop_mode_else_the_day_mode_and_ignores_the_last_stop_mode', () => {
-    const legs = plannedLegs('fake', 'walk', [A, B, C]);
-
-    expect(legs).toEqual([
-      {
-        fromStopId: 'a',
-        toStopId: 'b',
-        mode: 'walk',
-        key: cacheKeys.leg('fake', 'walk', A.location, B.location),
-      },
-      {
-        fromStopId: 'b',
-        toStopId: 'c',
-        mode: 'bike',
-        key: cacheKeys.leg('fake', 'bike', B.location, C.location),
-      },
+describe('keyedLegs', () => {
+  it('keys_each_leg_by_its_mode_and_ends', () => {
+    expect(keyedLegs('fake', 'walk', [A, B, C]).map((leg) => leg.key)).toEqual([
+      cacheKeys.leg('fake', 'walk', A.location, B.location),
+      cacheKeys.leg('fake', 'bike', B.location, C.location),
     ]);
   });
 });
 
 describe('summariseDayRoute', () => {
-  const legs = plannedLegs('fake', 'walk', [A, B, C]);
+  const legs = keyedLegs('fake', 'walk', [A, B, C]);
 
   it('totals_every_leg_when_all_are_cached', () => {
     const cached = new Map(legs.map((leg, index) => [leg.key, cachedLeg(100 * (index + 1), 60)]));
