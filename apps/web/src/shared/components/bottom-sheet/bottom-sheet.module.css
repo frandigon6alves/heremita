@@ -80,17 +80,28 @@
   overscroll-behavior: contain;
 }
 
-.panel {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-  background: var(--color-surface);
-  color: var(--color-text);
-}
+/* The side panel: same markup, so the server render needs no swap after hydration. */
+@media (min-width: 768px) {
+  .sheet,
+  .sheet[data-snap] {
+    position: static;
+    height: 100%;
+    min-height: 0;
+    max-height: none;
+    padding-bottom: 0;
+    border-radius: 0;
+    box-shadow: none;
+    transition: none;
+  }
 
-.panelHeader {
-  flex: none;
-  padding: var(--space-3) var(--space-4) var(--space-2);
-  border-bottom: 1px solid var(--color-border);
+  .header {
+    padding: var(--space-3) var(--space-4) var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+    touch-action: auto;
+    user-select: auto;
+  }
+
+  .handle {
+    display: none;
+  }
 }

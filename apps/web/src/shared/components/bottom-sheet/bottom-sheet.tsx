@@ -10,6 +10,7 @@ import {
   type ReactNode,
   type TransitionEvent,
 } from 'react';
+import { useMediaQuery } from '@/shared/hooks/use-media-query';
 import { useReducedMotion } from '@/shared/hooks/use-reduced-motion';
 import {
   clampHeight,
@@ -26,14 +27,15 @@ import styles from './bottom-sheet.module.css';
 
 export type { Snap } from './snap-math';
 
+/** Where the sheet becomes a side panel; `bottom-sheet.module.css` switches the layout at the same width. */
+export const PANEL_QUERY = '(min-width: 768px)';
+
 /** Finger travel before a press on the header becomes a sheet drag (a tap still hits the chip). */
 const DRAG_SLOP_PX = 8;
 /** Enough pointer samples to cover the 100 ms velocity window at 120 Hz. */
 const MAX_SAMPLES = 16;
 
 export interface BottomSheetProps {
-  /** `sheet` on phones (snaps + drag); `panel` on wider screens: same content, plain side column. */
-  variant: 'sheet' | 'panel';
   snap: Snap;
   onSnapChange: (snap: Snap) => void;
   /** The sheet stopped moving at this height (px): pad the map by it. Never per drag frame. */
@@ -68,13 +70,15 @@ function measureHeights(sheet: HTMLElement): SnapHeights {
 
 /**
  * The planner's non-modal bottom sheet over the map (phone) or its side
- * panel (wider screens). Three snaps; the header drags it (release → nearest
- * snap, or the next one in a fling's direction); the handle button cycles
- * peek → half → full → half for taps, Enter and screen readers. No focus
- * trap and the map stays operable: it is a region, not a dialog.
+ * panel (from `PANEL_QUERY`). One markup at every width, so the server
+ * render already has the right layout: CSS turns the sheet into the panel
+ * and hides the handle, and the snap mechanics do nothing there. Three
+ * snaps; the header drags it (release → nearest snap, or the next one in a
+ * fling's direction); the handle button cycles peek → half → full → half for
+ * taps, Enter and screen readers. No focus trap and the map stays operable:
+ * it is a region, not a dialog.
  */
 export function BottomSheet({
-  variant,
   snap,
   onSnapChange,
   onSnapSettled,
@@ -89,6 +93,7 @@ export function BottomSheet({
   const [dragHeight, setDragHeight] = useState<number | null>(null);
   const [direction, setDirection] = useState<CycleDirection>('up');
   const reducedMotion = useReducedMotion();
+  const wide = useMediaQuery(PANEL_QUERY);
   const next = cycleSnap(snap, direction);
 
   function reportSettled() {
@@ -101,7 +106,7 @@ export function BottomSheet({
 
   useEffect(() => {
     const sheet = sheetRef.current;
-    if (variant === 'panel' || dragHeight !== null || sheet === null) {
+    if (wide || dragHeight !== null || sheet === null) {
       return;
     }
     const target = measureHeights(sheet)[snap];
@@ -110,25 +115,16 @@ export function BottomSheet({
     if (reducedMotion || alreadyThere) {
       reportSettledFromEffect();
     }
-  }, [variant, snap, dragHeight, reducedMotion]);
+  }, [wide, snap, dragHeight, reducedMotion]);
 
   useEffect(() => {
-    if (variant === 'panel') {
+    if (wide) {
       return;
     }
     const onResize = () => reportSettledFromEffect();
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-  }, [variant]);
-
-  if (variant === 'panel') {
-    return (
-      <section className={styles.panel} aria-labelledby={labelledBy}>
-        <div className={styles.panelHeader}>{header}</div>
-        <div className={styles.body}>{children}</div>
-      </section>
-    );
-  }
+  }, [wide]);
 
   function handleCycle() {
     setDirection(next.direction);
@@ -137,7 +133,7 @@ export function BottomSheet({
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
     const sheet = sheetRef.current;
-    if (!event.isPrimary || event.button !== 0 || sheet === null) {
+    if (wide || !event.isPrimary || event.button !== 0 || sheet === null) {
       return;
     }
     suppressClick.current = false;
@@ -203,13 +199,14 @@ export function BottomSheet({
 
   function handleBodyFocus() {
     // Tabbing into the body or rows hidden below the peek line opens the sheet so focus stays visible.
-    if (snap === 'peek') {
+    if (!wide && snap === 'peek') {
       onSnapChange('half');
     }
   }
 
   function handleTransitionEnd(event: TransitionEvent<HTMLElement>) {
     if (
+      !wide &&
       event.target === event.currentTarget &&
       event.propertyName === 'height' &&
       dragHeight === null

@@ -47,7 +47,7 @@ import { PlaceSearch, WhatsHereCard } from '@/features/place-search';
 import { planQuery } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { AppBar } from '@/shared/components/app-bar/app-bar';
-import { BottomSheet, type Snap } from '@/shared/components/bottom-sheet/bottom-sheet';
+import { BottomSheet, PANEL_QUERY, type Snap } from '@/shared/components/bottom-sheet/bottom-sheet';
 import { Button } from '@/shared/components/button/button';
 import { buttonClassName, iconButtonClassName } from '@/shared/components/button/button-class';
 import { useMediaQuery } from '@/shared/hooks/use-media-query';
@@ -63,7 +63,6 @@ import { CommunitySlot } from './community-slot';
 import { initialMapView } from './initial-map-view';
 import styles from './planner-screen.module.css';
 
-const PANEL_QUERY = '(min-width: 768px)';
 const SNAP_ORDER: readonly Snap[] = ['peek', 'half', 'full'];
 
 interface Draft {
@@ -422,7 +421,6 @@ export function PlannerScreen({ tripId, initialPlan, initialUpdatedAt }: Planner
           {t('screen.skipToMap')}
         </a>
         <BottomSheet
-          variant={wide ? 'panel' : 'sheet'}
           snap={snap}
           onSnapChange={setSnap}
           onSnapSettled={setSheetHeight}

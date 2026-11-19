@@ -30,7 +30,7 @@ import { useCopyTrip } from '@/features/trips/use-copy-trip';
 import { planQuery, sharedPlanQuery } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { AppBar } from '@/shared/components/app-bar/app-bar';
-import { BottomSheet, type Snap } from '@/shared/components/bottom-sheet/bottom-sheet';
+import { BottomSheet, PANEL_QUERY, type Snap } from '@/shared/components/bottom-sheet/bottom-sheet';
 import { buttonClassName } from '@/shared/components/button/button-class';
 import { DemoBadge } from '@/shared/components/demo-badge/demo-badge';
 import { useMediaQuery } from '@/shared/hooks/use-media-query';
@@ -44,7 +44,6 @@ import { initialMapView } from '../../../(app)/trips/[tripId]/_components/initia
 import { rememberCopyIntent, takeCopyIntent } from './copy-intent';
 import styles from './trip-viewer-screen.module.css';
 
-const PANEL_QUERY = '(min-width: 768px)';
 const SNAP_ORDER: readonly Snap[] = ['peek', 'half', 'full'];
 
 interface ViewerPageProps {
@@ -202,7 +201,6 @@ function TripViewerScreen({ source, plan, signedIn, path }: TripViewerScreenProp
           {t('screen.skipToMap')}
         </a>
         <BottomSheet
-          variant={wide ? 'panel' : 'sheet'}
           snap={snap}
           onSnapChange={setSnap}
           onSnapSettled={setSheetHeight}

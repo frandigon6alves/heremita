@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { installFakeMatchMedia } from '@/shared/hooks/match-media.test-support';
 import { renderWithIntl } from '@/test-utils/render';
-import { BottomSheet, type Snap } from './bottom-sheet';
+import { BottomSheet, PANEL_QUERY, type Snap } from './bottom-sheet';
 
 const SNAP_NAMES: Record<Snap, string> = {
   peek: 'collapsed',
@@ -17,12 +17,10 @@ const HEIGHT_OF: Record<Snap, number> = { peek: MIN_HEIGHT, half: 384, full: MAX
 
 function Planner({
   initialSnap = 'half',
-  variant = 'sheet',
   onSnapSettled = vi.fn(),
   onChip = vi.fn(),
 }: {
   initialSnap?: Snap;
-  variant?: 'sheet' | 'panel';
   onSnapSettled?: (height: number) => void;
   onChip?: () => void;
 }) {
@@ -30,7 +28,6 @@ function Planner({
   return (
     <>
       <BottomSheet
-        variant={variant}
         snap={snap}
         onSnapChange={setSnap}
         onSnapSettled={onSnapSettled}
@@ -248,11 +245,31 @@ describe('BottomSheet', () => {
     expect(onSnapSettled).toHaveBeenCalledExactlyOnceWith(HEIGHT_OF.half);
   });
 
-  it('renders_a_plain_panel_without_handle_or_snaps_on_wide_screens', () => {
-    renderWithIntl(<Planner variant="panel" />);
+  it('keeps_the_same_markup_when_the_screen_turns_wide', () => {
+    renderWithIntl(<Planner />);
+    const narrow = sheet().outerHTML;
 
-    expect(sheet()).not.toHaveAttribute('data-snap');
-    expect(screen.queryByRole('button', { name: /Panel/ })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Castle' })).toBeInTheDocument();
+    act(() => media.set(PANEL_QUERY, true));
+
+    expect(sheet().outerHTML).toBe(narrow);
+  });
+
+  it('ignores_drags_and_reports_no_height_on_wide_screens', async () => {
+    media.set(PANEL_QUERY, true);
+    media.set('(prefers-reduced-motion: reduce)', true);
+    const onSnapSettled = vi.fn();
+    const { user } = renderWithIntl(<Planner onSnapSettled={onSnapSettled} />);
+    layOutSheet();
+    const title = screen.getByRole('heading', { name: 'Lisbon on foot' });
+
+    await user.pointer([
+      { keys: '[TouchA>]', target: title, coords: { clientY: 400 } },
+      { pointerName: 'TouchA', target: title, coords: { clientY: 100 } },
+      { keys: '[/TouchA]', target: title, coords: { clientY: 100 } },
+    ]);
+
+    expect(sheet()).toHaveAttribute('data-snap', 'half');
+    expect(sheet().style.height).toBe('');
+    expect(onSnapSettled).not.toHaveBeenCalled();
   });
 });
