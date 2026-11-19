@@ -12,6 +12,7 @@ const ENV = parseEnv({
   ALLOW_FAKE_PROVIDERS: 'true',
   NODE_ENV: 'production',
   PUBLIC_SITE_URL: 'https://heremita.example',
+  SERVER_FETCH_SECRET: 'logger-test-secret-0123456789abcdefgh',
 });
 
 function capture(): { stream: Writable; lines: () => string[] } {
