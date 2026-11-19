@@ -1,7 +1,6 @@
 {
   "search": {
     "label": "Buscar lugares",
-    "placeholder": "Buscar lugares",
     "clear": "Limpar busca",
     "minChars": "Digite pelo menos {min} caracteres.",
     "searching": "Buscando…",

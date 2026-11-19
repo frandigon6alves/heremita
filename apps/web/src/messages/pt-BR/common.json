@@ -19,10 +19,6 @@
     "privacy": "Privacidade",
     "language": "Idioma"
   },
-  "appBar": {
-    "back": "Voltar",
-    "more": "Mais opções"
-  },
   "actions": {
     "retry": "Tentar de novo",
     "cancel": "Cancelar",

@@ -1,7 +1,6 @@
 {
   "search": {
     "label": "Search places",
-    "placeholder": "Search places",
     "clear": "Clear search",
     "minChars": "Type at least {min} characters.",
     "searching": "Searching…",
