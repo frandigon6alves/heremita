@@ -23,6 +23,12 @@ export const WEB_ORIGIN = 'http://localhost:3100';
 /** The web server's signing secret in tests (`SERVER_FETCH_SECRET`). */
 export const TEST_SERVER_FETCH_SECRET = 'test-server-fetch-secret-0123456789abcdef';
 
+/**
+ * A database nothing listens on (port 1 refuses at once), for apps that never
+ * query: Prisma connects lazily, so they boot without PostgreSQL.
+ */
+export const UNREACHABLE_DATABASE_URL = 'postgresql://heremita:heremita@127.0.0.1:1/heremita';
+
 /** Where the test clock starts unless a test passes its own clock. */
 export const TEST_START = '2026-11-18T10:00:00.000Z';
 

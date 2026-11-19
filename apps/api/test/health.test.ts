@@ -12,9 +12,7 @@ import { configureApp } from '../src/app.setup.js';
 import { ENV } from '../src/config/config.module.js';
 import { parseEnv } from '../src/config/env.js';
 import { createTestDatabase, type TestDatabase } from './support/test-database.js';
-
-/** Nothing listens on port 1, so connections are refused at once. */
-const UNREACHABLE_DATABASE_URL = 'postgresql://heremita:heremita@127.0.0.1:1/heremita';
+import { UNREACHABLE_DATABASE_URL } from './support/app.js';
 
 async function startApp(databaseUrl: string): Promise<NestExpressApplication> {
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] })

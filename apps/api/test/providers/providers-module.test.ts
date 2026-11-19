@@ -22,16 +22,14 @@ import { FakeGeocoder } from '../../src/providers/fake/fake-geocoder.js';
 import { FakeRouter } from '../../src/providers/fake/fake-router.js';
 import { OsrmRouter } from '../../src/providers/osrm/osrm-router.js';
 import { PhotonGeocoder } from '../../src/providers/photon/photon.geocoder.js';
-
-/** Building the module graph opens no connection, so no database is needed here. */
-const DATABASE_URL = 'postgresql://heremita:heremita@127.0.0.1:1/heremita';
+import { UNREACHABLE_DATABASE_URL } from '../support/app.js';
 
 let context: INestApplicationContext | undefined;
 
 async function boot(env: Record<string, string>): Promise<INestApplicationContext> {
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(ENV)
-    .useValue(parseEnv({ DATABASE_URL, NODE_ENV: 'test', ...env }))
+    .useValue(parseEnv({ DATABASE_URL: UNREACHABLE_DATABASE_URL, NODE_ENV: 'test', ...env }))
     .compile();
   context = moduleRef;
   return moduleRef;
@@ -82,7 +80,7 @@ describe('ProvidersModule with registered adapters', () => {
       imports: [ConfigModule, PrismaModule, CoreModule, ProvidersModule.forRoot(adapters)],
     })
       .overrideProvider(ENV)
-      .useValue(parseEnv({ DATABASE_URL, NODE_ENV: 'test', ...env }))
+      .useValue(parseEnv({ DATABASE_URL: UNREACHABLE_DATABASE_URL, NODE_ENV: 'test', ...env }))
       .compile();
     context = moduleRef;
     return moduleRef;

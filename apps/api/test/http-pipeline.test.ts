@@ -24,10 +24,8 @@ import {
 } from '../src/core/http/client-address.js';
 import { Endpoint } from '../src/core/http/endpoint.decorator.js';
 import { Input } from '../src/core/http/input.decorator.js';
+import { UNREACHABLE_DATABASE_URL, WEB_ORIGIN } from './support/app.js';
 
-/** No database is needed: nothing here runs a query, and Prisma connects lazily. */
-const NO_DATABASE_URL = 'postgresql://heremita:heremita@127.0.0.1:1/heremita';
-const WEB_ORIGIN = 'http://localhost:3100';
 const TRIP_ID = '0193a000-0000-7000-8000-000000000101';
 
 const echoBody = z.strictObject({ name: z.string().min(1), tags: z.array(z.string()).optional() });
@@ -107,7 +105,7 @@ class ProbeController {
 }
 
 async function startApp(overrides: Record<string, string> = {}): Promise<NestExpressApplication> {
-  const env = parseEnv({ ...process.env, DATABASE_URL: NO_DATABASE_URL, ...overrides });
+  const env = parseEnv({ ...process.env, DATABASE_URL: UNREACHABLE_DATABASE_URL, ...overrides });
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule],
     controllers: [ProbeController],

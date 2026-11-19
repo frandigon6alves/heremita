@@ -8,6 +8,7 @@ import { ENV } from '../src/config/config.module.js';
 import { parseEnv } from '../src/config/env.js';
 import { ENDPOINT } from '../src/core/http/endpoint.decorator.js';
 import { PENDING_ENDPOINTS } from './support/pending-endpoints.js';
+import { UNREACHABLE_DATABASE_URL } from './support/app.js';
 
 interface RouteHandler {
   name: string;
@@ -18,9 +19,7 @@ interface RouteHandler {
 async function routeHandlers(): Promise<RouteHandler[]> {
   const moduleRef = await Test.createTestingModule({ imports: [AppModule, DiscoveryModule] })
     .overrideProvider(ENV)
-    .useValue(
-      parseEnv({ ...process.env, DATABASE_URL: 'postgresql://heremita:heremita@127.0.0.1:1/x' }),
-    )
+    .useValue(parseEnv({ ...process.env, DATABASE_URL: UNREACHABLE_DATABASE_URL }))
     .compile();
   try {
     const scanner = new MetadataScanner();

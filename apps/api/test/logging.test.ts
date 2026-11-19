@@ -13,12 +13,11 @@ import { ENV } from '../src/config/config.module.js';
 import { parseEnv } from '../src/config/env.js';
 import { Endpoint } from '../src/core/http/endpoint.decorator.js';
 import { loggerParams } from '../src/core/logging/logger-params.js';
+import { UNREACHABLE_DATABASE_URL, WEB_ORIGIN } from './support/app.js';
 
 // nestjs-pino keeps one root logger per process, so this file (its own Vitest
 // module graph) is the only one that captures the log.
 
-const NO_DATABASE_URL = 'postgresql://heremita:heremita@127.0.0.1:1/heremita';
-const WEB_ORIGIN = 'http://localhost:3100';
 const TRIP_ID = '0193a000-0000-7000-8000-000000000101';
 
 const probe = {
@@ -69,7 +68,7 @@ describe('logging', () => {
       .map((line) => JSON.parse(line) as Record<string, unknown>);
 
   beforeAll(async () => {
-    const env = parseEnv({ ...process.env, DATABASE_URL: NO_DATABASE_URL });
+    const env = parseEnv({ ...process.env, DATABASE_URL: UNREACHABLE_DATABASE_URL });
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
       controllers: [ProbeController],
