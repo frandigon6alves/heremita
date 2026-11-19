@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { useForm, useWatch, type FieldErrors, type Resolver } from 'react-hook-form';
 import { apiFetch } from '@/lib/api/client';
-import { bodyPathsOf, hasCode } from '@/lib/api/failure';
+import { bodyPathsOf, hasCode, SERVER_ERROR, showFieldErrors } from '@/lib/api/failure';
 import { queryKeys } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
@@ -33,7 +33,6 @@ import {
 import styles from './trip-form.module.css';
 
 /** A field the API refused although it passed the shared schema here. */
-const SERVER = 'server';
 
 const resolver: Resolver<NewTripValues, unknown, CreateTripBody> = (values) => {
   const parsed = parseNewTrip(values);
@@ -111,12 +110,9 @@ export function TripForm({ renderDestination }: TripFormProps) {
           .map((path) => newTripFieldOf(path, getValues('dates')))
           .filter((field) => field !== null),
       );
-      if (fields.size === 0) {
+      if (!showFieldErrors(setError, fields)) {
         setFailure({ error });
       }
-      [...fields].forEach((field, index) =>
-        setError(field, { type: SERVER }, { shouldFocus: index === 0 }),
-      );
     }
   });
   const pending = isSubmitting || leaving;
@@ -142,7 +138,7 @@ export function TripForm({ renderDestination }: TripFormProps) {
         if (type === 'too_big') {
           return t('errors.titleTooLong', { max: LIMITS.TRIP_TITLE_MAX });
         }
-        return type === SERVER ? t('errors.titleRejected') : t('errors.titleRequired');
+        return type === SERVER_ERROR ? t('errors.titleRejected') : t('errors.titleRequired');
       case 'destination':
         return type === 'too_big'
           ? t('errors.destinationTooLong', { max: LIMITS.DESTINATION_NAME_MAX })

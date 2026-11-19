@@ -10,7 +10,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useForm, type FieldError } from 'react-hook-form';
 import { apiFetch } from '@/lib/api/client';
-import { bodyFieldsOf, hasCode } from '@/lib/api/failure';
+import { bodyFieldsOf, hasCode, SERVER_ERROR, showFieldErrors } from '@/lib/api/failure';
 import { Button } from '@/shared/components/button/button';
 import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { PasswordField } from '@/shared/components/password-field/password-field';
@@ -19,7 +19,6 @@ import styles from './settings.module.css';
 
 const FIELDS = ['currentPassword', 'newPassword'] as const;
 /** The API refused a value that passed the shared schema here. */
-const SERVER = 'server';
 /** E10 422 `wrong_password`: the current password does not match. */
 const WRONG = 'wrong';
 /** The new password is the e-mail address or its local part. */
@@ -63,11 +62,8 @@ export function PasswordForm({ email }: { email: string }) {
       reset();
       showToast({ message: t('changed') });
     } catch (error) {
-      const fields = bodyFieldsOf(error, FIELDS);
-      const type = hasCode(error, 'wrong_password') ? WRONG : SERVER;
-      if (fields.length > 0) {
-        fields.forEach((field, index) => setError(field, { type }, { shouldFocus: index === 0 }));
-      } else {
+      const type = hasCode(error, 'wrong_password') ? WRONG : SERVER_ERROR;
+      if (!showFieldErrors(setError, bodyFieldsOf(error, FIELDS), type)) {
         setFailure({ error });
       }
     }
@@ -112,7 +108,7 @@ export function PasswordForm({ email }: { email: string }) {
     switch (error?.type) {
       case undefined:
         return undefined;
-      case SERVER:
+      case SERVER_ERROR:
         return t('errors.newRejected');
       case IS_EMAIL:
         return t('errors.newIsEmail');

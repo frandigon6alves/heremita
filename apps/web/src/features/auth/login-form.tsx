@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { apiFetch } from '@/lib/api/client';
-import { bodyFieldsOf, hasCode } from '@/lib/api/failure';
+import { bodyFieldsOf, hasCode, showFieldErrors } from '@/lib/api/failure';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
 import { FormAlert } from '@/shared/components/form-alert/form-alert';
@@ -54,12 +54,7 @@ export function LoginForm({ next }: LoginFormProps) {
       setLeaving(true);
       signedIn(me, next ?? routes.trips(locale));
     } catch (error) {
-      const fields = bodyFieldsOf(error, FIELDS);
-      if (fields.length > 0) {
-        fields.forEach((field, index) =>
-          setError(field, { type: 'server' }, { shouldFocus: index === 0 }),
-        );
-      } else {
+      if (!showFieldErrors(setError, bodyFieldsOf(error, FIELDS))) {
         setFormError({ error });
       }
     }

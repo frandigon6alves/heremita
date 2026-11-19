@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Controller, useForm, useWatch, type FieldError } from 'react-hook-form';
 import { apiFetch } from '@/lib/api/client';
-import { bodyFieldsOf, hasCode } from '@/lib/api/failure';
+import { bodyFieldsOf, hasCode, SERVER_ERROR, showFieldErrors } from '@/lib/api/failure';
 import { queryKeys } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
@@ -28,7 +28,6 @@ import styles from './review-form.module.css';
 const FIELDS = ['rating', 'visitedMonth', 'body'] as const;
 
 /** The API refused a field that passed the shared schema here. */
-const SERVER = 'server';
 /** Screen readers hear the character count at most this often while typing. */
 const COUNTER_ANNOUNCE_MS = 1000;
 
@@ -93,12 +92,7 @@ export function ReviewForm({ placeId, myReview, currentMonth }: ReviewFormProps)
       await save.mutateAsync(review);
       await backToPlace(myReview === null ? t('published') : t('updated'));
     } catch (error) {
-      const fields = bodyFieldsOf(error, FIELDS);
-      if (fields.length > 0) {
-        fields.forEach((field, index) =>
-          setError(field, { type: SERVER }, { shouldFocus: index === 0 }),
-        );
-      } else {
+      if (!showFieldErrors(setError, bodyFieldsOf(error, FIELDS))) {
         setFailure({ error });
       }
     }
@@ -205,7 +199,7 @@ export function ReviewForm({ placeId, myReview, currentMonth }: ReviewFormProps)
     if (error === undefined) {
       return undefined;
     }
-    return error.type === 'custom' || error.type === SERVER
+    return error.type === 'custom' || error.type === SERVER_ERROR
       ? t('visitedMonthFuture')
       : t('visitedMonthRequired');
   }

@@ -1,4 +1,5 @@
 import type { ErrorCode } from '@heremita/shared';
+import type { FieldPath, FieldValues, UseFormSetError } from 'react-hook-form';
 import { ApiProblemError, HttpError } from './problem';
 
 /** `fetch` rejects with a TypeError only when the request never got an HTTP answer. */
@@ -35,6 +36,24 @@ export function bodyPathsOf(error: unknown): string[][] {
 export function bodyFieldsOf<F extends string>(error: unknown, fields: readonly F[]): F[] {
   const named = new Set(bodyPathsOf(error).map(([field]) => field));
   return fields.filter((field) => named.has(field));
+}
+
+/** Error `type` of a field the API rejected; each form words it as "check this field". */
+export const SERVER_ERROR = 'server';
+
+/**
+ * Puts a failed submit's field errors on the form: each of `fields` gets an
+ * error of `type` and the first one takes the focus. `false` when there are
+ * none, so the form shows the failure as a whole instead.
+ */
+export function showFieldErrors<T extends FieldValues>(
+  setError: UseFormSetError<T>,
+  fields: Iterable<FieldPath<T>>,
+  type: string = SERVER_ERROR,
+): boolean {
+  const named = [...fields];
+  named.forEach((field, index) => setError(field, { type }, { shouldFocus: index === 0 }));
+  return named.length > 0;
 }
 
 /** A failed call as every screen explains it, before any code the screen handles itself. */

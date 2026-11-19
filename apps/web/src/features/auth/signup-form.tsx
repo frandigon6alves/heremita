@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useState, type ReactNode } from 'react';
 import { useForm, type FieldError } from 'react-hook-form';
 import { apiFetch } from '@/lib/api/client';
-import { bodyFieldsOf, hasCode } from '@/lib/api/failure';
+import { bodyFieldsOf, hasCode, SERVER_ERROR, showFieldErrors } from '@/lib/api/failure';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
 import { FormAlert } from '@/shared/components/form-alert/form-alert';
@@ -24,7 +24,6 @@ type SignUpField = (typeof FIELDS)[number];
 /** Marks the e-mail error that comes with a "Log in instead" link. */
 const EMAIL_TAKEN = 'email_taken';
 /** A field the API refused although it passed the shared schema here. */
-const SERVER = 'server';
 
 interface SignupFormProps {
   /** Validated `?next=`; without it a new account starts a trip. */
@@ -58,14 +57,9 @@ export function SignupForm({ next }: SignupFormProps) {
       setLeaving(true);
       signedIn(me, next ?? routes.newTrip(locale));
     } catch (error) {
-      const fields = bodyFieldsOf(error, FIELDS);
       if (hasCode(error, 'email_taken')) {
         setError('email', { type: EMAIL_TAKEN }, { shouldFocus: true });
-      } else if (fields.length > 0) {
-        fields.forEach((field, index) =>
-          setError(field, { type: SERVER }, { shouldFocus: index === 0 }),
-        );
-      } else {
+      } else if (!showFieldErrors(setError, bodyFieldsOf(error, FIELDS))) {
         setFormError({ error });
       }
     }
@@ -78,7 +72,7 @@ export function SignupForm({ next }: SignupFormProps) {
     }
     switch (field) {
       case 'displayName':
-        if (error.type === SERVER) {
+        if (error.type === SERVER_ERROR) {
           return t('errors.displayNameRejected');
         }
         return error.type === 'too_big'
@@ -93,7 +87,7 @@ export function SignupForm({ next }: SignupFormProps) {
             </>
           );
         }
-        return error.type === SERVER ? t('errors.emailRejected') : t('errors.emailInvalid');
+        return error.type === SERVER_ERROR ? t('errors.emailRejected') : t('errors.emailInvalid');
       case 'password':
         return passwordMessage(error.type, t);
     }
@@ -141,7 +135,7 @@ export function SignupForm({ next }: SignupFormProps) {
 
 function passwordMessage(type: string, t: ReturnType<typeof useTranslations<'auth'>>): string {
   switch (type) {
-    case SERVER:
+    case SERVER_ERROR:
       return t('errors.passwordRejected');
     case 'too_big':
       return t('errors.passwordTooLong', { max: LIMITS.PASSWORD_MAX });

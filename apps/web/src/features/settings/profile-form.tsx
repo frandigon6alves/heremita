@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm, type FieldError } from 'react-hook-form';
 import { apiFetch } from '@/lib/api/client';
-import { bodyFieldsOf } from '@/lib/api/failure';
+import { bodyFieldsOf, SERVER_ERROR, showFieldErrors } from '@/lib/api/failure';
 import { queryKeys } from '@/lib/api/query-keys';
 import { Button } from '@/shared/components/button/button';
 import { FormAlert } from '@/shared/components/form-alert/form-alert';
@@ -21,7 +21,6 @@ import styles from './settings.module.css';
 
 const FIELDS = ['displayName'] as const;
 /** The API refused a name that passed the shared schema here. */
-const SERVER = 'server';
 
 /** Display name (E9). Saved explicitly: a half-typed name never reaches other people. */
 export function ProfileForm({ displayName }: { displayName: string }) {
@@ -54,9 +53,7 @@ export function ProfileForm({ displayName }: { displayName: string }) {
       // The app bar shows the name from the server render.
       router.refresh();
     } catch (error) {
-      if (bodyFieldsOf(error, FIELDS).length > 0) {
-        setError('displayName', { type: SERVER }, { shouldFocus: true });
-      } else {
+      if (!showFieldErrors(setError, bodyFieldsOf(error, FIELDS))) {
         setFailure({ error });
       }
     }
@@ -82,7 +79,7 @@ export function ProfileForm({ displayName }: { displayName: string }) {
     if (error === undefined) {
       return undefined;
     }
-    if (error.type === SERVER) {
+    if (error.type === SERVER_ERROR) {
       return t('errors.rejected');
     }
     return error.type === 'too_big'

@@ -1,5 +1,5 @@
 import type { ProblemDetails } from '@heremita/shared';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   bodyFieldsOf,
   bodyPathsOf,
@@ -8,6 +8,8 @@ import {
   isNetworkError,
   problemCodeOf,
   requestIdOf,
+  SERVER_ERROR,
+  showFieldErrors,
 } from './failure';
 import { ApiProblemError, HttpError } from './problem';
 
@@ -83,5 +85,37 @@ describe('failure classification', () => {
     });
     expect(classifyFailure(problem('internal_error', 500))).toEqual({ kind: 'failed' });
     expect(classifyFailure(new Error('boom'))).toEqual({ kind: 'failed' });
+  });
+});
+
+describe('showFieldErrors', () => {
+  it('marks_every_field_and_focuses_only_the_first', () => {
+    const setError = vi.fn();
+
+    const shown = showFieldErrors<{ email: string; password: string }>(setError, [
+      'email',
+      'password',
+    ]);
+
+    expect(shown).toBe(true);
+    expect(setError.mock.calls).toEqual([
+      ['email', { type: SERVER_ERROR }, { shouldFocus: true }],
+      ['password', { type: SERVER_ERROR }, { shouldFocus: false }],
+    ]);
+  });
+
+  it('uses_the_given_type', () => {
+    const setError = vi.fn();
+
+    showFieldErrors<{ password: string }>(setError, ['password'], 'wrong');
+
+    expect(setError).toHaveBeenCalledWith('password', { type: 'wrong' }, { shouldFocus: true });
+  });
+
+  it('answers_false_and_marks_nothing_without_fields', () => {
+    const setError = vi.fn();
+
+    expect(showFieldErrors<{ email: string }>(setError, [])).toBe(false);
+    expect(setError).not.toHaveBeenCalled();
   });
 });

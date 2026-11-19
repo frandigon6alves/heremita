@@ -5,7 +5,7 @@ import { LIMITS } from '@heremita/shared/plain';
 import { useTranslations } from 'next-intl';
 import { useState, type ReactNode } from 'react';
 import { useForm, useWatch, type FieldErrors, type Resolver } from 'react-hook-form';
-import { bodyPathsOf } from '@/lib/api/failure';
+import { bodyPathsOf, SERVER_ERROR, showFieldErrors } from '@/lib/api/failure';
 import { Button } from '@/shared/components/button/button';
 import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { SegmentedControl } from '@/shared/components/segmented-control/segmented-control';
@@ -28,7 +28,6 @@ import {
 } from './trip-details-model';
 import styles from './trip-form.module.css';
 
-const SERVER = 'server';
 const MODES: readonly TravelMode[] = ['walk', 'bike', 'drive'];
 
 export interface TripDetailsFormProps {
@@ -94,12 +93,9 @@ export function TripDetailsForm({ trip, renderDestination }: TripDetailsFormProp
           .map(tripDetailsFieldOf)
           .filter((field) => field !== null),
       );
-      if (fields.size === 0) {
+      if (!showFieldErrors(setError, fields)) {
         setFailure({ error });
       }
-      [...fields].forEach((field, index) =>
-        setError(field, { type: SERVER }, { shouldFocus: index === 0 }),
-      );
     }
   });
 
@@ -128,7 +124,9 @@ export function TripDetailsForm({ trip, renderDestination }: TripDetailsFormProp
         if (type === 'too_big') {
           return tForm('errors.titleTooLong', { max: LIMITS.TRIP_TITLE_MAX });
         }
-        return type === SERVER ? tForm('errors.titleRejected') : tForm('errors.titleRequired');
+        return type === SERVER_ERROR
+          ? tForm('errors.titleRejected')
+          : tForm('errors.titleRequired');
       case 'description':
         return type === 'too_big'
           ? t('descriptionTooLong', { max: LIMITS.TRIP_DESCRIPTION_MAX })

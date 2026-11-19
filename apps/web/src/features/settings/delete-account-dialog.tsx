@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm, type FieldError } from 'react-hook-form';
 import { apiFetch } from '@/lib/api/client';
-import { bodyFieldsOf, hasCode } from '@/lib/api/failure';
+import { bodyFieldsOf, hasCode, SERVER_ERROR, showFieldErrors } from '@/lib/api/failure';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
 import { FormAlert } from '@/shared/components/form-alert/form-alert';
@@ -69,13 +69,8 @@ export function DeleteAccountDialog({ open, onClose }: DeleteAccountDialogProps)
     try {
       await remove.mutateAsync(body);
     } catch (error) {
-      if (bodyFieldsOf(error, FIELDS).length > 0) {
-        setError(
-          'password',
-          { type: hasCode(error, 'wrong_password') ? WRONG : 'server' },
-          { shouldFocus: true },
-        );
-      } else {
+      const type = hasCode(error, 'wrong_password') ? WRONG : SERVER_ERROR;
+      if (!showFieldErrors(setError, bodyFieldsOf(error, FIELDS), type)) {
         setFailure({ error });
       }
       return;
