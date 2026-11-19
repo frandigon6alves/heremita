@@ -36,6 +36,8 @@ export interface PlaceSearchComboboxProps extends Omit<PlaceSearchProps, 'defaul
   initialText: string;
   /** Focus the field and put the caret back, when the plain field had focus. */
   restoreCaret: CaretToRestore | null;
+  /** Text was typed into the plain field: open the suggestions for it at once. */
+  typedBefore: boolean;
 }
 
 /**
@@ -56,6 +58,7 @@ export function PlaceSearchCombobox({
   inputId,
   initialText,
   restoreCaret,
+  typedBefore,
 }: PlaceSearchComboboxProps) {
   const t = useTranslations('place-search.search');
   const tCommon = useTranslations('common');
@@ -90,7 +93,7 @@ export function PlaceSearchCombobox({
   });
   const usable = typed.length >= LIMITS.SEARCH_Q_MIN;
 
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(typedBefore);
   const search = useQuery({
     ...options,
     enabled: options.enabled === true && usable && menuOpen,

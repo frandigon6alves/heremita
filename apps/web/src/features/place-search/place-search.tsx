@@ -60,12 +60,19 @@ export function PlaceSearch({ defaultValue = '', ...props }: PlaceSearchProps) {
   const listboxId = `${inputId}-listbox`;
   const inputRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState(defaultValue);
+  const [typed, setTyped] = useState(false);
   const [loaded, setLoaded] = useState<{ Combobox: Combobox; caret: CaretToRestore | null }>();
   const Ready = loaded?.Combobox ?? loadedCombobox;
 
   if (Ready !== null) {
     return (
-      <Ready {...props} inputId={inputId} initialText={text} restoreCaret={loaded?.caret ?? null} />
+      <Ready
+        {...props}
+        inputId={inputId}
+        initialText={text}
+        restoreCaret={loaded?.caret ?? null}
+        typedBefore={typed}
+      />
     );
   }
 
@@ -89,6 +96,7 @@ export function PlaceSearch({ defaultValue = '', ...props }: PlaceSearchProps) {
 
   function change(next: string) {
     setText(next);
+    setTyped(next !== '');
     props.onInputChange?.(next);
   }
 

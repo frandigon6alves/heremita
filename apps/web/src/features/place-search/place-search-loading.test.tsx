@@ -1,6 +1,6 @@
 import { endpoints } from '@heremita/shared';
 import { screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { onEndpoint, okResponse, setupApiServer } from '../../../test/msw/handlers';
 import { renderWithProviders } from '../../../test/render';
 import { buildPlaceResult } from './test-support';
@@ -21,6 +21,10 @@ async function comboboxLoaded() {
     ),
   );
 }
+
+afterEach(() => {
+  vi.doUnmock('./place-search-combobox');
+});
 
 beforeEach(() => {
   server.use(
@@ -51,6 +55,26 @@ describe('PlaceSearch before its combobox loads', () => {
     const input = screen.getByRole('combobox', { name: 'Search places' });
     expect(input).toHaveValue('museu');
     expect(input).toHaveFocus();
+    expect(await screen.findByRole('option', { name: /Museu Nacional do Azulejo/ })).toBeVisible();
+  });
+
+  it('suggests_for_text_typed_in_full_before_the_combobox_loaded', async () => {
+    let release = () => {};
+    const downloaded = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    vi.doMock('./place-search-combobox', async (importOriginal) => {
+      await downloaded;
+      return importOriginal();
+    });
+    const PlaceSearch = await freshPlaceSearch();
+    const { user } = renderWithProviders(<PlaceSearch onSelect={vi.fn()} />);
+
+    // `fill` (paste, autofill) puts the whole text in before the download ends.
+    await user.click(screen.getByRole('combobox', { name: 'Search places' }));
+    await user.paste('museu');
+    release();
+
     expect(await screen.findByRole('option', { name: /Museu Nacional do Azulejo/ })).toBeVisible();
   });
 
