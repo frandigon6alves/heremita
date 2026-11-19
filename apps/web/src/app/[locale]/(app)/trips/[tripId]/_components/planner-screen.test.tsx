@@ -2,7 +2,7 @@ import { endpoints, type TripPlanOwner } from '@heremita/shared';
 import { onlineManager } from '@tanstack/react-query';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { delay } from 'msw';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   applyAddStop,
   applyCreateDay,
@@ -23,6 +23,7 @@ import { buildPlaceResult } from '@/features/place-search/test-support';
 import { resetToasts } from '@/shared/components/toast/toast-store';
 import { Toaster } from '@/shared/components/toast/toaster';
 import { installFakeMatchMedia } from '@/shared/hooks/match-media.test-support';
+import { loadPlaceSearchCombobox } from '@/features/place-search/place-search';
 import {
   buildMe,
   onEndpoint,
@@ -38,6 +39,11 @@ vi.mock('@/shared/map/trip-map', () => ({
 }));
 
 const server = setupApiServer();
+
+// The combobox loads on first focus in the app; here it is in from the start.
+beforeAll(async () => {
+  await loadPlaceSearchCombobox();
+});
 
 /** What the API holds: GET /plan answers it, writes that succeed change it. */
 let serverPlan: TripPlanOwner;

@@ -1,8 +1,9 @@
 import { endpoints, type CreateTripBody } from '@heremita/shared';
 import { screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildPlaceResult } from '@/features/place-search/test-support';
 import { buildTripOwner } from '@/features/trips/test-support';
+import { loadPlaceSearchCombobox } from '@/features/place-search/place-search';
 import {
   failWith,
   onEndpoint,
@@ -18,6 +19,11 @@ const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 const server = setupApiServer();
+
+// The combobox loads on first focus in the app; here it is in from the start.
+beforeAll(async () => {
+  await loadPlaceSearchCombobox();
+});
 
 beforeEach(() => push.mockReset());
 

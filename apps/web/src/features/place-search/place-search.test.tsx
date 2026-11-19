@@ -1,7 +1,7 @@
 import { endpoints } from '@heremita/shared';
 import { screen, waitFor } from '@testing-library/react';
 import { HttpResponse } from 'msw';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   failWith,
   networkErrorOn,
@@ -11,10 +11,15 @@ import {
   TEST_REQUEST_ID,
 } from '../../../test/msw/handlers';
 import { renderWithProviders } from '../../../test/render';
-import { PlaceSearch } from './place-search';
+import { loadPlaceSearchCombobox, PlaceSearch } from './place-search';
 import { buildPlaceResult } from './test-support';
 
 const server = setupApiServer();
+
+// The combobox loads on first focus in the app; here it is in from the start.
+beforeAll(async () => {
+  await loadPlaceSearchCombobox();
+});
 
 const azulejo = buildPlaceResult();
 const jeronimos = buildPlaceResult({
