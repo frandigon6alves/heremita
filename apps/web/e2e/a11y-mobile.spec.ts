@@ -75,6 +75,8 @@ async function visit(page: Page, url: string): Promise<void> {
 }
 
 test('no_page_scrolls_sideways_at_any_width', async ({ page, account, isMobile }) => {
+  // Every page at every width: about 30 s on a CI runner, the default timeout.
+  test.slow();
   const { urls } = await arrangeSitemap(account);
   const overflowing: string[] = [];
 
