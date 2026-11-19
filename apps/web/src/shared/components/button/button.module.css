@@ -73,6 +73,14 @@
   .ghost:hover:not(:disabled, [aria-disabled='true']) {
     background: var(--color-primary-soft);
   }
+
+  .primary:hover:not(:disabled, [aria-disabled='true']) {
+    background: var(--color-primary-hover);
+  }
+
+  .danger:hover:not(:disabled, [aria-disabled='true']) {
+    background: var(--color-danger-hover);
+  }
 }
 
 .icon {

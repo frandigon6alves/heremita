@@ -74,6 +74,17 @@
   transform: scale(var(--pressed-scale));
 }
 
+@media (hover: hover) {
+  .navLink:hover,
+  .link:hover {
+    background: var(--color-primary-soft);
+  }
+
+  .navPrimary:hover {
+    background: var(--color-primary-hover);
+  }
+}
+
 /* Phones: the footer carries Explore, so the bar keeps room for the account links. */
 .optionalOnPhone {
   display: none;

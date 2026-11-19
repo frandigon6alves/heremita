@@ -29,8 +29,10 @@
   text-decoration: none;
 }
 
-.author:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .author:hover {
+    text-decoration: underline;
+  }
 }
 
 .badge {

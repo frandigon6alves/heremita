@@ -57,6 +57,16 @@
   font-weight: 700;
 }
 
+@media (hover: hover) {
+  .segment:hover:not(:has(.input:checked, .input:disabled)) {
+    background: var(--color-primary-soft);
+  }
+
+  .segment:hover:has(.input:checked:not(:disabled)) {
+    background: var(--color-primary-hover);
+  }
+}
+
 .segment:active:not(:has(.input:disabled)) {
   transform: scale(var(--pressed-scale));
 }

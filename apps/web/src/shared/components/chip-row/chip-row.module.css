@@ -42,6 +42,17 @@
   font-weight: 700;
 }
 
+@media (hover: hover) {
+  .chip:hover:not([aria-pressed='true']) {
+    background: var(--color-primary-soft);
+  }
+
+  .chip[aria-pressed='true']:hover {
+    border-color: var(--color-primary-hover);
+    background: var(--color-primary-hover);
+  }
+}
+
 .swatch {
   width: 10px;
   height: 10px;
