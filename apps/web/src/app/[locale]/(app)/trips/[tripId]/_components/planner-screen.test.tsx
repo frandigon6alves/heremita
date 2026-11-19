@@ -363,6 +363,56 @@ describe('PlannerScreen removals', () => {
   });
 });
 
+describe('PlannerScreen undo of a delete', () => {
+  it('keeps_the_restored_place_when_a_later_day_refuses_it_and_retries_only_that_day', async () => {
+    const twoDays = applyAddStop(buildPlan(), dayId(2), {
+      id: stopId(8),
+      tripPlaceId: tripPlaceId(1),
+      modeToNext: null,
+    });
+    record(endpoints.deleteTripPlace, () =>
+      okResponse(endpoints.deleteTripPlace, { planVersion: 8 }),
+    );
+    const readds = record(endpoints.addTripPlace, () =>
+      okResponse(endpoints.addTripPlace, {
+        tripPlace: { ...buildTripPlace(1), id: tripPlaceId(9) },
+        stopId: stopId(9),
+        planVersion: 9,
+      }),
+    );
+    let refuse = true;
+    const extras = record(endpoints.addStop, () =>
+      refuse
+        ? problemResponse('internal_error')
+        : okResponse(endpoints.addStop, {
+            stop: { id: stopId(10), tripPlaceId: tripPlaceId(9), modeToNext: null },
+            planVersion: 10,
+          }),
+    );
+    const { user } = renderPlanner(twoDays);
+    await screen.findByRole('button', { name: 'Actions for Castelo de São Jorge' });
+
+    await user.click(rowItem('Castelo de São Jorge', 'Delete from trip'));
+    await toast('Castelo de São Jorge deleted from the trip');
+    await user.click(screen.getByRole('button', { name: 'Undo' }));
+
+    expect(
+      await toast('Castelo de São Jorge is back, but not on every day it was on.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Could not add Castelo de São Jorge.')).not.toBeInTheDocument();
+    refuse = false;
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+
+    await waitFor(() =>
+      expect(extras).toEqual([
+        { tripPlaceId: tripPlaceId(9), index: 1 },
+        { tripPlaceId: tripPlaceId(9), index: 1 },
+      ]),
+    );
+    expect(readds).toHaveLength(1);
+  });
+});
+
 describe('PlannerScreen adds', () => {
   function serveSearch() {
     const result = buildPlaceResult({ name: 'Museu do Azulejo' });

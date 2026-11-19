@@ -108,7 +108,8 @@
     "ordered": "Nova ordem aplicada",
     "orderFailed": "Não foi possível mudar a ordem.",
     "orderRestored": "Ordem anterior restaurada",
-    "planChanged": "A viagem mudou em outro lugar; mostrando a versão atual."
+    "planChanged": "A viagem mudou em outro lugar; mostrando a versão atual.",
+    "restoreIncomplete": "{name} voltou, mas não para todos os dias em que estava."
   },
   "categories": {
     "sight": "Atração",

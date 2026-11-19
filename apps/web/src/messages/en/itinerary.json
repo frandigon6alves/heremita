@@ -108,7 +108,8 @@
     "ordered": "New order applied",
     "orderFailed": "Could not change the order.",
     "orderRestored": "Previous order restored",
-    "planChanged": "The trip changed somewhere else; showing the current version."
+    "planChanged": "The trip changed somewhere else; showing the current version.",
+    "restoreIncomplete": "{name} is back, but not on every day it was on."
   },
   "categories": {
     "sight": "Sight",

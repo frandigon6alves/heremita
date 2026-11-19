@@ -53,8 +53,16 @@ interface AddVariables extends AddPlaceRequest {
   target: string;
 }
 
+type ExtraStop = NonNullable<AddPlaceRequest['extraStops']>[number];
+
 type AddResult =
-  | { kind: 'created'; tripPlaceId: string; response: AddTripPlaceResponse }
+  | {
+      kind: 'created';
+      tripPlaceId: string;
+      response: AddTripPlaceResponse;
+      /** Extra stops the server refused: the place itself is saved, so these never fail the add. */
+      failedStops: ExtraStop[];
+    }
   | { kind: 'existing'; tripPlaceId: string; stopId: string | null };
 
 interface MoveVariables {
@@ -136,18 +144,12 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
     changesCounts: true,
     mutationFn: async ({ place, note, dayId, index, extraStops = [] }) => {
       const schedule = dayId === null ? null : { dayId, index };
+      let response: AddTripPlaceResponse;
       try {
-        const response = await apiFetch(endpoints.addTripPlace, {
+        response = await apiFetch(endpoints.addTripPlace, {
           params: { tripId },
           body: { place, note: note ?? null, schedule },
         });
-        for (const stop of extraStops) {
-          await apiFetch(endpoints.addStop, {
-            params: { tripId, dayId: stop.dayId },
-            body: { tripPlaceId: response.tripPlace.id, index: stop.index },
-          });
-        }
-        return { kind: 'created', tripPlaceId: response.tripPlace.id, response };
       } catch (error) {
         const existing = error instanceof ApiProblemError ? error.tripPlaceId : undefined;
         if (errorCode(error) !== 'place_already_in_trip' || existing === undefined) {
@@ -162,6 +164,18 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
         });
         return { kind: 'existing', tripPlaceId: existing, stopId: added.stop.id };
       }
+      const failedStops: ExtraStop[] = [];
+      for (const stop of extraStops) {
+        try {
+          await apiFetch(endpoints.addStop, {
+            params: { tripId, dayId: stop.dayId },
+            body: { tripPlaceId: response.tripPlace.id, index: stop.index },
+          });
+        } catch {
+          failedStops.push(stop);
+        }
+      }
+      return { kind: 'created', tripPlaceId: response.tripPlace.id, response, failedStops };
     },
     optimistic: (plan, { pendingId, pendingStopId, preview, rating, note, dayId, index }) =>
       applyAddTripPlace(
@@ -201,6 +215,27 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
       });
       onAdded(result.tripPlaceId);
       if (result.kind === 'existing' && result.stopId === null) {
+        return;
+      }
+      if (result.kind === 'created' && result.failedStops.length > 0) {
+        const { failedStops, tripPlaceId } = result;
+        showToast({
+          message: t('restoreIncomplete', { name: preview.name }),
+          action: {
+            label: tActions('retry'),
+            onAction: () => {
+              for (const stop of failedStops) {
+                addStop.mutate({
+                  ...stop,
+                  tripPlaceId,
+                  name: preview.name,
+                  stopId: newPendingId(),
+                  target: targetName(stop.dayId),
+                });
+              }
+            },
+          },
+        });
         return;
       }
       showToast({
