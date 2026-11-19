@@ -228,6 +228,11 @@ Renaming the `checks` or `e2e` job means updating the Vercel Deployment Checks t
 
 ### One-time setup (owner, in this order)
 
+The live demo already exists, so steps 1 to 4 describe how it should be configured (or how to recreate it). Two settings must be checked on the existing services, because they were created before CI existed:
+
+- **Render:** if `heremita-api` was created from the Blueprint, the push of `autoDeployTrigger: checksPass` syncs on its own; otherwise (service created by hand) set Settings → Build & Deploy → Auto-Deploy → "After CI Checks Pass". Either way, confirm the dashboard shows that value.
+- **Vercel:** add the Deployment Checks `checks` and `e2e` (step 3, last bullet). Until then Vercel promotes every successful build of `main`, green CI or not.
+
 1. **Neon.** The repository is already linked to a Neon project (`neon.ts`, `.neon`, branch `production`). Make sure the project's region is AWS Frankfurt (`eu-central-1`, next to the Render service), then copy the **direct** (not pooled, no `-pooler` in the host) connection string of the `production` branch, with `sslmode=require`. Check the backup / point-in-time restore window of your plan.
 2. **Render.** New → Blueprint → pick this repository; Render reads `render.yaml` and creates `heremita-api` (free plan, Frankfurt). Fill the `sync: false` variables: `DATABASE_URL` (step 1), `WEB_ORIGIN` and `PUBLIC_SITE_URL` (the Vercel production URL, e.g. `https://heremita.vercel.app`; set them after step 3 if the URL is not known yet, then redeploy). `DEMO_PASSWORD` is generated. In the service's Settings → Build & Deploy, confirm Auto-Deploy shows "After CI Checks Pass". Note the service URL (`https://heremita-api.onrender.com` or similar).
 3. **Vercel.** Add New → Project → import this repository, then in the project settings:
@@ -252,7 +257,7 @@ A migration is committed with the code that needs it. After CI passes, Render bu
 
 ## Running in production
 
-Nothing is deployed yet; the planned hosts and their setup are in [CI/CD](#cicd). The code assumes this shape:
+The live demo runs on Vercel (web), Render (API) and Neon (database); their setup is in [CI/CD](#cicd). In general the code assumes this shape:
 
 - A reverse proxy that terminates TLS (with HSTS), serves only the web app and overwrites `X-Forwarded-For`.
 - The web app (`next start`, port 3100) and the API (`node dist/main.js`, port 3101, not exposed publicly), with `NODE_ENV=production`, `COOKIE_SECURE=true`, `SESSION_COOKIE_NAME=__Host-hm_session`, `PUBLIC_SITE_URL`, `WEB_ORIGIN`, `CONTACT_EMAIL` and the real provider settings. Build the web app with its final `API_URL` and map styles.
