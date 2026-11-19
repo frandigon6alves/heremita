@@ -40,9 +40,23 @@ vi.mock('@/shared/map/trip-map', () => ({
 
 const server = setupApiServer();
 
-// The combobox loads on first focus in the app; here it is in from the start.
+// Lazy parts are loaded before any test acts, so no test races them: the
+// search combobox (loaded on first focus in the app), and the owner's sortable
+// list, which renders read-only until dnd-kit loads and then replaces its rows,
+// so a click landing during that swap was lost (a flaky
+// opening_a_place_pushes_it_and_back_returns_to_the_list) and tests that read
+// the row menus at once passed only when an earlier test had loaded it.
 beforeAll(async () => {
   await loadPlaceSearchCombobox();
+  stubBrowser();
+  const { unmount } = renderPlanner();
+  await screen.findByRole(
+    'button',
+    { name: 'Actions for Castelo de São Jorge' },
+    { timeout: 10_000 },
+  );
+  unmount();
+  unstubBrowser();
 });
 
 /** What the API holds: GET /plan answers it, writes that succeed change it. */
@@ -111,11 +125,20 @@ function toast(text: string | RegExp) {
   return screen.findByText(text, { selector: 'li *, li' });
 }
 
-beforeEach(() => {
+/** What jsdom lacks and the planner calls. */
+function stubBrowser() {
   installFakeMatchMedia();
   HTMLElement.prototype.hidePopover = vi.fn();
   Element.prototype.scrollIntoView = vi.fn();
-});
+}
+
+function unstubBrowser() {
+  Reflect.deleteProperty(HTMLElement.prototype, 'hidePopover');
+  Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
+  vi.unstubAllGlobals();
+}
+
+beforeEach(stubBrowser);
 
 afterEach(() => {
   act(() => {
@@ -123,9 +146,7 @@ afterEach(() => {
     onlineManager.setOnline(true);
   });
   window.sessionStorage.clear();
-  Reflect.deleteProperty(HTMLElement.prototype, 'hidePopover');
-  Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
-  vi.unstubAllGlobals();
+  unstubBrowser();
 });
 
 describe('PlannerScreen read path', () => {
