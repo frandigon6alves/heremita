@@ -6,6 +6,7 @@ import {
   type CreateTripBody,
 } from '@heremita/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { BARCELONA_TRIP_ID, SEED_USERS, seedDatabase } from '../../prisma/seed-database.js';
 import { buildTestApp, type TestApp } from '../support/app.js';
 import { createUser, publishTrip, type TestUser } from '../support/factories.js';
 import { callOk, sendRaw } from '../support/http.js';
@@ -279,5 +280,24 @@ describe('E48 listPublicTrips', () => {
 
     expect(status).toBe(422);
     expect(problem.code).toBe('invalid_cursor');
+  });
+});
+
+describe('E48 listPublicTrips on the demo data', () => {
+  it('lists_the_seeded_barcelona_trip', async () => {
+    await seedDatabase(t.prisma, { NODE_ENV: 'test', DEMO_PASSWORD: 'seed-test-password' });
+
+    const page = await listPublic({ q: 'barcelona' });
+
+    expect(page.items).toEqual([
+      expect.objectContaining({
+        id: BARCELONA_TRIP_ID,
+        destinationName: 'Barcelona',
+        countryCode: 'ES',
+        dayCount: 2,
+        placeCount: 8,
+        author: { id: SEED_USERS.nuria.id, displayName: 'Núria Ferrer-Prueba', isDemo: true },
+      }),
+    ]);
   });
 });

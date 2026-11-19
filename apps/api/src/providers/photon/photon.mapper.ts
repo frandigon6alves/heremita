@@ -80,8 +80,14 @@ export const PHOTON_INCLUDE: Readonly<Record<Exclude<PlaceCategory, 'other'>, re
 /** Photon's bias zoom range; outside it the bias radius stops changing. */
 const PHOTON_ZOOM = { min: 3, max: 18 } as const;
 
-/** Photon speaks `default` (local names), `de`, `en`, `fr`; `lang=pt` is a 400. */
-export function photonLang(locale: Locale): 'default' | 'en' {
+/** The Photon languages Heremita asks for: English, or `default` (local names). */
+export type PhotonLang = 'default' | 'en';
+
+/**
+ * Photon speaks `default` (local names), `de`, `en`, `fr`; `lang=es` and
+ * `lang=pt` are a 400, so Spanish and Portuguese get the local names.
+ */
+export function photonLang(locale: Locale): PhotonLang {
   return locale === 'en' ? 'en' : 'default';
 }
 

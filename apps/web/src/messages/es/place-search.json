@@ -1,0 +1,32 @@
+{
+  "search": {
+    "label": "Buscar lugares",
+    "placeholder": "Buscar lugares",
+    "clear": "Borrar búsqueda",
+    "minChars": "Escribe al menos {min} caracteres.",
+    "searching": "Buscando…",
+    "results": "{count, plural, =0 {No se encontraron lugares} one {# lugar encontrado} many {# lugares encontrados} other {# lugares encontrados}}",
+    "empty": "No se encontraron lugares para “{query}”. Revisa cómo está escrito o prueba con otro nombre.",
+    "busy": "La búsqueda está saturada; vuelve a intentarlo en un momento.",
+    "unavailable": "La búsqueda no está disponible ahora. Vuelve a intentarlo más tarde.",
+    "offline": "Estás sin conexión. La búsqueda necesita conexión.",
+    "failed": "La búsqueda falló."
+  },
+  "whatsHere": {
+    "title": "¿Qué hay aquí?",
+    "nearby": "Lugares cercanos",
+    "empty": "No hay lugares con nombre a menos de 150 m de este punto.",
+    "failed": "No se pudieron cargar los lugares cercanos.",
+    "useExactPoint": "Usar este punto exacto",
+    "customName": "Nombre",
+    "customNameHint": "Cómo aparece este punto en tu viaje.",
+    "customNameRequired": "Ponle un nombre a este punto.",
+    "customNameTooLong": "Usa como máximo {max} caracteres.",
+    "coordinates": "Coordenadas",
+    "coordinatesLabel": "Latitud, longitud",
+    "coordinatesHint": "Por ejemplo: 38.7139, -9.1334",
+    "coordinatesInvalid": "Escribe la latitud (de −90 a 90) y la longitud (de −180 a 180), separadas por una coma.",
+    "coordinatesSubmit": "Ir a estas coordenadas",
+    "point": "Punto en {lat}, {lng}"
+  }
+}

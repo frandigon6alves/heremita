@@ -1,0 +1,20 @@
+{
+  "title": "Mapa del viaje",
+  "unavailable": "No se puede mostrar el mapa en este navegador. Todos los lugares siguen en la lista.",
+  "geolocateError": "No se pudo encontrar tu ubicación. Revisa el permiso de ubicación.",
+  "draftPin": "Marcador nuevo. Muévelo con las flechas (Shift lo mueve más lejos) y presiona Enter para elegir este punto.",
+  "controls": {
+    "toggleAttribution": "Mostrar créditos del mapa",
+    "mapFeedback": "Mejora este mapa",
+    "findMyLocation": "Mi ubicación",
+    "locationNotAvailable": "Ubicación no disponible",
+    "marker": "Marcador del mapa",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "resetBearing": "Orientar al norte",
+    "closePopup": "Cerrar",
+    "cooperativeWindows": "Usa Ctrl + desplazamiento para hacer zoom en el mapa",
+    "cooperativeMac": "Usa ⌘ + desplazamiento para hacer zoom en el mapa",
+    "cooperativeMobile": "Usa dos dedos para mover el mapa"
+  }
+}

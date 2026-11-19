@@ -4,8 +4,9 @@ import { copyTitle } from './copy-title.js';
 
 describe('copyTitle', () => {
   it('prefixes_the_title_in_the_copier_language', () => {
-    expect(copyTitle('Lisboa em 3 dias', 'pt-BR')).toBe('Cópia de Lisboa em 3 dias');
     expect(copyTitle('Lisboa em 3 dias', 'en')).toBe('Copy of Lisboa em 3 dias');
+    expect(copyTitle('Lisboa em 3 dias', 'es')).toBe('Copia de Lisboa em 3 dias');
+    expect(copyTitle('Lisboa em 3 dias', 'pt-BR')).toBe('Cópia de Lisboa em 3 dias');
   });
 
   it('cuts_a_long_title_to_the_limit', () => {

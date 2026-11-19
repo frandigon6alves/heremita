@@ -1,0 +1,64 @@
+{
+  "about": {
+    "metaTitle": "Acerca de",
+    "metaDescription": "Qué es Heremita, los datos abiertos y servicios gratuitos detrás de sus mapas, búsquedas y rutas, y cómo escribir al responsable.",
+    "title": "Acerca de Heremita",
+    "lead": "Heremita es un planificador de viajes para quienes viajan por su cuenta. Marca lugares en un mapa con notas privadas, organízalos por días y mira la ruta a pie, en bicicleta o en auto de cada día. Lee las reseñas de otros viajeros y copia viajes públicos para hacerlos tuyos.",
+    "credits": {
+      "heading": "Mapas, búsqueda y rutas",
+      "intro": "Heremita se apoya en datos abiertos y en servicios que voluntarios y organizaciones sin fines de lucro ofrecen gratis.",
+      "osm": "Datos del mapa © <link>colaboradores de OpenStreetMap</link>, disponibles bajo la Open Database License (ODbL). ¿Falta algo o hay un error? <fix>Corrige el mapa</fix>.",
+      "tiles": "Mapa base: <link>OpenFreeMap</link>, con <fallback>VersaTiles</fallback> cuando no responde.",
+      "routing": "Rutas: <link>OSRM</link> en los servidores de rutas de FOSSGIS e.V.",
+      "search": "Búsqueda de lugares: <link>Photon</link>, de komoot.",
+      "nominatim": "Resultados de búsqueda adicionales y detalles de lugares: <link>Nominatim</link>, de la OpenStreetMap Foundation, solo cuando esta instalación lo activa.",
+      "icons": "Iconos adaptados de <link>Lucide</link> (licencia ISC)."
+    }
+  },
+  "privacy": {
+    "metaTitle": "Privacidad",
+    "metaDescription": "Qué guarda Heremita, qué servicios reciben tus búsquedas y puntos de ruta, y cómo eliminar tus datos.",
+    "title": "Privacidad",
+    "lead": "Heremita guarda solo lo necesario para planificar tus viajes. No envía correos, no muestra anuncios y no usa analítica ni rastreo.",
+    "stored": {
+      "heading": "Qué guardamos",
+      "account": "Tu cuenta: nombre visible, correo electrónico, idioma y tema. Tu contraseña se guarda solo como hash irreversible.",
+      "sessions": "Sesiones iniciadas: un hash de la clave de sesión que guarda tu navegador. Una sesión termina cuando cierras sesión y, como máximo, a los 90 días.",
+      "trips": "Tus viajes: título, descripción, destino, fechas, días, lugares y su orden. Un viaje es privado salvo que lo compartas por enlace o lo hagas público. Los viajes compartidos y públicos muestran tu nombre visible, nunca tus fechas.",
+      "notes": "Tus notas sobre lugares son privadas: solo tú las ves. Nunca aparecen en viajes compartidos ni públicos y no se copian con un viaje.",
+      "reviews": "Tus reseñas son públicas, con tu nombre visible y el mes de tu visita.",
+      "reports": "Las denuncias que envías y las personas que bloqueas, para que la moderación pueda actuar y las personas bloqueadas queden fuera de tu vista."
+    },
+    "recipients": {
+      "heading": "Quién más recibe datos",
+      "intro": "Las búsquedas y las rutas pasan por nuestro servidor, que solo reenvía lo que cada servicio necesita: nunca tu nombre, tu correo ni tu cuenta. Estos servicios ven la dirección de nuestro servidor, no la tuya. Cada uno tiene su propia política de privacidad.",
+      "search": "<link>Photon</link> (komoot) recibe el texto que buscas, la posición del mapa con la que se ordenan los resultados y el punto que tocas para ver qué hay ahí.",
+      "nominatim": "<link>Nominatim</link> (OpenStreetMap Foundation), solo cuando esta instalación lo activa, recibe las búsquedas que Photon no pudo responder y los identificadores de mapa de los lugares que guardas.",
+      "routing": "<link>Las rutas de OSRM</link> (FOSSGIS e.V.) reciben las coordenadas de las paradas de un día para calcular su ruta y guardan las solicitudes en los registros de sus servidores.",
+      "tiles": "<link>OpenFreeMap</link>, y <fallback>VersaTiles</fallback> cuando no responde, envían las imágenes del mapa directamente a tu navegador, por lo que ven tu dirección IP y la zona del mapa que miras.",
+      "handoff": "Google Maps y Apple Maps reciben el inicio y el final de un tramo solo cuando abres allí cómo llegar.",
+      "location": "“Mi ubicación” usa la posición de tu dispositivo solo en este navegador, para mover el mapa; nunca se envía a nuestro servidor."
+    },
+    "browser": {
+      "heading": "Cookies y almacenamiento del navegador",
+      "intro": "Ninguna cookie de publicidad ni de analítica. Heremita guarda en tu navegador solo esto:",
+      "session": "una cookie de sesión, mientras tienes la sesión iniciada;",
+      "language": "una cookie de idioma (NEXT_LOCALE) con el último idioma que usaste;",
+      "theme": "tu elección de tema, en el almacenamiento local;",
+      "drafts": "una nota que estás escribiendo, en el almacenamiento de sesión de esta pestaña, hasta que se guarda."
+    },
+    "logs": {
+      "heading": "Registros del servidor",
+      "body": "Para detectar fallos, nuestro servidor registra de cada solicitud el método, el patrón de ruta, el estado, la duración y el identificador de la cuenta. No registra contraseñas, notas, texto de búsqueda ni coordenadas."
+    },
+    "deletion": {
+      "heading": "Eliminar tus datos",
+      "body": "En <link>Configuración</link>, “Eliminar cuenta” te pide la contraseña y luego elimina de una vez tu cuenta, sesiones, viajes, notas, reseñas y bloqueos. Las copias que otras personas hicieron de tus viajes públicos son suyas y se mantienen. Las denuncias que enviaste se mantienen sin tu nombre, para que la moderación conserve su historial."
+    }
+  },
+  "contact": {
+    "heading": "Contacto",
+    "body": "Preguntas, correcciones, denuncias de abuso o una contraseña olvidada: escribe a <email>{address}</email>.",
+    "notConfigured": "Esta instalación aún no ha configurado una dirección de contacto."
+  }
+}

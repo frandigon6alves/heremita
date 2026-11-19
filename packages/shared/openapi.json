@@ -3659,7 +3659,7 @@
           {
             "in": "query",
             "name": "locale",
-            "schema": { "type": "string", "enum": ["pt-BR", "en"] },
+            "schema": { "type": "string", "enum": ["en", "es", "pt-BR"] },
             "required": true
           },
           {
@@ -3784,7 +3784,7 @@
           {
             "in": "query",
             "name": "locale",
-            "schema": { "type": "string", "enum": ["pt-BR", "en"] },
+            "schema": { "type": "string", "enum": ["en", "es", "pt-BR"] },
             "required": true
           }
         ],
@@ -4635,7 +4635,7 @@
           "email": { "type": "string", "format": "email", "maxLength": 254 },
           "password": { "type": "string", "minLength": 12, "maxLength": 128 },
           "displayName": { "type": "string", "minLength": 1, "maxLength": 50 },
-          "locale": { "type": "string", "enum": ["pt-BR", "en"] }
+          "locale": { "type": "string", "enum": ["en", "es", "pt-BR"] }
         },
         "required": ["email", "password", "displayName", "locale"],
         "additionalProperties": false
@@ -4653,7 +4653,7 @@
         "type": "object",
         "properties": {
           "displayName": { "type": "string", "minLength": 1, "maxLength": 50 },
-          "locale": { "type": "string", "enum": ["pt-BR", "en"] },
+          "locale": { "type": "string", "enum": ["en", "es", "pt-BR"] },
           "theme": { "type": "string", "enum": ["system", "light", "dark"] }
         },
         "additionalProperties": false
@@ -5043,7 +5043,7 @@
           },
           "email": { "type": "string" },
           "displayName": { "type": "string" },
-          "locale": { "type": "string", "enum": ["pt-BR", "en"] },
+          "locale": { "type": "string", "enum": ["en", "es", "pt-BR"] },
           "theme": { "type": "string", "enum": ["system", "light", "dark"] },
           "role": { "type": "string", "enum": ["user", "moderator"] },
           "isDemo": { "type": "boolean" },
@@ -5175,7 +5175,7 @@
           "rating": { "type": "integer", "minimum": 1, "maximum": 5 },
           "body": { "type": "string" },
           "visitedMonth": { "type": "string", "pattern": "^\\d{4}-(0[1-9]|1[0-2])$" },
-          "language": { "type": "string", "enum": ["pt-BR", "en"] },
+          "language": { "type": "string", "enum": ["en", "es", "pt-BR"] },
           "author": { "$ref": "#/components/schemas/UserCard" },
           "status": { "type": "string", "enum": ["published", "hidden"] },
           "createdAt": {

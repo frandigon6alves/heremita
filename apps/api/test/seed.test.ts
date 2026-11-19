@@ -109,17 +109,29 @@ describe('seedDatabase', () => {
   it('marks_every_seeded_user_as_demo_with_one_moderator', async () => {
     const users = await seeded.prisma.user.findMany({ select: { isDemo: true, role: true } });
 
-    expect(users).toHaveLength(6);
+    expect(users).toHaveLength(7);
     expect(users.every((user) => user.isDemo)).toBe(true);
     expect(users.filter((user) => user.role === 'moderator')).toHaveLength(1);
   });
 
-  it('seeds_seven_public_one_link_and_two_private_trips_of_the_demo_user', async () => {
+  it('has_users_and_reviews_in_every_locale_with_an_english_demo_login', async () => {
+    const users = await seeded.prisma.user.findMany({ select: { locale: true } });
+    const reviews = await seeded.prisma.review.findMany({ select: { language: true } });
+    const demo = await seeded.prisma.user.findUniqueOrThrow({ where: { id: DEMO_USER.id } });
+
+    expect(new Set(users.map((user) => user.locale))).toEqual(new Set(['en', 'es', 'pt_BR']));
+    expect(new Set(reviews.map((review) => review.language))).toEqual(
+      new Set(['en', 'es', 'pt_BR']),
+    );
+    expect(demo.locale).toBe('en');
+  });
+
+  it('seeds_eight_public_one_link_and_two_private_trips_of_the_demo_user', async () => {
     const trips = await seeded.prisma.trip.findMany({
       select: { visibility: true, ownerId: true },
     });
 
-    expect(trips.filter((trip) => trip.visibility === 'public')).toHaveLength(7);
+    expect(trips.filter((trip) => trip.visibility === 'public')).toHaveLength(8);
     expect(trips.filter((trip) => trip.visibility === 'link')).toHaveLength(1);
     expect(trips.filter((trip) => trip.visibility === 'private')).toEqual([
       { visibility: 'private', ownerId: DEMO_USER.id },
@@ -173,7 +185,7 @@ describe('seedDatabase', () => {
     });
     const counts = perPlace.map((place) => place._count._all);
 
-    expect(counts.reduce((sum, n) => sum + n, 0)).toBe(90);
+    expect(counts.reduce((sum, n) => sum + n, 0)).toBe(115);
     expect(counts.filter((n) => n >= 6).length).toBeGreaterThanOrEqual(3);
     expect(counts.filter((n) => n < 6).length).toBeGreaterThan(counts.filter((n) => n >= 6).length);
     expect(await seeded.prisma.place.count()).toBeGreaterThan(perPlace.length);

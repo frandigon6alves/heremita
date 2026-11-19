@@ -1,5 +1,5 @@
-import { endpoints } from '@heremita/shared';
-import { act, screen, waitFor } from '@testing-library/react';
+import { endpoints, type Locale } from '@heremita/shared';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import { delay } from 'msw';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { queryKeys } from '@/lib/api/query-keys';
@@ -41,7 +41,7 @@ function recordPatches(respondAfterMs = 0) {
   return bodies;
 }
 
-function renderForm(locale: 'en' | 'pt-BR' = 'en') {
+function renderForm(locale: Locale = 'en') {
   return renderWithProviders(<PreferencesForm />, { locale, viewer: buildMe({ theme: 'light' }) });
 }
 
@@ -120,6 +120,24 @@ describe('PreferencesForm', () => {
     await waitFor(() => expect(bodies).toEqual([{ locale: 'en' }]));
     expect(await screen.findByText('Salvo')).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Idioma' })).toBeDisabled();
+  });
+
+  it('offers_every_language_named_in_itself', () => {
+    renderForm();
+
+    const languages = within(screen.getByRole('group', { name: 'Language' }));
+    expect(
+      languages.getAllByRole('radio').map((radio) => radio.closest('label')?.textContent),
+    ).toEqual(['English', 'Español', 'Português (Brasil)']);
+  });
+
+  it('saves_spanish_as_the_language', async () => {
+    const bodies = recordPatches();
+    const { user } = renderForm();
+
+    await user.click(screen.getByRole('radio', { name: 'Español' }));
+
+    await waitFor(() => expect(bodies).toEqual([{ locale: 'es' }]));
   });
 
   it('stays_on_the_language_when_saving_it_fails', async () => {

@@ -53,6 +53,12 @@ describe('nominatimLookupUrl', () => {
     expect(url.searchParams.get('osm_ids')).toBe('N4919986733,R5400890,W1370081491');
     expect(url.searchParams.get('accept-language')).toBe('en');
   });
+
+  it('asks_in_spanish_for_a_spanish_caller', () => {
+    const url = new URL(nominatimLookupUrl(NOMINATIM, ['osm:W:5013364'], 'es'));
+
+    expect(url.searchParams.get('accept-language')).toBe('es');
+  });
 });
 
 describe('parseNominatimAnswer', () => {

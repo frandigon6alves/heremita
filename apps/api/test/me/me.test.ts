@@ -44,6 +44,16 @@ describe('E9 updateMe', () => {
     expect((await sendRaw(agent, endpoints.getMe)).body).toEqual(response.body);
   });
 
+  it('switches_the_locale_to_spanish', async () => {
+    const { agent, user } = await createUser(t);
+
+    const response = await sendRaw(agent, endpoints.updateMe, { body: { locale: 'es' } });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ ...user, locale: 'es' });
+    expect((await sendRaw(agent, endpoints.getMe)).body).toEqual(response.body);
+  });
+
   it('changes_only_the_fields_sent', async () => {
     const { agent, user } = await createUser(t);
 

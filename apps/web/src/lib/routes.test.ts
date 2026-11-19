@@ -31,9 +31,12 @@ describe('routes', () => {
 });
 
 describe('isSafeNextPath', () => {
-  it.each(['/pt-BR/trips', '/en/trips/abc?day=ideas', '/en/'])('accepts %s', (next) => {
-    expect(isSafeNextPath(next)).toBe(true);
-  });
+  it.each(['/pt-BR/trips', '/es/trips', '/en/trips/abc?day=ideas', '/en/'])(
+    'accepts %s',
+    (next) => {
+      expect(isSafeNextPath(next)).toBe(true);
+    },
+  );
 
   it.each([
     null,
@@ -48,6 +51,7 @@ describe('isSafeNextPath', () => {
     '/fr/trips',
     'en/trips',
     '/english/trips',
+    '/espanol/trips',
   ])('rejects %s', (next) => {
     expect(isSafeNextPath(next)).toBe(false);
   });
@@ -58,6 +62,12 @@ describe('switchLocalePath', () => {
     expect(switchLocalePath('/pt-BR/trips/t1?day=ideas&place=p', 'en')).toBe(
       '/en/trips/t1?day=ideas&place=p',
     );
+  });
+
+  it('swaps_between_every_pair_of_locales', () => {
+    expect(switchLocalePath('/en/explore?q=lisboa', 'es')).toBe('/es/explore?q=lisboa');
+    expect(switchLocalePath('/es/explore?q=lisboa', 'pt-BR')).toBe('/pt-BR/explore?q=lisboa');
+    expect(switchLocalePath('/pt-BR/explore?q=lisboa', 'es')).toBe('/es/explore?q=lisboa');
   });
 
   it('handles_the_locale_root_with_and_without_query', () => {
@@ -71,6 +81,7 @@ describe('switchLocalePath', () => {
 
   it('does_not_mistake_a_longer_segment_for_a_locale', () => {
     expect(switchLocalePath('/english/x', 'pt-BR')).toBe('/pt-BR/english/x');
+    expect(switchLocalePath('/espresso', 'en')).toBe('/en/espresso');
   });
 });
 
@@ -87,6 +98,8 @@ describe('isPublicPath', () => {
     '/en/privacy',
     '/pt-BR/login',
     '/pt-BR/signup',
+    '/es',
+    '/es/explore',
   ])('is_public %s', (pathname) => {
     expect(isPublicPath(pathname)).toBe(true);
   });

@@ -1,6 +1,6 @@
 # Heremita
 
-Plan your own trip: places on a map with your private notes, a day-by-day itinerary you can reorder by touch, a route per day (walk, bike or drive) with distance and time, and reviews and public trips from other travellers. Mobile first, works on desktop. UI in Brazilian Portuguese (default) and English, light and dark themes.
+Plan your own trip: places on a map with your private notes, a day-by-day itinerary you can reorder by touch, a route per day (walk, bike or drive) with distance and time, and reviews and public trips from other travellers. Mobile first, works on desktop. UI in English (the official language) with Spanish and Brazilian Portuguese translations, light and dark themes. Every URL carries its locale (`/en`, `/es`, `/pt-BR`); `/` goes to the visitor's last used locale, else the best `Accept-Language` match, else English.
 
 | Workspace         | What it is                                                                          | Dev port |
 | ----------------- | ----------------------------------------------------------------------------------- | -------- |
@@ -34,9 +34,9 @@ pnpm db:seed         # demo users, places, public trips and reviews
 pnpm dev             # shared (tsc --watch) + api (watch + restart) + web (next dev)
 ```
 
-Open http://localhost:3100. Sign in as `demo@example.com` with the password in `DEMO_PASSWORD` (`apps/api/.env`, default `heremita-demo-2026`). The seed also creates five other demo users on `example.com` with the same password; `ana@example.com` is a moderator. Demo accounts carry an "Exemplo"/"Example" badge wherever their name is shown.
+Open http://localhost:3100. Sign in as `demo@example.com` with the password in `DEMO_PASSWORD` (`apps/api/.env`, default `heremita-demo-2026`). The seed also creates six other demo users on `example.com` with the same password; `ana@example.com` is a moderator. The demo login uses English, `diego@example.com` and `nuria@example.com` Spanish and `elena@example.com` English; the others use Brazilian Portuguese, so seeded reviews come in all three languages. Demo accounts carry an "Example"/"Ejemplo"/"Exemplo" badge wherever their name is shown. Public demo trips cover Lisboa, Rio de Janeiro, São Paulo, Paris and Barcelona (Núria's two-day plan, with her notes visible only when you sign in as her).
 
-With the default `.env`, search and routing in development call the public Photon and OSRM servers. To work offline or spare them, set `GEOCODING_PROVIDER=fake` and `ROUTING_PROVIDER=fake` in `apps/api/.env`: the fakes answer from a fixed gazetteer of about 60 real places in Lisboa, São Paulo, Rio de Janeiro and Paris.
+With the default `.env`, search and routing in development call the public Photon and OSRM servers. To work offline or spare them, set `GEOCODING_PROVIDER=fake` and `ROUTING_PROVIDER=fake` in `apps/api/.env`: the fakes answer from a fixed gazetteer of about 70 real places in Lisboa, São Paulo, Rio de Janeiro, Paris and Barcelona.
 
 ## Commands
 
@@ -106,7 +106,7 @@ Both apps validate their environment at start-up and stop with a list of the bad
 - **Database isolation.** Each API test run drops, recreates and migrates the template database `heremita_test` once; every integration file then clones it (`CREATE DATABASE … TEMPLATE heremita_test`) and drops its copy at the end, so files never share rows. Because the template is rebuilt per run, **two simultaneous API test runs against the same PostgreSQL are not supported**.
 - **Parallelism.** The API tests run on two workers and `pnpm test` runs the workspaces one after another: with more concurrency, the integration tests that loop many requests overran their timeouts. Pass `--maxWorkers=2` when running Vitest by hand.
 - **Authorisation.** `apps/api/test/authz-matrix.test.ts` has a row for every endpoint of the contract (anonymous, non-owner, owner, moderator and crossed-id cases) and fails when an endpoint has none; `apps/api/test/route-table.test.ts` fails when a Nest handler has no endpoint definition or an endpoint has no handler. A new endpoint needs both.
-- **End to end.** `pnpm e2e` builds and starts its own servers (API 3111, web 3110; it never reuses running ones), recreates the `heremita_e2e` database (drop and create, migrations, seed) before the API boots, uses the fake providers and a blank map style, and aborts any request that leaves localhost. Run `pnpm e2e:install` once per machine first. A run takes a few minutes because of the two production builds. Retries are off: a flaky test is a bug to fix or quarantine, never to retry. Reports land in `apps/web/playwright-report/`. The e2e builds go to `apps/api/dist-e2e` and `apps/web/.next-e2e`, so they never touch the dev servers' output.
+- **End to end.** `pnpm e2e` builds and starts its own servers (API 3111, web 3110; it never reuses running ones), recreates the `heremita_e2e` database (drop and create, migrations, seed) before the API boots, uses the fake providers and a blank map style, and aborts any request that leaves localhost. Run `pnpm e2e:install` once per machine first. A run takes a few minutes because of the two production builds. Most journeys run in English; the sign-up journey runs in Brazilian Portuguese, the sharing journeys in Spanish, and the settings journey switches English → Spanish → Portuguese. Retries are off: a flaky test is a bug to fix or quarantine, never to retry. Reports land in `apps/web/playwright-report/`. The e2e builds go to `apps/api/dist-e2e` and `apps/web/.next-e2e`, so they never touch the dev servers' output.
 - **Live providers.** Tests never reach the internet. `pnpm --filter @heremita/api test:live` is the manual check that the adapters still match the real services.
 
 ## Performance budget
@@ -139,7 +139,7 @@ The floor every page shares is about 212 KB: React DOM (73.5 KB), the Next.js cl
 These need a person with real devices or a real browser and were not automated:
 
 - **Real devices.** One pass of the main journeys on a real iPhone and a real Android phone, including the spacing between touch targets (at least 8 px; the e2e suite checks sizes, not spacing).
-- **Search ranking.** One search per locale (pt-BR and en) against the real Photon service, judging whether the results come in a sensible order.
+- **Search ranking.** One search per locale (en, es and pt-BR) against the real Photon service, judging whether the results come in a sensible order.
 - **Content Security Policy.** In a real browser with the console open, walk every page with the real map styles, then make OpenFreeMap unreachable (for example by blocking `tiles.openfreemap.org` in the browser's request blocking) so the map falls back to VersaTiles, and confirm no CSP violation is reported.
 
 ## Map and place providers
@@ -157,9 +157,9 @@ What the API does about it: every upstream call carries `User-Agent: Heremita/<a
 
 **Turning Nominatim on (owner decision).** Keep `NOMINATIM_ENABLED=false` in development and e2e. For production, read the Nominatim policy, then set `NOMINATIM_ENABLED=true` and `NOMINATIM_URL`. It is then used only for explicit searches where no Photon result name contains the query, and to look a place up again on save when its cached search result has expired. With it off, such a save answers 503 `geocoding_unavailable` and the app asks the user to search again.
 
-Known gap: Photon does not index Portuguese exonyms ("Torre Eiffel", "Munique"), so pt-BR users see local or English place names.
+Known gap: Photon answers only in English, German, French or local names, and does not index Spanish or Portuguese exonyms ("Torre Eiffel", "Munique"), so es and pt-BR users see local names.
 
-Self-hosting is the way out when the terms stop fitting (sustained 429s, a high-traffic or commercial site) or Portuguese search matters; only the base URLs change. A planet-wide Photon needs about 95 GB of disk and 64 GB of RAM, and Portuguese names need the full JSON dump imported with `-languages pt,…`; a regional OSRM extract needs far less than the FOSSGIS servers.
+Self-hosting is the way out when the terms stop fitting (sustained 429s, a high-traffic or commercial site) or Spanish or Portuguese search matters; only the base URLs change. A planet-wide Photon needs about 95 GB of disk and 64 GB of RAM, and Spanish or Portuguese names need the full JSON dump imported with `-languages es,pt,…`; a regional OSRM extract needs far less than the FOSSGIS servers.
 
 ## Owner operations
 

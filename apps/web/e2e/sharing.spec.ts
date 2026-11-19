@@ -5,9 +5,10 @@ import { accountTest as test, expect, expectAccessible } from './support/fixture
 import { expectMapReady, toasts } from './support/planner';
 import { checkOnceHydrated } from './support/ui';
 
-test.use({ locale: 'pt-BR' });
+// The whole journey runs in Spanish: owner, visitor and reader.
+test.use({ locale: 'es' });
 
-const NOTE = 'Comprar ingresso combinado na bilheteria do Mosteiro.';
+const NOTE = 'Comprar la entrada combinada en la taquilla del Monasterio.';
 
 async function arrangeDatedTripWithNote(account: Account, title: string) {
   const trip = await arrangeTrip(account.api, {
@@ -26,11 +27,11 @@ async function arrangeDatedTripWithNote(account: Account, title: string) {
   return trip;
 }
 
-async function chooseVisibility(page: Page, tripId: string, label: 'Pública' | 'Por link') {
-  await page.goto(`/pt-BR/trips/${tripId}/settings`);
+async function chooseVisibility(page: Page, tripId: string, label: 'Público' | 'Por enlace') {
+  await page.goto(`/es/trips/${tripId}/settings`);
   const radio = page.getByRole('radio', { name: new RegExp(`^${label}`) });
   await checkOnceHydrated(radio);
-  await expect(page.getByText('Salvo', { exact: true })).toBeVisible();
+  await expect(page.getByText('Guardado', { exact: true })).toBeVisible();
 }
 
 test('publishes_a_trip_a_visitor_copies_it_after_logging_in', async ({
@@ -39,36 +40,40 @@ test('publishes_a_trip_a_visitor_copies_it_after_logging_in', async ({
   openContext,
   makeAccount,
 }) => {
-  const trip = await arrangeDatedTripWithNote(account, 'Belém e arredores');
+  const trip = await arrangeDatedTripWithNote(account, 'Belém y alrededores');
 
-  await chooseVisibility(page, trip.id, 'Pública');
+  await chooseVisibility(page, trip.id, 'Público');
   await expectAccessible(page);
 
   // A visitor, signed out: the public page shows the trip without notes or dates.
   const visitorContext = await openContext();
   const visitor = await visitorContext.newPage();
-  await visitor.goto(`/pt-BR/t/${trip.id}`);
-  await expect(visitor.getByRole('heading', { level: 1, name: 'Belém e arredores' })).toBeVisible();
+  await visitor.goto(`/es/t/${trip.id}`);
+  await expect(
+    visitor.getByRole('heading', { level: 1, name: 'Belém y alrededores' }),
+  ).toBeVisible();
   await expect(visitor.getByText(`por ${account.me.displayName}`)).toBeVisible();
-  await expect(visitor.getByText('2 dias')).toBeVisible();
+  await expect(visitor.getByText('2 días')).toBeVisible();
   await expectMapReady(visitor);
   await visitor.getByRole('button', { name: /^Torre de Belém/ }).click();
   await expect(visitor.getByRole('heading', { level: 3, name: 'Torre de Belém' })).toBeVisible();
   await expect(visitor.getByText(NOTE)).toHaveCount(0);
-  await expect(visitor.getByText(/2027|10 de mar|mar\. 2027/)).toHaveCount(0);
+  await expect(visitor.getByText(/2027|10 mar/)).toHaveCount(0);
   await expectAccessible(visitor);
 
   // Copy asks to log in, then resumes the copy (`?copy=1`).
-  const reader = await makeAccount('Leitora');
+  const reader = await makeAccount('Lectora');
   await visitor.getByRole('link', { name: 'Copiar' }).click();
-  await expect(visitor).toHaveURL(/\/pt-BR\/login\?next=/);
-  await visitor.getByRole('textbox', { name: 'E-mail' }).fill(reader.email);
-  await visitor.getByLabel('Senha', { exact: true }).fill(reader.password);
-  await visitor.getByRole('button', { name: 'Entrar' }).click();
+  await expect(visitor).toHaveURL(/\/es\/login\?next=/);
+  await visitor.getByRole('textbox', { name: 'Correo electrónico' }).fill(reader.email);
+  await visitor.getByLabel('Contraseña', { exact: true }).fill(reader.password);
+  await visitor.getByRole('button', { name: 'Iniciar sesión' }).click();
 
-  await expect(toasts(visitor).getByText('Cópia criada: Cópia de Belém e arredores')).toBeVisible();
-  await visitor.goto('/pt-BR/trips');
-  await expect(visitor.getByRole('link', { name: /^Cópia de Belém e arredores/ })).toBeVisible();
+  await expect(
+    toasts(visitor, 'Notificaciones').getByText('Copia creada: Copia de Belém y alrededores'),
+  ).toBeVisible();
+  await visitor.goto('/es/trips');
+  await expect(visitor.getByRole('link', { name: /^Copia de Belém y alrededores/ })).toBeVisible();
   await expectAccessible(visitor);
 });
 
@@ -77,31 +82,31 @@ test('shares_a_trip_by_link_and_a_new_link_kills_the_old_one', async ({
   account,
   openContext,
 }) => {
-  const trip = await arrangeDatedTripWithNote(account, 'Só para amigos');
+  const trip = await arrangeDatedTripWithNote(account, 'Solo para amigos');
 
-  await chooseVisibility(page, trip.id, 'Por link');
-  const shareField = page.getByRole('textbox', { name: 'Link para compartilhar' });
-  await expect(shareField).toHaveValue(/\/pt-BR\/s\/[\w-]+$/);
+  await chooseVisibility(page, trip.id, 'Por enlace');
+  const shareField = page.getByRole('textbox', { name: 'Enlace para compartir' });
+  await expect(shareField).toHaveValue(/\/es\/s\/[\w-]+$/);
   const firstLink = await shareField.inputValue();
 
   const friend = await (await openContext()).newPage();
   await friend.goto(firstLink);
-  await expect(friend.getByRole('heading', { level: 1, name: 'Só para amigos' })).toBeVisible();
+  await expect(friend.getByRole('heading', { level: 1, name: 'Solo para amigos' })).toBeVisible();
   await expect(friend.getByText(NOTE)).toHaveCount(0);
   await expectAccessible(friend);
 
-  await page.getByRole('button', { name: 'Gerar novo link' }).click();
+  await page.getByRole('button', { name: 'Crear un enlace nuevo' }).click();
   await page
-    .getByRole('dialog', { name: 'Gerar um novo link?' })
-    .getByRole('button', { name: 'Gerar novo link' })
+    .getByRole('dialog', { name: '¿Crear un enlace nuevo?' })
+    .getByRole('button', { name: 'Crear enlace nuevo' })
     .click();
   await expect(shareField).not.toHaveValue(firstLink);
   const secondLink = await shareField.inputValue();
 
   await friend.reload();
   await expect(
-    friend.getByRole('heading', { level: 1, name: 'Página não encontrada' }),
+    friend.getByRole('heading', { level: 1, name: 'Página no encontrada' }),
   ).toBeVisible();
   await friend.goto(secondLink);
-  await expect(friend.getByRole('heading', { level: 1, name: 'Só para amigos' })).toBeVisible();
+  await expect(friend.getByRole('heading', { level: 1, name: 'Solo para amigos' })).toBeVisible();
 });

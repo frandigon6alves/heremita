@@ -1,0 +1,141 @@
+{
+  "mine": {
+    "metaTitle": "Mis viajes",
+    "title": "Mis viajes",
+    "newTrip": "Nuevo viaje",
+    "emptyTitle": "Aún no tienes viajes",
+    "emptyBody": "Empieza uno ahora: marca lugares en el mapa y organízalos por días.",
+    "emptyExplore": "O copia uno de Explorar",
+    "failed": "No se pudieron cargar tus viajes.",
+    "moreFailed": "No se pudieron cargar más viajes."
+  },
+  "card": {
+    "visibility": {
+      "private": "Privado",
+      "link": "Por enlace",
+      "public": "Público"
+    }
+  },
+  "new": {
+    "metaTitle": "Nuevo viaje",
+    "title": "Nuevo viaje",
+    "back": "Mis viajes"
+  },
+  "form": {
+    "title": "Título",
+    "titleHint": "Por ejemplo: Lisboa en marzo",
+    "destination": "Destino",
+    "destinationHint": "Opcional. Elige una sugerencia para abrir el mapa allí o simplemente escribe un nombre.",
+    "dates": "Fechas",
+    "noDates": "Sin fechas",
+    "withDates": "Con fechas",
+    "startDate": "Primer día",
+    "endDate": "Último día",
+    "rangeDays": "{count, plural, =0 {Sin días} one {# día} many {# días} other {# días}}",
+    "dayCount": "Número de días",
+    "dayCountHint": "De 1 a {max}. Puedes agregar o quitar días más adelante.",
+    "submit": "Crear y abrir",
+    "submitting": "Creando…",
+    "errors": {
+      "titleRequired": "Ponle un título al viaje.",
+      "titleTooLong": "Usa como máximo {max} caracteres.",
+      "titleRejected": "Este título no se aceptó. Prueba con otro.",
+      "destinationTooLong": "Usa como máximo {max} caracteres para el destino.",
+      "destinationRejected": "Este destino no se aceptó. Prueba con otro.",
+      "startRequired": "Elige el primer día.",
+      "startInvalid": "Esta fecha no se aceptó.",
+      "endRequired": "Elige el último día.",
+      "endBeforeStart": "El último día no puede ser anterior al primero.",
+      "rangeTooLong": "Un viaje tiene como máximo {max} días.",
+      "dayCountInvalid": "Escribe un número entero de días de 1 a {max}.",
+      "limitReached": "Llegaste al límite de {max} viajes. Elimina uno para crear otro.",
+      "offline": "Sin conexión. Revísala y vuelve a intentarlo.",
+      "unexpected": "No se pudo guardar el viaje. Vuelve a intentarlo."
+    }
+  },
+  "modes": {
+    "walk": "A pie",
+    "bike": "Bicicleta",
+    "drive": "Auto"
+  },
+  "settings": {
+    "metaTitle": "Ajustes del viaje · {title}",
+    "title": "Ajustes del viaje",
+    "back": "Volver al viaje",
+    "sharingHeading": "Visibilidad y uso compartido",
+    "details": {
+      "heading": "Detalles",
+      "description": "Descripción",
+      "descriptionHint": "Opcional, hasta {max} caracteres. La ve quien pueda ver el viaje.",
+      "descriptionTooLong": "Usa como máximo {max} caracteres.",
+      "descriptionRejected": "Esta descripción no se aceptó. Prueba con otra.",
+      "startDate": "Primer día",
+      "startDateHint": "Opcional. El número de días se cambia en el planificador.",
+      "defaultMode": "Medio de transporte predeterminado",
+      "modeRejected": "Este medio de transporte no se aceptó.",
+      "save": "Guardar cambios",
+      "saving": "Guardando…",
+      "failed": "No se pudieron guardar los cambios. Vuelve a intentarlo.",
+      "offline": "Sin conexión. Revísala y vuelve a intentarlo."
+    },
+    "visibility": {
+      "legend": "Quién puede ver este viaje",
+      "private": {
+        "label": "Privado",
+        "hint": "Solo tú."
+      },
+      "link": {
+        "label": "Por enlace",
+        "hint": "Cualquiera con el enlace. Nunca aparece en Explorar."
+      },
+      "public": {
+        "label": "Público",
+        "hint": "Aparece en Explorar. Tus notas y fechas siguen ocultas."
+      },
+      "failed": "Visibilidad no guardada."
+    },
+    "share": {
+      "label": "Enlace para compartir",
+      "hint": "Quien lo abra verá el viaje sin tus notas ni tus fechas.",
+      "copy": "Copiar enlace",
+      "copied": "Enlace copiado.",
+      "copyFailed": "No se pudo copiar el enlace. Selecciónalo y cópialo a mano.",
+      "share": "Compartir",
+      "shareFailed": "No se pudo compartir el enlace.",
+      "rotate": "Crear un enlace nuevo",
+      "rotateTitle": "¿Crear un enlace nuevo?",
+      "rotateBody": "El enlace actual deja de funcionar de inmediato. Quien lo tenga necesitará el nuevo.",
+      "rotateConfirm": "Crear enlace nuevo",
+      "rotated": "Enlace nuevo creado. El anterior ya no funciona.",
+      "rotateFailed": "No se pudo crear un enlace nuevo. Vuelve a intentarlo.",
+      "rotateOffline": "Sin conexión. Revísala y vuelve a intentarlo.",
+      "nowPrivate": "El viaje ahora es privado, así que no tiene enlace."
+    },
+    "duplicate": {
+      "heading": "Duplicar",
+      "body": "Haz una copia privada de este viaje con los mismos días y lugares, sin notas ni fechas.",
+      "button": "Duplicar"
+    },
+    "danger": {
+      "heading": "Eliminar viaje",
+      "body": "Al eliminarlo se borran para siempre los días, los lugares, las notas y el enlace para compartir."
+    }
+  },
+  "copy": {
+    "copying": "Copiando…",
+    "done": "Copia creada: {title}",
+    "open": "Abrir copia",
+    "limitReached": "Llegaste al límite de viajes. Elimina uno para copiar otro.",
+    "failed": "No se pudo copiar el viaje.",
+    "offline": "Sin conexión. El viaje no se copió."
+  },
+  "delete": {
+    "button": "Eliminar viaje",
+    "title": "¿Eliminar “{title}”?",
+    "body": "No se puede deshacer. Los días, los lugares, las notas y el enlace para compartir se eliminan con él.",
+    "confirm": "Eliminar viaje",
+    "done": "Viaje eliminado: {title}",
+    "failed": "No se pudo eliminar el viaje. Vuelve a intentarlo.",
+    "offline": "Sin conexión. El viaje no se eliminó."
+  }
+}

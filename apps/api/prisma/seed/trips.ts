@@ -43,6 +43,7 @@ const SAO_PAULO = {
   center: { lng: -46.6333, lat: -23.5505 },
 };
 const PARIS = { name: 'Paris', countryCode: 'FR', center: { lng: 2.3522, lat: 48.8566 } };
+const BARCELONA = { name: 'Barcelona', countryCode: 'ES', center: { lng: 2.1734, lat: 41.3851 } };
 
 const stops = (...places: GazetteerName[]): SeedStop[] => places.map((place) => ({ place }));
 
@@ -50,7 +51,7 @@ export const SEED_TRIPS: SeedTrip[] = [
   {
     number: 1,
     owner: 'demo',
-    title: 'Lisboa em 3 dias',
+    title: 'Lisbon in 3 days',
     description: null,
     destination: LISBOA,
     startDate: '2027-05-14',
@@ -75,15 +76,15 @@ export const SEED_TRIPS: SeedTrip[] = [
     ],
     ideas: ['timeOutMarket', 'lxFactory', 'oceanarioDeLisboa', 'pensaoAmor'],
     notes: {
-      casteloDeSaoJorge: 'Comprar o ingresso online na véspera; abre às 9h.',
-      pasteisDeBelem: 'Pedir para levar e comer no jardim em frente.',
-      oceanarioDeLisboa: 'Ver se encaixa na manhã do terceiro dia.',
+      casteloDeSaoJorge: 'Buy the ticket online the day before; opens at 9:00.',
+      pasteisDeBelem: 'Order to take away and eat in the garden across the road.',
+      oceanarioDeLisboa: 'See if it fits into the morning of day three.',
     },
   },
   {
     number: 2,
     owner: 'demo',
-    title: 'Próxima viagem',
+    title: 'Next trip',
     description: null,
     destination: null,
     startDate: null,
@@ -203,7 +204,7 @@ export const SEED_TRIPS: SeedTrip[] = [
   {
     number: 6,
     owner: 'diego',
-    title: 'Rio em 2 dias, versão corrida',
+    title: 'Río en 2 días, versión exprés',
     description: null,
     destination: RIO,
     startDate: null,
@@ -225,8 +226,8 @@ export const SEED_TRIPS: SeedTrip[] = [
   {
     number: 7,
     owner: 'diego',
-    title: 'Fim de semana em São Paulo',
-    description: 'Sábado no centro a pé, domingo de carro entre a Paulista e o Ibirapuera.',
+    title: 'Fin de semana en São Paulo',
+    description: 'Sábado a pie por el centro, domingo en coche entre la Paulista y el Ibirapuera.',
     destination: SAO_PAULO,
     startDate: '2026-03-21',
     visibility: 'public',
@@ -251,7 +252,7 @@ export const SEED_TRIPS: SeedTrip[] = [
       },
     ],
     ideas: ['museuDoFutebol'],
-    notes: { mercadoMunicipal: 'Sanduíche de mortadela no andar de cima.' },
+    notes: { mercadoMunicipal: 'Sándwich de mortadela en la planta de arriba.' },
   },
   {
     number: 8,
@@ -333,9 +334,40 @@ export const SEED_TRIPS: SeedTrip[] = [
     ideas: [],
     notes: {},
   },
+  {
+    number: 11,
+    owner: 'nuria',
+    title: 'Barcelona en 2 días: Gaudí, casco antiguo y playa',
+    description:
+      'Dos días a pie entre las obras de Gaudí, el casco antiguo y el mar; solo un tramo en taxi para bajar de los búnkeres.',
+    destination: BARCELONA,
+    startDate: '2026-10-09',
+    visibility: 'public',
+    defaultMode: 'walk',
+    copiedFrom: null,
+    createdAt: '2026-09-28T17:00:00.000Z',
+    updatedAt: '2026-10-02T08:40:00.000Z',
+    days: [
+      { stops: stops('sagradaFamilia', 'casaBatllo', 'laBoqueria', 'museuPicasso') },
+      {
+        stops: [
+          { place: 'parcGuell' },
+          { place: 'bunkersDelCarmel', modeToNext: 'drive' },
+          { place: 'platjaDeLaBarceloneta' },
+        ],
+      },
+    ],
+    ideas: ['museuDeCienciesNaturals'],
+    notes: {
+      sagradaFamilia: 'Entradas para las 9:15. Llegar diez minutos antes por el control.',
+      laBoqueria: 'Ir antes de las 11; después se llena de grupos.',
+      bunkersDelCarmel: 'Subir al atardecer y llevar abrigo: arriba sopla el viento.',
+    },
+  },
 ];
 
 export const LISBON_TRIP_ID = seedId('trip', 1);
+export const BARCELONA_TRIP_ID = seedId('trip', 11);
 
 /** Fixed 22-character share token of a seeded trip (dev data only: the seed refuses production). */
 export function seedShareToken(tripNumber: number): string {

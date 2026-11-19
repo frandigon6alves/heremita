@@ -1,7 +1,9 @@
 import {
+  DEFAULT_LOCALE,
   endpoints,
   type EndpointDef,
   type EndpointOutput,
+  type Locale,
   type Me,
   type TripPlanOwner,
 } from '@heremita/shared';
@@ -59,11 +61,16 @@ export async function newApiContext(
 /** Signs up through the API; the returned client carries the new session cookie. */
 export async function signUp(
   context: APIRequestContext,
-  { displayName, email, password }: { displayName: string; email: string; password: string },
+  {
+    displayName,
+    email,
+    password,
+    locale = DEFAULT_LOCALE,
+  }: { displayName: string; email: string; password: string; locale?: Locale },
 ): Promise<Account> {
   const api = new ApiClient(context);
   const me = await api.call(endpoints.signUp, {
-    body: { displayName, email, password, locale: 'pt-BR' },
+    body: { displayName, email, password, locale },
   });
   return { me, email, password, storageState: await context.storageState(), api };
 }
@@ -130,7 +137,7 @@ export async function readPlan(api: ApiClient, tripId: string): Promise<TripPlan
   return plan;
 }
 
-/** Place names of a day, in visit order (`dayIndex` 0 = Dia 1). */
+/** Place names of a day, in visit order (`dayIndex` 0 = day 1). */
 export function dayPlaceNames(plan: TripPlanOwner, dayIndex: number): string[] {
   const day = plan.days[dayIndex];
   return (day?.stops ?? []).map(

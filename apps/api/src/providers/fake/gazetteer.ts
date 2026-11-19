@@ -1,16 +1,10 @@
 // Generated from the Photon answers saved in test/fixtures/upstream/responses-seed/
-// (lang=default for pt-BR, lang=en for en) through the Photon mapper. Real OpenStreetMap
+// (lang=default and lang=en) through the Photon mapper. Real OpenStreetMap
 // objects: © OpenStreetMap contributors, ODbL. Used by the fake geocoder and by the seed.
-import type {
-  BoundingBox,
-  LngLat,
-  Locale,
-  PlaceAddress,
-  PlaceCategory,
-  PlaceKey,
-} from '@heremita/shared';
+import type { BoundingBox, LngLat, PlaceAddress, PlaceCategory, PlaceKey } from '@heremita/shared';
+import type { PhotonLang } from '../photon/photon.mapper.js';
 
-export type GazetteerCity = 'lisboa' | 'sao-paulo' | 'rio-de-janeiro' | 'paris';
+export type GazetteerCity = 'lisboa' | 'sao-paulo' | 'rio-de-janeiro' | 'paris' | 'barcelona';
 
 export interface GazetteerPlace {
   key: PlaceKey;
@@ -23,8 +17,8 @@ export interface GazetteerPlace {
   location: LngLat;
   bbox?: BoundingBox;
   countryCode: string;
-  /** Photon `lang=default` (local names) serves pt-BR; `lang=en` serves en. */
-  localized: Record<Locale, { name: string; label: string; address: PlaceAddress }>;
+  /** The place as Photon answers it in each of its languages (see `photonLang`). */
+  localized: Record<PhotonLang, { name: string; label: string; address: PlaceAddress }>;
 }
 
 export const GAZETTEER_KEYS = {
@@ -86,6 +80,15 @@ export const GAZETTEER_KEYS = {
   sacreCoeur: 'osm:W:23762981',
   arcDeTriomphe: 'osm:W:226413508',
   gareDuNord: 'osm:N:5364676905',
+  sagradaFamilia: 'osm:R:9194723',
+  parcGuell: 'osm:W:66713401',
+  casaBatllo: 'osm:R:9427554',
+  laBoqueria: 'osm:R:6288735',
+  boqueriaMetroEntrance: 'osm:N:1238021386',
+  platjaDeLaBarceloneta: 'osm:R:7333373',
+  museuPicasso: 'osm:W:188938001',
+  museuDeCienciesNaturals: 'osm:N:6246531685',
+  bunkersDelCarmel: 'osm:W:142894789',
 } as const satisfies Record<string, PlaceKey>;
 
 export const GAZETTEER: readonly GazetteerPlace[] = [
@@ -112,7 +115,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Torre de Belém',
         label: 'Avenida de Brasília · São Francisco Xavier, Lisboa · Portugal',
         address: {
@@ -161,7 +164,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Mosteiro dos Jerónimos',
         label: 'Praça do Império · São Francisco Xavier, Lisboa · Portugal',
         address: {
@@ -210,7 +213,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Padrão dos Descobrimentos',
         label: 'Rosa dos Ventos · São Francisco Xavier, Lisboa · Portugal',
         address: {
@@ -253,7 +256,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Pastéis de Belém',
         label: 'Rua de Belém 84-92 · São Francisco Xavier, Lisboa · Portugal',
         address: {
@@ -298,7 +301,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Manteigaria "Fábrica de Pastéis de Nata"',
         label: 'Rua de Belém 7 · São Francisco Xavier, Lisboa · Portugal',
         address: {
@@ -349,7 +352,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'LX Factory',
         label: 'Rua Rodrigues Faria 103 · Alcântara, Lisboa · Portugal',
         address: {
@@ -400,7 +403,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Museu Nacional de Arte Antiga',
         label: 'Rua das Janelas Verdes 59 · Prazeres, Lisboa · Portugal',
         address: {
@@ -451,7 +454,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Jardim da Estrela',
         label: 'Praça da Estrela · Prazeres, Lisboa · Portugal',
         address: {
@@ -500,7 +503,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Praça do Comércio',
         label: 'Santa Maria Maior, Lisboa · Portugal',
         address: {
@@ -547,7 +550,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Elevador de Santa Justa',
         label: 'Rua de Santa Justa · Santa Maria Maior, Lisboa · Portugal',
         address: {
@@ -590,7 +593,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'A Brasileira',
         label: 'Rua Garrett 120/122 · Santa Maria Maior, Lisboa · Portugal',
         address: {
@@ -641,7 +644,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Sé de Lisboa',
         label: 'Largo da Sé · Alfama, Lisboa · Portugal',
         address: {
@@ -690,7 +693,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Castelo de São Jorge',
         label: 'Rua de Santa Cruz do Castelo · Alfama, Lisboa · Portugal',
         address: {
@@ -733,7 +736,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Miradouro de Santa Luzia',
         label: 'Largo de Santa Luzia · Alfama, Lisboa · Portugal',
         address: {
@@ -776,7 +779,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Miradouro da Senhora do Monte',
         label: 'Rua da Senhora do Monte · Graça, Lisboa · Portugal',
         address: {
@@ -825,7 +828,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Time Out Market Lisboa',
         label: 'Praça D. Luís I 49 · Misericórdia, Lisboa · Portugal',
         address: {
@@ -870,7 +873,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Pensão Amor',
         label: 'Rua do Alecrim 19 · Misericórdia, Lisboa · Portugal',
         address: {
@@ -921,7 +924,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Pousada de Lisboa',
         label: 'Rua Henriques Nogueira · Santa Maria Maior, Lisboa · Portugal',
         address: {
@@ -964,7 +967,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Cervejaria Ramiro',
         label: 'Avenida Almirante Reis 104 · Arroios, Lisboa · Portugal',
         address: {
@@ -1015,7 +1018,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'PT',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Oceanário de Lisboa',
         label: 'Esplanada Dom Carlos I · Parque das Nações, Lisboa · Portugal',
         address: {
@@ -1064,7 +1067,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Museu de Arte de São Paulo',
         label: 'Av. Paulista 1578 · Bela Vista, São Paulo · Brasil',
         address: {
@@ -1117,7 +1120,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Parque Ibirapuera',
         label: 'Avenida Pedro Álvares Cabral · Ibirapuera, São Paulo · Brasil',
         address: {
@@ -1168,7 +1171,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Pinacoteca do Estado de São Paulo',
         label: 'Praça da Luz 2 · Bom Retiro, São Paulo · Brasil',
         address: {
@@ -1221,7 +1224,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Estação da Luz',
         label: 'Praça da Luz 1 · Bom Retiro, São Paulo · Brasil',
         address: {
@@ -1268,7 +1271,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Museu do Futebol',
         label: 'Praça Charles Miller · Pacaembu, São Paulo · Brasil',
         address: {
@@ -1319,7 +1322,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Mercado Municipal de São Paulo',
         label: 'Rua da Cantareira 306 · Sé, São Paulo · Brasil',
         address: {
@@ -1372,7 +1375,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Catedral da Sé',
         label: 'Praça da Sé · Sé, São Paulo · Brasil',
         address: {
@@ -1423,7 +1426,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Teatro Municipal de São Paulo',
         label: 'Praça Ramos de Azevedo · Centro, São Paulo · Brasil',
         address: {
@@ -1468,7 +1471,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Bar Brahma',
         label: 'Avenida São João 665 · República, São Paulo · Brasil',
         address: {
@@ -1515,7 +1518,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Japan House',
         label: 'Avenida Paulista 52 · Bela Vista, São Paulo · Brasil',
         address: {
@@ -1562,7 +1565,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Beco do Batman',
         label: 'Travessa Beco do Batman · Pinheiros, São Paulo · Brasil',
         address: {
@@ -1613,7 +1616,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Museu Paulista',
         label: 'Parque da Independência · Ipiranga, São Paulo · Brasil',
         address: {
@@ -1658,7 +1661,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Cristo Redentor',
         label: 'Alto da Boa Vista, Rio de Janeiro · Brasil',
         address: {
@@ -1701,7 +1704,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Pão de Açúcar',
         label: 'Rio de Janeiro · Brasil',
         address: {
@@ -1748,7 +1751,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Praia de Copacabana',
         label: 'Copacabana, Rio de Janeiro · Brasil',
         address: {
@@ -1795,7 +1798,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Praia do Leme',
         label: 'Leme, Rio de Janeiro · Brasil',
         address: {
@@ -1842,7 +1845,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Praia de Ipanema',
         label: 'Ipanema, Rio de Janeiro · Brasil',
         address: {
@@ -1889,7 +1892,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Hotel Copacabana Palace',
         label: 'Avenida Atlântica 1702 · Copacabana, Rio de Janeiro · Brasil',
         address: {
@@ -1942,7 +1945,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Escadaria Selarón',
         label: 'Rua Manoel Carneiro · Santa Teresa, Rio de Janeiro · Brasil',
         address: {
@@ -1993,7 +1996,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Arcos da Lapa',
         label: 'Rua Riachuelo · Lapa, Rio de Janeiro · Brasil',
         address: {
@@ -2038,7 +2041,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Confeitaria Colombo',
         label: 'Rua Gonçalves Dias 32 · Centro, Rio de Janeiro · Brasil',
         address: {
@@ -2091,7 +2094,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Museu do Amanhã',
         label: 'Praça Mauá 1 · Centro, Rio de Janeiro · Brasil',
         address: {
@@ -2144,7 +2147,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Parque Henrique Lage',
         label: 'Jardim Botânico, Rio de Janeiro · Brasil',
         address: {
@@ -2187,7 +2190,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Mirante Dona Marta',
         label: 'Donasanta · Botafogo, Rio de Janeiro · Brasil',
         address: {
@@ -2238,7 +2241,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'BR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Estádio Jornalista Mário Filho',
         label: 'Avenida Presidente Castelo Branco · Maracanã, Rio de Janeiro · Brasil',
         address: {
@@ -2289,7 +2292,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'FR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Tour Eiffel',
         label: 'Avenue Anatole France 5 · Paris, Paris · France',
         address: {
@@ -2342,7 +2345,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'FR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Musée du Louvre',
         label: 'Place du Carrousel · Paris, Paris · France',
         address: {
@@ -2393,7 +2396,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'FR',
     localized: {
-      'pt-BR': {
+      default: {
         name: "Musée d'Orsay",
         label: "Rue de la Légion d'Honneur 1 · Paris, Paris · France",
         address: {
@@ -2446,7 +2449,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'FR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Cathédrale Notre-Dame de Paris',
         label: 'Parvis Notre-Dame - Place Jean-Paul II 6 · Paris, Paris · France',
         address: {
@@ -2499,7 +2502,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'FR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Sainte-Chapelle',
         label: 'Boulevard du Palais 8 · Paris, Paris · France',
         address: {
@@ -2552,7 +2555,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'FR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Panthéon',
         label: 'Place du Panthéon · Paris, Paris · France',
         address: {
@@ -2603,7 +2606,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'FR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Jardin du Luxembourg',
         label: 'Paris, Paris · France',
         address: {
@@ -2644,7 +2647,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'FR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Café de Flore',
         label: 'Rue Saint-Benoît · Paris, Paris · France',
         address: {
@@ -2689,7 +2692,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'FR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Shakespeare and Company',
         label: 'Rue de la Bûcherie 37 · Paris, Paris · France',
         address: {
@@ -2742,7 +2745,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'FR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Centre Georges Pompidou',
         label: 'Rue Beaubourg 19 · Le Marais, Paris · France',
         address: {
@@ -2795,7 +2798,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'FR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Basilique du Sacré-Cœur',
         label: 'Rue du Chevalier de la Barre · Paris, Paris · France',
         address: {
@@ -2846,7 +2849,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'FR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Arc de Triomphe',
         label: "Tunnel de l'Étoile · Paris, Paris · France",
         address: {
@@ -2891,7 +2894,7 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
     },
     countryCode: 'FR',
     localized: {
-      'pt-BR': {
+      default: {
         name: 'Gare du Nord (Métro)',
         label: 'Rue du Faubourg Saint-Denis · Paris, Paris · France',
         address: {
@@ -2915,6 +2918,449 @@ export const GAZETTEER: readonly GazetteerPlace[] = [
           postcode: '75010',
           country: 'France',
           countryCode: 'FR',
+        },
+      },
+    },
+  },
+  {
+    key: 'osm:R:9194723',
+    city: 'barcelona',
+    ref: {
+      osmType: 'R',
+      osmId: 9194723,
+    },
+    category: 'sight',
+    kind: 'poi',
+    osmKey: 'amenity',
+    osmValue: 'place_of_worship',
+    location: {
+      lng: 2.1744283,
+      lat: 41.4035046,
+    },
+    bbox: {
+      west: 2.1735675,
+      north: 41.4039672,
+      east: 2.1749928,
+      south: 41.4030422,
+    },
+    countryCode: 'ES',
+    localized: {
+      default: {
+        name: 'Basílica de la Sagrada Família',
+        label: "Carrer de Mallorca · l'Eixample, Barcelona · España",
+        address: {
+          street: 'Carrer de Mallorca',
+          district: "l'Eixample",
+          city: 'Barcelona',
+          state: 'Catalunya',
+          postcode: '08013',
+          country: 'España',
+          countryCode: 'ES',
+        },
+      },
+      en: {
+        name: 'Basilica of the Holy Family',
+        label: "Carrer de Mallorca · l'Eixample, Barcelona · Spain",
+        address: {
+          street: 'Carrer de Mallorca',
+          district: "l'Eixample",
+          city: 'Barcelona',
+          state: 'Catalonia',
+          postcode: '08013',
+          country: 'Spain',
+          countryCode: 'ES',
+        },
+      },
+    },
+  },
+  {
+    key: 'osm:W:66713401',
+    city: 'barcelona',
+    ref: {
+      osmType: 'W',
+      osmId: 66713401,
+    },
+    category: 'nature',
+    kind: 'poi',
+    osmKey: 'leisure',
+    osmValue: 'park',
+    location: {
+      lng: 2.1524576,
+      lat: 41.4142348,
+    },
+    bbox: {
+      west: 2.1478935,
+      north: 41.4168489,
+      east: 2.1553109,
+      south: 41.4115579,
+    },
+    countryCode: 'ES',
+    localized: {
+      default: {
+        name: 'Parc Güell',
+        label: 'Gràcia, Barcelona · España',
+        address: {
+          district: 'Gràcia',
+          city: 'Barcelona',
+          state: 'Catalunya',
+          country: 'España',
+          countryCode: 'ES',
+        },
+      },
+      en: {
+        name: 'Park Guell',
+        label: 'Gràcia, Barcelona · Spain',
+        address: {
+          district: 'Gràcia',
+          city: 'Barcelona',
+          state: 'Catalonia',
+          country: 'Spain',
+          countryCode: 'ES',
+        },
+      },
+    },
+  },
+  {
+    key: 'osm:R:9427554',
+    city: 'barcelona',
+    ref: {
+      osmType: 'R',
+      osmId: 9427554,
+    },
+    category: 'sight',
+    kind: 'poi',
+    osmKey: 'tourism',
+    osmValue: 'artwork',
+    location: {
+      lng: 2.1646961,
+      lat: 41.3915446,
+    },
+    bbox: {
+      west: 2.1644917,
+      north: 41.3917444,
+      east: 2.165031,
+      south: 41.3913377,
+    },
+    countryCode: 'ES',
+    localized: {
+      default: {
+        name: 'Casa Batlló',
+        label: "Passeig de Gràcia 43 · l'Eixample, Barcelona · España",
+        address: {
+          houseNumber: '43',
+          street: 'Passeig de Gràcia',
+          district: "l'Eixample",
+          city: 'Barcelona',
+          state: 'Catalunya',
+          postcode: '08007',
+          country: 'España',
+          countryCode: 'ES',
+        },
+      },
+      en: {
+        name: 'Batlló House',
+        label: "Passeig de Gràcia 43 · l'Eixample, Barcelona · Spain",
+        address: {
+          houseNumber: '43',
+          street: 'Passeig de Gràcia',
+          district: "l'Eixample",
+          city: 'Barcelona',
+          state: 'Catalonia',
+          postcode: '08007',
+          country: 'Spain',
+          countryCode: 'ES',
+        },
+      },
+    },
+  },
+  {
+    key: 'osm:R:6288735',
+    city: 'barcelona',
+    ref: {
+      osmType: 'R',
+      osmId: 6288735,
+    },
+    category: 'shopping',
+    kind: 'poi',
+    osmKey: 'amenity',
+    osmValue: 'marketplace',
+    location: {
+      lng: 2.1715515,
+      lat: 41.381736,
+    },
+    bbox: {
+      west: 2.170865,
+      north: 41.3821871,
+      east: 2.1722905,
+      south: 41.3812823,
+    },
+    countryCode: 'ES',
+    localized: {
+      default: {
+        name: 'Mercat de Sant Josep - La Boqueria',
+        label: 'La Rambla 91 · Ciutat Vella, Barcelona · España',
+        address: {
+          houseNumber: '91',
+          street: 'La Rambla',
+          district: 'Ciutat Vella',
+          city: 'Barcelona',
+          state: 'Catalunya',
+          postcode: '08001',
+          country: 'España',
+          countryCode: 'ES',
+        },
+      },
+      en: {
+        name: 'Mercat de Sant Josep - La Boqueria',
+        label: 'La Rambla 91 · Ciutat Vella, Barcelona · Spain',
+        address: {
+          houseNumber: '91',
+          street: 'La Rambla',
+          district: 'Ciutat Vella',
+          city: 'Barcelona',
+          state: 'Catalonia',
+          postcode: '08001',
+          country: 'Spain',
+          countryCode: 'ES',
+        },
+      },
+    },
+  },
+  {
+    key: 'osm:N:1238021386',
+    city: 'barcelona',
+    ref: {
+      osmType: 'N',
+      osmId: 1238021386,
+    },
+    category: 'transport',
+    kind: 'poi',
+    osmKey: 'railway',
+    osmValue: 'subway_entrance',
+    location: {
+      lng: 2.1724566,
+      lat: 41.3820141,
+    },
+    countryCode: 'ES',
+    localized: {
+      default: {
+        name: 'La Rambla / Mercat de la Boqueria',
+        label: 'La Rambla · Ciutat Vella, Barcelona · España',
+        address: {
+          street: 'La Rambla',
+          district: 'Ciutat Vella',
+          city: 'Barcelona',
+          state: 'Catalunya',
+          postcode: '08002',
+          country: 'España',
+          countryCode: 'ES',
+        },
+      },
+      en: {
+        name: 'La Rambla / Mercat de la Boqueria',
+        label: 'La Rambla · Ciutat Vella, Barcelona · Spain',
+        address: {
+          street: 'La Rambla',
+          district: 'Ciutat Vella',
+          city: 'Barcelona',
+          state: 'Catalonia',
+          postcode: '08002',
+          country: 'Spain',
+          countryCode: 'ES',
+        },
+      },
+    },
+  },
+  {
+    key: 'osm:R:7333373',
+    city: 'barcelona',
+    ref: {
+      osmType: 'R',
+      osmId: 7333373,
+    },
+    category: 'beach',
+    kind: 'poi',
+    osmKey: 'natural',
+    osmValue: 'beach',
+    location: {
+      lng: 2.192971,
+      lat: 41.3793285,
+    },
+    bbox: {
+      west: 2.1915184,
+      north: 41.3816276,
+      east: 2.1952778,
+      south: 41.3771347,
+    },
+    countryCode: 'ES',
+    localized: {
+      default: {
+        name: 'Platja de la Barceloneta',
+        label: 'Ciutat Vella, Barcelona · España',
+        address: {
+          district: 'Ciutat Vella',
+          city: 'Barcelona',
+          state: 'Catalunya',
+          country: 'España',
+          countryCode: 'ES',
+        },
+      },
+      en: {
+        name: 'Platja de la Barceloneta',
+        label: 'Ciutat Vella, Barcelona · Spain',
+        address: {
+          district: 'Ciutat Vella',
+          city: 'Barcelona',
+          state: 'Catalonia',
+          country: 'Spain',
+          countryCode: 'ES',
+        },
+      },
+    },
+  },
+  {
+    key: 'osm:W:188938001',
+    city: 'barcelona',
+    ref: {
+      osmType: 'W',
+      osmId: 188938001,
+    },
+    category: 'culture',
+    kind: 'poi',
+    osmKey: 'tourism',
+    osmValue: 'museum',
+    location: {
+      lng: 2.1812015,
+      lat: 41.3851039,
+    },
+    bbox: {
+      west: 2.1807388,
+      north: 41.3854618,
+      east: 2.1817328,
+      south: 41.3847321,
+    },
+    countryCode: 'ES',
+    localized: {
+      default: {
+        name: 'Museu Picasso',
+        label: 'Plaça de Jaume Sabartés · Ciutat Vella, Barcelona · España',
+        address: {
+          street: 'Plaça de Jaume Sabartés',
+          district: 'Ciutat Vella',
+          city: 'Barcelona',
+          state: 'Catalunya',
+          postcode: '08003',
+          country: 'España',
+          countryCode: 'ES',
+        },
+      },
+      en: {
+        name: 'Picasso Museum',
+        label: 'Plaça de Jaume Sabartés · Ciutat Vella, Barcelona · Spain',
+        address: {
+          street: 'Plaça de Jaume Sabartés',
+          district: 'Ciutat Vella',
+          city: 'Barcelona',
+          state: 'Catalonia',
+          postcode: '08003',
+          country: 'Spain',
+          countryCode: 'ES',
+        },
+      },
+    },
+  },
+  {
+    key: 'osm:N:6246531685',
+    city: 'barcelona',
+    ref: {
+      osmType: 'N',
+      osmId: 6246531685,
+    },
+    category: 'culture',
+    kind: 'poi',
+    osmKey: 'tourism',
+    osmValue: 'museum',
+    location: {
+      lng: 2.183445,
+      lat: 41.388119,
+    },
+    countryCode: 'ES',
+    localized: {
+      default: {
+        name: 'Seu científica del Museu de Ciències Naturals de Barcelona',
+        label: 'Passeig de Picasso · Ciutat Vella, Barcelona · España',
+        address: {
+          street: 'Passeig de Picasso',
+          district: 'Ciutat Vella',
+          city: 'Barcelona',
+          state: 'Catalunya',
+          postcode: '08003',
+          country: 'España',
+          countryCode: 'ES',
+        },
+      },
+      en: {
+        name: 'Seu científica del Museu de Ciències Naturals de Barcelona',
+        label: 'Passeig de Picasso · Ciutat Vella, Barcelona · Spain',
+        address: {
+          street: 'Passeig de Picasso',
+          district: 'Ciutat Vella',
+          city: 'Barcelona',
+          state: 'Catalonia',
+          postcode: '08003',
+          country: 'Spain',
+          countryCode: 'ES',
+        },
+      },
+    },
+  },
+  {
+    key: 'osm:W:142894789',
+    city: 'barcelona',
+    ref: {
+      osmType: 'W',
+      osmId: 142894789,
+    },
+    category: 'sight',
+    kind: 'poi',
+    osmKey: 'historic',
+    osmValue: 'fort',
+    location: {
+      lng: 2.1616974,
+      lat: 41.4193923,
+    },
+    bbox: {
+      west: 2.1612815,
+      north: 41.4196358,
+      east: 2.1622289,
+      south: 41.4191361,
+    },
+    countryCode: 'ES',
+    localized: {
+      default: {
+        name: 'Bateries antiaèries i barraques del Carmel',
+        label: 'Carrer de Marià Labèrnia · Horta-Guinardó, Barcelona · España',
+        address: {
+          street: 'Carrer de Marià Labèrnia',
+          district: 'Horta-Guinardó',
+          city: 'Barcelona',
+          state: 'Catalunya',
+          postcode: '08032',
+          country: 'España',
+          countryCode: 'ES',
+        },
+      },
+      en: {
+        name: 'Bateries antiaèries i barraques del Carmel',
+        label: 'Carrer de Marià Labèrnia · Horta-Guinardó, Barcelona · Spain',
+        address: {
+          street: 'Carrer de Marià Labèrnia',
+          district: 'Horta-Guinardó',
+          city: 'Barcelona',
+          state: 'Catalonia',
+          postcode: '08032',
+          country: 'Spain',
+          countryCode: 'ES',
         },
       },
     },

@@ -12,9 +12,9 @@ test('rejects_a_cross_site_login_through_the_web_origin', async ({ request }) =>
 });
 
 signedInTest('opens_signed_in_as_the_worker_account', async ({ page, workerAccount }) => {
-  await page.goto('/pt-BR');
+  await page.goto('/en');
 
   await expect(
-    page.getByRole('button', { name: `Conta: ${workerAccount.me.displayName}` }),
+    page.getByRole('button', { name: `Account: ${workerAccount.me.displayName}` }),
   ).toBeVisible();
 });

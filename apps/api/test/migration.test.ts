@@ -146,6 +146,24 @@ describe('v1 model migration', () => {
     expect(result.rows[0]?.folded).toBe('Sao Jorge a noite');
   });
 
+  it('gives_a_user_without_a_locale_english', async () => {
+    const id = await insertUser();
+
+    const result = await db.query<{ locale: string }>('SELECT locale FROM users WHERE id = $1', [
+      id,
+    ]);
+
+    expect(result.rows[0]?.locale).toBe('en');
+  });
+
+  it('offers_english_spanish_and_brazilian_portuguese_locales', async () => {
+    const result = await db.query<{ value: string }>(
+      `SELECT unnest(enum_range(NULL::"Locale"))::text AS value ORDER BY value`,
+    );
+
+    expect(result.rows.map((row) => row.value)).toEqual(['en', 'es', 'pt-BR']);
+  });
+
   const violations: Array<{ constraint: string; insert: (ids: Fixture) => Promise<unknown> }> = [
     {
       constraint: 'places_source_shape_chk',

@@ -18,7 +18,7 @@ const TRIP_ROW_BLOCK = 100;
 const HOUR_MS = 3_600_000;
 const DAY_MS = 24 * HOUR_MS;
 
-const LOCALE_TO_DB = { 'pt-BR': 'pt_BR', en: 'en' } as const;
+const LOCALE_TO_DB = { en: 'en', es: 'es', 'pt-BR': 'pt_BR' } as const;
 
 /** Writes the demo data. Upserts by fixed ids, so running it again changes nothing. */
 export async function seedDemo(prisma: PrismaClient, demoPassword: string): Promise<void> {
@@ -88,7 +88,7 @@ async function upsertPlaces(tx: Tx): Promise<Map<string, string>> {
 }
 
 function placeData(place: GazetteerPlace) {
-  const local = place.localized['pt-BR'];
+  const local = place.localized.default;
   const seededAt = new Date('2026-01-01T00:00:00.000Z');
   return {
     source: 'osm',

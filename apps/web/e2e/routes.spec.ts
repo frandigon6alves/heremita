@@ -2,29 +2,27 @@ import { arrangeTrip, PLACES } from './support/api';
 import { accountTest as test, expect, expectAccessible } from './support/fixtures';
 import { openPlanner } from './support/planner';
 
-test.use({ locale: 'pt-BR' });
-
 test('switching_to_bike_changes_the_legs_and_a_routing_outage_falls_back_to_estimates', async ({
   page,
   account,
 }) => {
   const trip = await arrangeTrip(account.api, {
-    title: 'Pedalando em Belém',
+    title: 'Cycling around Belém',
     days: [[PLACES.torreDeBelem, PLACES.mosteiroDosJeronimos, PLACES.lxFactory]],
   });
   await openPlanner(page, trip.id, `?day=${trip.plan.days[0]?.id}`);
 
-  const firstLeg = page.getByRole('button', { name: /^Rota até Mosteiro dos Jerónimos/ });
-  await expect(firstLeg).toHaveAccessibleName(/a pé: \d+ min · [\d,]+ km$/);
+  const firstLeg = page.getByRole('button', { name: /^Route to Mosteiro dos Jerónimos/ });
+  await expect(firstLeg).toHaveAccessibleName(/on foot: \d+ min · [\d.]+ km$/);
   const walking = await firstLeg.textContent();
 
   await page
-    .getByRole('group', { name: 'Modo de transporte' })
-    .getByRole('radio', { name: 'Bicicleta' })
+    .getByRole('group', { name: 'Travel mode' })
+    .getByRole('radio', { name: 'Bike' })
     .check();
 
   await expect(page).toHaveURL(/[?&]mode=bike/);
-  await expect(firstLeg).toHaveAccessibleName(/de bicicleta: \d+ min · [\d,]+ km$/);
+  await expect(firstLeg).toHaveAccessibleName(/by bike: \d+ min · [\d.]+ km$/);
   await expect(firstLeg).not.toHaveText(walking ?? '');
   await expectAccessible(page);
 
@@ -44,12 +42,12 @@ test('switching_to_bike_changes_the_legs_and_a_routing_outage_falls_back_to_esti
     }),
   );
   await page
-    .getByRole('group', { name: 'Modo de transporte' })
-    .getByRole('radio', { name: 'Carro' })
+    .getByRole('group', { name: 'Travel mode' })
+    .getByRole('radio', { name: 'Drive' })
     .check();
 
-  await expect(page.getByRole('alert').filter({ hasText: 'Rota indisponível.' })).toBeVisible();
-  await expect(firstLeg).toHaveAccessibleName(/de carro: ≈ .+ \(estimativa\)/);
-  await expect(page.getByText(/inclui estimativas/)).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: 'Route unavailable.' })).toBeVisible();
+  await expect(firstLeg).toHaveAccessibleName(/by car: ≈ .+ \(estimate\)/);
+  await expect(page.getByText(/includes estimates/)).toBeVisible();
   await expectAccessible(page);
 });

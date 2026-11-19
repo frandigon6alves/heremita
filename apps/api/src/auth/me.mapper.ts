@@ -3,8 +3,8 @@ import type { User } from '../generated/prisma/client.js';
 
 type DbLocale = User['locale'];
 
-const TO_DB_LOCALE: Record<Locale, DbLocale> = { 'pt-BR': 'pt_BR', en: 'en' };
-const FROM_DB_LOCALE: Record<DbLocale, Locale> = { pt_BR: 'pt-BR', en: 'en' };
+const TO_DB_LOCALE: Record<Locale, DbLocale> = { en: 'en', es: 'es', 'pt-BR': 'pt_BR' };
+const FROM_DB_LOCALE: Record<DbLocale, Locale> = { en: 'en', es: 'es', pt_BR: 'pt-BR' };
 
 export function toDbLocale(locale: Locale): DbLocale {
   return TO_DB_LOCALE[locale];

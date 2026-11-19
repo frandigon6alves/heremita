@@ -1,0 +1,170 @@
+{
+  "screen": {
+    "back": "Mis viajes",
+    "settings": "Ajustes del viaje",
+    "panelHeading": "Itinerario",
+    "skipToMap": "Saltar al mapa",
+    "mapLabel": "Mapa de {title}",
+    "loading": "Cargando el viaje…"
+  },
+  "sheet": {
+    "handle": "Panel: {state}. {action}",
+    "snap": {
+      "peek": "contraído",
+      "half": "media altura",
+      "full": "altura completa"
+    },
+    "expand": "Expandir",
+    "collapse": "Contraer"
+  },
+  "days": {
+    "label": "Días",
+    "ideas": "Ideas",
+    "all": "Todos",
+    "day": "Día {number}",
+    "add": "Agregar un día"
+  },
+  "summary": {
+    "places": "{count, plural, =0 {Sin lugares} one {# lugar} many {# lugares} other {# lugares}}",
+    "allDays": "{count, plural, =0 {Sin días} one {# día} many {Los # días} other {Los # días}}",
+    "includesEstimates": "incluye estimaciones"
+  },
+  "dayMenu": {
+    "label": "Opciones del día {number}",
+    "delete": "Eliminar el día {number}",
+    "confirmTitle": "¿Eliminar el día {number}?",
+    "confirmBody": "{count, plural, =0 {El día no tiene lugares.} one {Su lugar vuelve a Ideas.} many {Sus # lugares vuelven a Ideas.} other {Sus # lugares vuelven a Ideas.}} Los días siguientes se adelantan un número."
+  },
+  "list": {
+    "dayLabel": "Lugares del día {number}",
+    "ideasLabel": "Ideas",
+    "emptyDay": {
+      "title": "Aún no hay lugares en este día",
+      "body": "Busca un lugar o toca Agregar aquí en el mapa."
+    },
+    "emptyIdeas": {
+      "title": "Aún no hay ideas",
+      "body": "Los lugares que agregas con Ideas seleccionado esperan aquí hasta que les asignes un día."
+    },
+    "emptyTrip": {
+      "title": "Este viaje aún no tiene lugares",
+      "body": "Elige un día y luego busca un lugar o toca Agregar aquí en el mapa."
+    }
+  },
+  "row": {
+    "actions": "Acciones para {name}",
+    "drag": "Mover {name}",
+    "moveUp": "Subir",
+    "moveDown": "Bajar",
+    "moveFirst": "Mover al principio",
+    "moveLast": "Mover al final",
+    "moveToDay": "Mover al día…",
+    "addToDay": "Agregar al día…",
+    "newDay": "Día nuevo",
+    "removeFromDay": "Quitar del día",
+    "deleteFromTrip": "Eliminar del viaje"
+  },
+  "drag": {
+    "instructions": "Para mover un lugar, presiona Espacio, usa las flechas arriba y abajo y vuelve a presionar Espacio para soltarlo, o Esc para cancelar.",
+    "roleDescription": "lugar movible",
+    "pickedUp": "{name} seleccionado, posición {position} de {total}.",
+    "movedTo": "{name} movido a la posición {position} de {total}.",
+    "dropped": "{name} soltado en la posición {position} de {total}.",
+    "cancelled": "Movimiento cancelado. {name} vuelve a la posición {position} de {total}."
+  },
+  "card": {
+    "back": "Volver a la lista",
+    "close": "Cerrar",
+    "dayButton": "Día: {days}",
+    "dayMenu": "Elige un día",
+    "note": "Tu nota",
+    "noteHint": "Solo tú la ves.",
+    "community": "Qué dicen los viajeros",
+    "seeReviews": "Ver reseñas",
+    "addToDay": "Agregar al día {number}",
+    "addToIdeas": "Agregar a Ideas",
+    "adding": "Agregando…",
+    "deleteFromTrip": "Eliminar del viaje"
+  },
+  "addHere": {
+    "button": "Agregar aquí"
+  },
+  "toasts": {
+    "added": "{target, select, ideas {{name} agregado a Ideas} other {{name} agregado al día {target}}}",
+    "addFailed": "No se pudo agregar {name}.",
+    "placeLimit": "Este viaje ya tiene el máximo de lugares posible.",
+    "dayFull": "El día {target} está completo.",
+    "moved": "{name}, ahora {position} de {total} en el día {target}",
+    "moveFailed": "No se pudo mover {name}.",
+    "removed": "{name} quitado del día {target}",
+    "removeFailed": "No se pudo quitar {name}.",
+    "deleted": "{name} eliminado del viaje",
+    "deleteFailed": "No se pudo eliminar {name}.",
+    "createDayFailed": "No se pudo agregar un día.",
+    "deleteDayFailed": "No se pudo eliminar el día {number}.",
+    "dayDeleted": "Día {number} eliminado",
+    "noteFailed": "Nota no guardada.",
+    "modeFailed": "Medio de transporte no guardado.",
+    "ordered": "Nuevo orden aplicado",
+    "orderFailed": "No se pudo cambiar el orden.",
+    "orderRestored": "Orden anterior restaurado",
+    "planChanged": "El viaje cambió en otro sitio; se muestra la versión actual."
+  },
+  "categories": {
+    "sight": "Atracción",
+    "food": "Restaurante",
+    "cafe": "Cafetería",
+    "nightlife": "Vida nocturna",
+    "lodging": "Alojamiento",
+    "shopping": "Compras",
+    "nature": "Naturaleza",
+    "beach": "Playa",
+    "culture": "Cultura",
+    "transport": "Transporte",
+    "activity": "Actividad",
+    "other": "Lugar"
+  },
+  "route": {
+    "leg": "{duration} · {distance}",
+    "legEstimated": "≈ {duration} (estimación) · {distance}",
+    "legPending": "Calculando la ruta…",
+    "legLabel": "Ruta a {name} {mode, select, walk {a pie} bike {en bicicleta} other {en auto}}: {summary}",
+    "legMode": "Medio de transporte para este tramo",
+    "directions": "Abrir ruta en",
+    "google": "Google Maps",
+    "apple": "Apple Maps",
+    "needsTwo": "Agrega otro lugar para ver una ruta.",
+    "failed": "Ruta no disponible. Los tiempos que se muestran son estimaciones.",
+    "retry": "Reintentar",
+    "partial": "No se pudo llegar a {names} {mode, select, walk {a pie} bike {en bicicleta} other {en auto}}; los tiempos son estimaciones.",
+    "mode": {
+      "legend": "Medio de transporte",
+      "walk": "A pie",
+      "bike": "Bicicleta",
+      "drive": "Auto"
+    }
+  },
+  "optimise": {
+    "open": "Optimizar orden",
+    "title": "Optimizar el día {number}",
+    "firstFixed": "El primer lugar sigue siendo el primero.",
+    "keepLast": "Mantener el último lugar al final",
+    "loading": "Buscando un orden más corto…",
+    "failed": "No se pudo sugerir un orden",
+    "tooFew": "Un día necesita al menos 3 lugares para reordenarlo.",
+    "alreadyShortest": "Este orden ya es el más corto.",
+    "comparison": "Antes: {before} · Después: {after}",
+    "estimated": "(estimaciones)",
+    "newOrder": "Orden sugerido",
+    "was": "antes {number}",
+    "cancel": "Cancelar",
+    "apply": "Aplicar"
+  },
+  "readOnly": {
+    "by": "por {name}",
+    "copy": "Copiar",
+    "report": "Denunciar este viaje",
+    "emptyTrip": "Este viaje aún no tiene lugares.",
+    "panelHeading": "Itinerario"
+  }
+}

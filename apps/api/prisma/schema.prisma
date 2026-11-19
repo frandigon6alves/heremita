@@ -14,8 +14,9 @@ datasource db {
 }
 
 enum Locale {
-  pt_BR @map("pt-BR")
   en
+  es
+  pt_BR @map("pt-BR")
 }
 
 enum ThemePreference {
@@ -98,7 +99,7 @@ model User {
   passwordHash      String          @map("password_hash")
   displayName       String          @map("display_name") @db.VarChar(50)
   role              UserRole        @default(user)
-  locale            Locale          @default(pt_BR)
+  locale            Locale          @default(en)
   theme             ThemePreference @default(system)
   isDemo            Boolean         @default(false) @map("is_demo")
   passwordChangedAt DateTime        @default(now()) @map("password_changed_at") @db.Timestamptz(3)

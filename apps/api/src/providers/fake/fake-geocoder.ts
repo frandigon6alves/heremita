@@ -8,6 +8,7 @@ import {
   type SearchQuery,
 } from '../core/contract.js';
 import { haversineMeters } from '../core/geo.js';
+import { photonLang } from '../photon/photon.mapper.js';
 import { GAZETTEER, type GazetteerPlace } from './gazetteer.js';
 
 /** Reverse geocoding of the fake answers with gazetteer places this close, nearest first. */
@@ -24,7 +25,7 @@ function fold(text: string): string {
 }
 
 function toResult(place: GazetteerPlace, locale: Locale): PlaceResult {
-  const localized = place.localized[locale];
+  const localized = place.localized[photonLang(locale)];
   return {
     key: place.key,
     ref: place.ref,
@@ -70,8 +71,8 @@ export class FakeGeocoder implements GeocodingProvider {
     return this.answer(() => {
       const text = fold(query.text);
       const matches = GAZETTEER.flatMap((place) => {
-        const shown = fold(place.localized[query.locale].name);
-        const names = [shown, fold(place.localized.en.name), fold(place.localized['pt-BR'].name)];
+        const shown = fold(place.localized[photonLang(query.locale)].name);
+        const names = [shown, fold(place.localized.en.name), fold(place.localized.default.name)];
         if (text !== '' && !names.some((name) => name.includes(text))) {
           return [];
         }

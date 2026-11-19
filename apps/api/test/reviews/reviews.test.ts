@@ -308,6 +308,16 @@ describe('E46 putMyReview', () => {
     expect((await reviewsOf(t.http, placeId)).body.items).toHaveLength(1);
   });
 
+  it('tags_a_spanish_authors_review_as_spanish', async () => {
+    const placeId = await insertPlace(t);
+    const author = await createUser(t, { locale: 'es' });
+
+    const response = await putReview(author.agent, placeId);
+
+    expect(response.status).toBe(201);
+    expect(response.body).toMatchObject({ language: 'es' });
+  });
+
   it('replaces_the_callers_review_with_200 (V49)', async () => {
     const placeId = await insertPlace(t);
     const author = await createUser(t);

@@ -9,6 +9,7 @@ import {
   type Theme,
 } from '@heremita/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useId } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { LOCALE_NAMES } from '@/i18n/routing';
@@ -49,6 +50,7 @@ export function PreferencesForm() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { data: viewer } = useQuery(viewerQuery());
+  const languageName = useId();
 
   const theme = useMutation({
     mutationFn: (value: Theme) => apiFetch(endpoints.updateMe, { body: { theme: value } }),
@@ -94,17 +96,27 @@ export function PreferencesForm() {
     },
   });
 
+  const shownLocale = language.isIdle || language.isError ? locale : (language.variables ?? locale);
+
   return (
     <div className={styles.preferences}>
       <div className={styles.preference}>
-        <SegmentedControl
-          legend={t('language')}
-          showLegend
-          options={localeSchema.options.map((value) => ({ value, label: LOCALE_NAMES[value] }))}
-          value={language.isIdle || language.isError ? locale : (language.variables ?? locale)}
-          onChange={(value) => language.mutate(value)}
-          disabled={language.isPending || language.isSuccess}
-        />
+        {/* Stacked radios, not a segmented control: three language names do not fit side by side on a phone. */}
+        <fieldset className={styles.languages} disabled={language.isPending || language.isSuccess}>
+          <legend className={styles.legend}>{t('language')}</legend>
+          {localeSchema.options.map((value) => (
+            <label key={value} className={styles.language}>
+              <input
+                type="radio"
+                name={languageName}
+                value={value}
+                checked={value === shownLocale}
+                onChange={() => language.mutate(value)}
+              />
+              <span lang={value}>{LOCALE_NAMES[value]}</span>
+            </label>
+          ))}
+        </fieldset>
         <StatusLine status={saveStatus(language)} />
       </div>
       <div className={styles.preference}>

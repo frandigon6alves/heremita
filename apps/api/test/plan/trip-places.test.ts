@@ -96,7 +96,7 @@ describe('E29 addTripPlace', () => {
         place: {
           source: 'osm',
           key: place.key,
-          name: place.localized['pt-BR'].name,
+          name: place.localized.default.name,
           category: place.category,
           location: place.location,
           countryCode: place.countryCode,

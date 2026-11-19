@@ -36,7 +36,7 @@ class CountingGeocoder extends FakeGeocoder {
 }
 
 function gazetteerPlace(name: string): GazetteerPlace {
-  const place = GAZETTEER.find((candidate) => candidate.localized['pt-BR'].name === name);
+  const place = GAZETTEER.find((candidate) => candidate.localized.default.name === name);
   if (!place) {
     throw new Error(`No gazetteer place named ${name}`);
   }
@@ -93,8 +93,8 @@ async function insertCanonical(place: GazetteerPlace): Promise<string> {
       source: 'osm',
       osmType: place.ref.osmType,
       osmId: BigInt(place.ref.osmId),
-      name: place.localized['pt-BR'].name,
-      label: place.localized['pt-BR'].label,
+      name: place.localized.default.name,
+      label: place.localized.default.label,
       category: place.category,
       osmKey: place.osmKey,
       osmValue: place.osmValue,
@@ -290,7 +290,7 @@ describe('GET /places/{placeId} (E44)', () => {
         source: 'osm',
         key: place.key,
         name: 'Mosteiro dos Jerónimos',
-        label: place.localized['pt-BR'].label,
+        label: place.localized.default.label,
         category: place.category,
         location: place.location,
         countryCode: place.countryCode,

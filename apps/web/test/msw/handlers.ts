@@ -110,7 +110,7 @@ export function buildMe(overrides: Partial<Me> = {}): Me {
     id: '0195f0c8-0000-7000-8000-000000000001',
     email: 'ana@example.com',
     displayName: 'Ana',
-    locale: 'pt-BR',
+    locale: 'en',
     theme: 'light',
     role: 'user',
     isDemo: false,

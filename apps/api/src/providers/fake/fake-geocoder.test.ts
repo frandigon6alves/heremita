@@ -28,6 +28,12 @@ describe('FakeGeocoder.search', () => {
     expect(en!.name).toBe('Tower of Belém');
   });
 
+  it('answers_spanish_with_the_local_names_like_photon', async () => {
+    const [es] = await new FakeGeocoder().search(query({ text: 'tower of belem', locale: 'es' }));
+
+    expect(es!.name).toBe('Torre de Belém');
+  });
+
   it('finds_a_place_by_its_name_in_the_other_locale', async () => {
     const results = await new FakeGeocoder().search(
       query({ text: 'tower of belem', locale: 'pt-BR' }),
@@ -71,6 +77,16 @@ describe('FakeGeocoder.search', () => {
 
     expect(results.length).toBeGreaterThan(0);
     expect(results.every((place) => place.address.countryCode === 'PT')).toBe(true);
+  });
+
+  it('finds_barcelona_places_by_name', async () => {
+    const geocoder = new FakeGeocoder();
+    const keysFor = async (text: string) =>
+      (await geocoder.search(query({ text, locale: 'es' }))).map((place) => place.key);
+
+    expect(await keysFor('sagrada')).toEqual([GAZETTEER_KEYS.sagradaFamilia]);
+    expect(await keysFor('barceloneta')).toEqual([GAZETTEER_KEYS.platjaDeLaBarceloneta]);
+    expect(await keysFor('Barcelona')).toEqual([GAZETTEER_KEYS.museuDeCienciesNaturals]);
   });
 
   it('honours_the_limit', async () => {

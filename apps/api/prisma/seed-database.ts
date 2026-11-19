@@ -3,7 +3,7 @@ import type { PrismaClient } from '../src/generated/prisma/client.js';
 import { seedDemo } from './seed/seed-demo.js';
 
 export { GAZETTEER_KEYS } from '../src/providers/fake/gazetteer.js';
-export { LISBON_TRIP_ID, seedShareToken } from './seed/trips.js';
+export { BARCELONA_TRIP_ID, LISBON_TRIP_ID, seedShareToken } from './seed/trips.js';
 export { DEMO_USER, SEED_USERS } from './seed/users.js';
 
 export const seedEnvSchema = z.object({

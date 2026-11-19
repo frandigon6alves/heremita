@@ -1,24 +1,26 @@
+import type { Locale } from '@heremita/shared';
 import { seedId } from './ids.js';
 
-export type SeedUserHandle = 'demo' | 'ana' | 'bruno' | 'carla' | 'diego' | 'elena';
+export type SeedUserHandle = 'demo' | 'ana' | 'bruno' | 'carla' | 'diego' | 'elena' | 'nuria';
 
 export interface SeedUser {
   id: string;
   email: string;
   displayName: string;
-  locale: 'pt-BR' | 'en';
+  locale: Locale;
   role: 'user' | 'moderator';
   createdAt: Date;
 }
 
-// Invented names on example.com (RFC 2606); the "-Teste" suffix keeps them from
-// passing for real people. All of them are flagged is_demo.
+// Invented names on example.com (RFC 2606); the "-Test", "-Prueba" and "-Teste"
+// suffixes keep them from passing for real people. All of them are flagged
+// is_demo. Each UI locale has at least one user, so seeded reviews come in all three.
 export const SEED_USERS: Record<SeedUserHandle, SeedUser> = {
   demo: {
     id: seedId('user', 1),
     email: 'demo@example.com',
-    displayName: 'Viajante Demo',
-    locale: 'pt-BR',
+    displayName: 'Demo Traveller',
+    locale: 'en',
     role: 'user',
     createdAt: new Date('2026-01-05T09:00:00.000Z'),
   },
@@ -49,8 +51,8 @@ export const SEED_USERS: Record<SeedUserHandle, SeedUser> = {
   diego: {
     id: seedId('user', 5),
     email: 'diego@example.com',
-    displayName: 'Diego Lourenço-Teste',
-    locale: 'pt-BR',
+    displayName: 'Diego Lorenzo-Prueba',
+    locale: 'es',
     role: 'user',
     createdAt: new Date('2026-02-20T21:30:00.000Z'),
   },
@@ -61,6 +63,14 @@ export const SEED_USERS: Record<SeedUserHandle, SeedUser> = {
     locale: 'en',
     role: 'user',
     createdAt: new Date('2026-03-03T14:00:00.000Z'),
+  },
+  nuria: {
+    id: seedId('user', 7),
+    email: 'nuria@example.com',
+    displayName: 'Núria Ferrer-Prueba',
+    locale: 'es',
+    role: 'user',
+    createdAt: new Date('2026-03-25T11:30:00.000Z'),
   },
 };
 

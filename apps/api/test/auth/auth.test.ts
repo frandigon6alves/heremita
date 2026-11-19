@@ -63,6 +63,13 @@ describe('E4 sign-up', () => {
     expect(profile.body).toEqual(response.body);
   });
 
+  it.each(['en', 'es', 'pt-BR'] as const)('keeps_the_sign_up_locale_%s', async (locale) => {
+    const response = await postSignUp(signUpBody({ locale }));
+
+    expect(response.status).toBe(201);
+    expect(meSchema.parse(response.body).locale).toBe(locale);
+  });
+
   it('stores_an_argon2id_hash_with_the_owasp_parameters', async () => {
     const body = signUpBody();
 

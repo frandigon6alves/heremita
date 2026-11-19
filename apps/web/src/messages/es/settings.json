@@ -1,0 +1,85 @@
+{
+  "metaTitle": "Configuración",
+  "title": "Configuración",
+  "sections": {
+    "label": "Secciones",
+    "profile": "Perfil",
+    "preferences": "Preferencias",
+    "security": "Seguridad",
+    "privacy": "Privacidad",
+    "account": "Cuenta"
+  },
+  "profile": {
+    "displayName": "Nombre",
+    "displayNameHint": "Aparece en tus reseñas y viajes públicos.",
+    "save": "Guardar nombre",
+    "saving": "Guardando…",
+    "saved": "Nombre guardado",
+    "errors": {
+      "required": "Escribe tu nombre.",
+      "tooLong": "Usa como máximo {max} caracteres.",
+      "rejected": "Este nombre no se puede usar. Prueba con otro."
+    }
+  },
+  "preferences": {
+    "language": "Idioma",
+    "theme": "Tema",
+    "languageNotSaved": "Idioma no guardado. Vuelve a intentarlo.",
+    "themeNotSaved": "Tema no guardado. Vuelve a intentarlo."
+  },
+  "password": {
+    "intro": "Al cambiar la contraseña se cierra tu sesión en todos los demás dispositivos.",
+    "current": "Contraseña actual",
+    "new": "Contraseña nueva",
+    "newHint": "Mínimo {min} caracteres.",
+    "submit": "Cambiar contraseña",
+    "submitting": "Cambiando…",
+    "changed": "Contraseña cambiada. Se cerró la sesión en los demás dispositivos.",
+    "errors": {
+      "currentRequired": "Escribe tu contraseña actual.",
+      "currentTooLong": "Usa como máximo {max} caracteres.",
+      "currentWrong": "Esta no es tu contraseña actual.",
+      "newTooShort": "Usa al menos {min} caracteres.",
+      "newTooLong": "Usa como máximo {max} caracteres.",
+      "newIsEmail": "No uses tu correo como contraseña.",
+      "newRejected": "Esta contraseña es demasiado común. Elige otra."
+    }
+  },
+  "blocked": {
+    "intro": "No ves las reseñas ni los viajes públicos de las personas que bloqueaste.",
+    "listLabel": "Personas bloqueadas",
+    "emptyTitle": "No has bloqueado a nadie",
+    "emptyBody": "Bloquea a alguien desde el menú de una de sus reseñas.",
+    "loadFailed": "No se pudieron cargar las personas que bloqueaste.",
+    "loadMoreFailed": "No se pudieron cargar más. Vuelve a intentarlo.",
+    "unblock": "Desbloquear",
+    "unblockLabel": "Desbloquear a {name}",
+    "unblocked": "Desbloqueaste a {name}",
+    "unblockFailed": "No se pudo desbloquear a {name}."
+  },
+  "account": {
+    "logOutHint": "Cierra la sesión en este dispositivo.",
+    "logOutEverywhere": "Cerrar sesión en todos los dispositivos",
+    "loggingOutEverywhere": "Cerrando sesión…",
+    "logOutEverywhereHint": "Cierra todas las sesiones, incluida esta.",
+    "logOutEverywhereFailed": "No se pudo cerrar la sesión. Vuelve a intentarlo.",
+    "delete": "Eliminar cuenta",
+    "deleteHint": "Elimina tus viajes, notas y reseñas para siempre.",
+    "deleteTitle": "¿Eliminar tu cuenta?",
+    "deleteBody": "Se eliminan tus viajes, notas y reseñas, y tus viajes públicos y reseñas desaparecen para todos. No se puede deshacer.",
+    "deletePassword": "Contraseña",
+    "deleteConfirm": "Eliminar cuenta",
+    "deleting": "Eliminando…",
+    "deleted": "Tu cuenta se eliminó.",
+    "errors": {
+      "passwordRequired": "Escribe tu contraseña para confirmar.",
+      "passwordTooLong": "Usa como máximo {max} caracteres.",
+      "passwordWrong": "La contraseña no es correcta."
+    }
+  },
+  "failures": {
+    "offline": "Estás sin conexión. Conéctate y vuelve a intentarlo.",
+    "tooMany": "Demasiados intentos. Espera un minuto y vuelve a intentarlo.",
+    "failed": "Algo salió mal. Vuelve a intentarlo."
+  }
+}

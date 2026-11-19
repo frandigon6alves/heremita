@@ -4,8 +4,6 @@ import { arrangeTrip, PLACES, type Account } from './support/api';
 import { accountTest as test, expect } from './support/fixtures';
 import { expectMapReady, openRowMenu, stopList } from './support/planner';
 
-test.use({ locale: 'pt-BR' });
-
 /** Widths the layout must hold without sideways scrolling (V64), split by device class. */
 const PHONE_WIDTHS = [360, 768] as const;
 const DESKTOP_WIDTHS = [1024, 1280] as const;
@@ -27,7 +25,7 @@ interface Sitemap {
  */
 async function arrangeSitemap(account: Account): Promise<Sitemap> {
   const trip = await arrangeTrip(account.api, {
-    title: 'Belém num dia de sol, com um título comprido para quebrar a linha',
+    title: 'Belém on a sunny day, with a title long enough to wrap the line',
     days: [DAY_ONE, ...Array.from({ length: DAY_COUNT - 1 }, () => [])],
     ideas: [PLACES.lxFactory],
   });
@@ -36,7 +34,7 @@ async function arrangeSitemap(account: Account): Promise<Sitemap> {
     body: { visibility: 'link' },
   });
   const { items } = await account.api.call(endpoints.searchPlaces, {
-    query: { q: 'Sainte-Chapelle', locale: 'pt-BR' },
+    query: { q: 'Sainte-Chapelle', locale: 'en' },
   });
   const placeId = items.find((item) => item.name === 'Sainte-Chapelle')?.placeId ?? '';
   const dayOneId = trip.plan.days[0]?.id ?? '';
@@ -44,23 +42,24 @@ async function arrangeSitemap(account: Account): Promise<Sitemap> {
     tripId: trip.id,
     dayOneId,
     urls: [
-      '/pt-BR',
       '/en',
-      '/pt-BR/explore',
-      '/pt-BR/about',
-      '/pt-BR/privacy',
-      `/pt-BR/places/${placeId}`,
-      `/pt-BR/places/${placeId}/review`,
-      `/pt-BR/u/${account.me.id}`,
-      `/pt-BR/s/${shareToken}`,
-      '/pt-BR/trips',
-      '/pt-BR/trips/new',
-      `/pt-BR/trips/${trip.id}`,
-      `/pt-BR/trips/${trip.id}?day=ideas`,
-      `/pt-BR/trips/${trip.id}?day=${dayOneId}`,
-      `/pt-BR/trips/${trip.id}/settings`,
-      '/pt-BR/settings',
-      '/pt-BR/nao-existe',
+      '/es',
+      '/pt-BR',
+      '/en/explore',
+      '/en/about',
+      '/en/privacy',
+      `/en/places/${placeId}`,
+      `/en/places/${placeId}/review`,
+      `/en/u/${account.me.id}`,
+      `/en/s/${shareToken}`,
+      '/en/trips',
+      '/en/trips/new',
+      `/en/trips/${trip.id}`,
+      `/en/trips/${trip.id}?day=ideas`,
+      `/en/trips/${trip.id}?day=${dayOneId}`,
+      `/en/trips/${trip.id}/settings`,
+      '/en/settings',
+      '/en/does-not-exist',
     ],
   };
 }
@@ -209,7 +208,7 @@ test('phone_targets_are_44_px_uncovered_and_headings_nest', async ({ page, accou
     );
   }
   // The row menu floats over the list and the sheet.
-  await visit(page, `/pt-BR/trips/${tripId}?day=${dayOneId}`);
+  await visit(page, `/en/trips/${tripId}?day=${dayOneId}`);
   await openRowMenu(page, 'Torre de Belém');
   problems.push(
     ...(await page.evaluate(auditPhoneScreen)).map((problem) => `row menu: ${problem}`),
@@ -226,20 +225,20 @@ test('the_collapsed_sheet_shows_its_handle_chips_and_day_summary', async ({
   test.skip(!isMobile, 'The sheet is the phone layout; desktop has a side panel.');
   // A trip with nothing on its days opens at peek.
   const trip = await arrangeTrip(account.api, {
-    title: 'Só ideias',
+    title: 'Only ideas',
     days: [[], []],
     ideas: [PLACES.lxFactory],
   });
   await page.setViewportSize({ width: PHONE_WIDTH, height: 780 });
-  await visit(page, `/pt-BR/trips/${trip.id}`);
+  await visit(page, `/en/trips/${trip.id}`);
 
   const sheet = page.locator('[data-snap="peek"]');
   const sheetTop = (await sheet.boundingBox())?.y ?? 0;
-  const summaryBox = await page.getByText('Ideias · 1 lugar').boundingBox();
+  const summaryBox = await page.getByText('Ideas · 1 place').boundingBox();
   expect(summaryBox?.y ?? 0).toBeGreaterThan(sheetTop);
   expect((summaryBox?.y ?? 0) + (summaryBox?.height ?? 0)).toBeLessThanOrEqual(780);
-  await expect(page.getByRole('button', { name: /^Painel: recolhido/ })).toBeInViewport();
-  await expect(page.getByRole('group', { name: 'Dias' })).toBeInViewport({ ratio: 1 });
+  await expect(page.getByRole('button', { name: /^Panel: collapsed/ })).toBeInViewport();
+  await expect(page.getByRole('group', { name: 'Days' })).toBeInViewport({ ratio: 1 });
 });
 
 /** The accessible name a screen reader would read for the focused element, roughly. */
@@ -277,12 +276,12 @@ test('the_keyboard_walks_the_planner_in_reading_order_with_a_visible_ring', asyn
   page,
   account,
 }) => {
-  const trip = await arrangeTrip(account.api, { title: 'Ordem do foco', days: [DAY_ONE] });
-  await visit(page, `/pt-BR/trips/${trip.id}`);
+  const trip = await arrangeTrip(account.api, { title: 'Focus order', days: [DAY_ONE] });
+  await visit(page, `/en/trips/${trip.id}`);
 
   const visited: string[] = [];
   const unringed: string[] = [];
-  const LAST = 'Adicionar aqui';
+  const LAST = 'Add here';
   for (let presses = 0; presses < 60 && visited.at(-1) !== LAST; presses += 1) {
     await page.keyboard.press('Tab');
     const name = await page.evaluate(focusedName);
@@ -294,13 +293,13 @@ test('the_keyboard_walks_the_planner_in_reading_order_with_a_visible_ring', asyn
 
   // §I.web.screens DOM order: app bar → search → skip link → sheet/panel → map → floating buttons.
   const landmarks = [
-    'Minhas viagens',
-    'Buscar lugares',
-    'Pular para o mapa',
-    'Dia 1',
-    'Ações de Torre de Belém',
-    'Ações de Padrão dos Descobrimentos',
-    'Mapa de Ordem do foco',
+    'My trips',
+    'Search places',
+    'Skip to the map',
+    'Day 1',
+    'Actions for Torre de Belém',
+    'Actions for Padrão dos Descobrimentos',
+    'Map of Focus order',
     LAST,
   ];
   const positions = landmarks.map((landmark) => visited.indexOf(landmark));
@@ -313,8 +312,8 @@ test.describe('with reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
 
   test('nothing_on_the_planner_moves', async ({ page, account }) => {
-    const trip = await arrangeTrip(account.api, { title: 'Sem movimento', days: [DAY_ONE] });
-    await visit(page, `/pt-BR/trips/${trip.id}`);
+    const trip = await arrangeTrip(account.api, { title: 'No motion', days: [DAY_ONE] });
+    await visit(page, `/en/trips/${trip.id}`);
     await openRowMenu(page, 'Mosteiro dos Jerónimos');
 
     const moving = await page.evaluate(() => {
@@ -344,24 +343,24 @@ test('a_screen_reader_hears_each_stop_its_actions_and_the_leg_to_the_next', asyn
   page,
   account,
 }) => {
-  const trip = await arrangeTrip(account.api, { title: 'Leitura', days: [DAY_ONE] });
-  await visit(page, `/pt-BR/trips/${trip.id}`);
+  const trip = await arrangeTrip(account.api, { title: 'Read aloud', days: [DAY_ONE] });
+  await visit(page, `/en/trips/${trip.id}`);
 
   await expect(stopList(page, 1)).toMatchAriaSnapshot(`
-    - list "Lugares do dia 1":
+    - list "Places of day 1":
       - listitem:
-        - button /^Torre de Belém Atração/
-        - button "Ações de Torre de Belém"
-        - button "Mover Torre de Belém"
-        - 'button /^Rota até Mosteiro dos Jerónimos a pé: \\d+ min · [\\d,]+ k?m$/'
+        - button /^Torre de Belém Sight/
+        - button "Actions for Torre de Belém"
+        - button "Move Torre de Belém"
+        - 'button /^Route to Mosteiro dos Jerónimos on foot: \\d+ min · [\\d.]+ k?m$/'
       - listitem:
-        - button /^Mosteiro dos Jerónimos Atração/
-        - button "Ações de Mosteiro dos Jerónimos"
-        - button "Mover Mosteiro dos Jerónimos"
-        - 'button /^Rota até Padrão dos Descobrimentos a pé: \\d+ min · [\\d,]+ k?m$/'
+        - button /^Mosteiro dos Jerónimos Sight/
+        - button "Actions for Mosteiro dos Jerónimos"
+        - button "Move Mosteiro dos Jerónimos"
+        - 'button /^Route to Padrão dos Descobrimentos on foot: \\d+ min · [\\d.]+ k?m$/'
       - listitem:
         - button /^Padrão dos Descobrimentos /
-        - button "Ações de Padrão dos Descobrimentos"
-        - button "Mover Padrão dos Descobrimentos"
+        - button "Actions for Padrão dos Descobrimentos"
+        - button "Move Padrão dos Descobrimentos"
   `);
 });

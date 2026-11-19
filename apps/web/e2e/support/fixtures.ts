@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { AxeBuilder } from '@axe-core/playwright';
+import { DEFAULT_LOCALE, localeSchema, type Locale } from '@heremita/shared';
 import {
   test as base,
   expect,
@@ -36,7 +37,10 @@ interface WorkerFixtures {
 }
 
 interface AccountFixtures {
-  /** Signs up another account for this test through the API (each from its own address). */
+  /**
+   * Signs up another account for this test through the API (each from its own
+   * address), in the test's locale.
+   */
   makeAccount: (displayName: string) => Promise<Account>;
   /** The test's own account, signed in in the default context. */
   account: Account;
@@ -85,6 +89,12 @@ async function reportCspViolations(
   });
 }
 
+/** The app locale a browser locale (`test.use({ locale })`) asks for; English otherwise. */
+export function appLocaleOf(browserLocale: string | undefined): Locale {
+  const parsed = localeSchema.safeParse(browserLocale);
+  return parsed.success ? parsed.data : DEFAULT_LOCALE;
+}
+
 let accountCounter = 0;
 
 /** A unique e-mail per worker process and call. */
@@ -116,7 +126,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     { auto: true },
   ],
 
-  openContext: async ({ browser, baseURL, cspViolations }, use, testInfo) => {
+  openContext: async ({ browser, baseURL, locale, cspViolations }, use, testInfo) => {
     const opened: BrowserContext[] = [];
     await use(async (storageState) => {
       const { viewport, userAgent, deviceScaleFactor, isMobile, hasTouch } = testInfo.project.use;
@@ -127,7 +137,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
         isMobile,
         hasTouch,
         baseURL,
-        locale: 'pt-BR',
+        locale,
         storageState,
         extraHTTPHeaders: { 'X-Forwarded-For': testAddress(testInfo, opened.length + 1) },
       });
@@ -167,13 +177,18 @@ export const signedInTest = test.extend({
  * writes (reports, reviews, deletion) must not leak into the next test.
  */
 export const accountTest = test.extend<AccountFixtures>({
-  makeAccount: async ({ playwright }, use, testInfo) => {
+  makeAccount: async ({ playwright, locale }, use, testInfo) => {
     const contexts: APIRequestContext[] = [];
     await use(async (displayName) => {
       const email = uniqueEmail('account', testInfo.workerIndex);
       const context = await newApiContext(playwright.request, clientAddressFor(`account:${email}`));
       contexts.push(context);
-      return signUp(context, { displayName, email, password: 'account passphrase e2e' });
+      return signUp(context, {
+        displayName,
+        email,
+        password: 'account passphrase e2e',
+        locale: appLocaleOf(locale),
+      });
     });
     await Promise.all(contexts.map((context) => context.dispose()));
   },

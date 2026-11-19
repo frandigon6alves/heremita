@@ -39,9 +39,10 @@ function parsed(name: string, dir?: string) {
 }
 
 describe('photonLang', () => {
-  it('maps_pt_BR_to_default_and_en_to_en', () => {
-    expect(photonLang('pt-BR')).toBe('default');
+  it('maps_en_to_en_and_the_languages_photon_lacks_to_default', () => {
     expect(photonLang('en')).toBe('en');
+    expect(photonLang('es')).toBe('default');
+    expect(photonLang('pt-BR')).toBe('default');
   });
 });
 
@@ -53,6 +54,12 @@ describe('photonSearchUrl', () => {
     expect(url.searchParams.get('q')).toBe('Pastéis de Belém');
     expect(url.searchParams.get('lang')).toBe('default');
     expect(url.searchParams.get('limit')).toBe('6');
+  });
+
+  it('asks_spanish_and_portuguese_with_one_url_so_they_share_a_cache_entry', () => {
+    expect(photonSearchUrl(PHOTON, search({ locale: 'es' }))).toBe(
+      photonSearchUrl(PHOTON, search({ locale: 'pt-BR' })),
+    );
   });
 
   it('rounds_the_bias_to_four_decimals_and_clamps_zoom', () => {

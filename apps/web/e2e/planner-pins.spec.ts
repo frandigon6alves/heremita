@@ -3,11 +3,9 @@ import { arrangeTrip, readPlan } from './support/api';
 import { accountTest as test, expect, expectAccessible } from './support/fixtures';
 import { openPlanner, toasts } from './support/planner';
 
-test.use({ locale: 'pt-BR' });
-
 /** A point on the visible part of the map: centred, above the half-open sheet. */
 async function visibleMapPoint(page: Page): Promise<{ x: number; y: number }> {
-  const box = await page.getByRole('region', { name: /^Mapa de / }).boundingBox();
+  const box = await page.getByRole('region', { name: /^Map of / }).boundingBox();
   if (!box) {
     throw new Error('The map region has no box');
   }
@@ -42,37 +40,37 @@ test('long_press_opens_whats_here_and_adds_a_nearby_place', async ({ page, accou
     await page.mouse.click(point.x, point.y, { button: 'right' });
   }
 
-  const whatsHere = page.getByRole('region', { name: 'O que tem aqui?' });
+  const whatsHere = page.getByRole('region', { name: "What's here?" });
   await expect(whatsHere).toBeVisible();
-  await expect(page.getByRole('button', { name: /^Novo marcador/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^New pin/ })).toBeVisible();
   const nearby = whatsHere.getByRole('listitem').getByRole('button');
   await expect(nearby.first()).toBeVisible();
   await expectAccessible(page);
   await nearby.first().click();
   const picked = await page.getByRole('heading', { level: 3 }).first().textContent();
-  await page.getByRole('button', { name: 'Adicionar ao Dia 1' }).click();
+  await page.getByRole('button', { name: 'Add to day 1' }).click();
 
-  await expect(toasts(page).getByText(`${picked} adicionado ao Dia 1`)).toBeVisible();
+  await expect(toasts(page).getByText(`${picked} added to day 1`)).toBeVisible();
   await expect
     .poll(async () => (await readPlan(account.api, trip.id)).places.map((p) => p.place.name))
     .toEqual([picked]);
 });
 
 test('add_here_button_pins_the_map_centre_as_a_custom_place', async ({ page, account }) => {
-  const trip = await arrangeTrip(account.api, { title: 'Ponto exato', days: [[]] });
+  const trip = await arrangeTrip(account.api, { title: 'Exact spot', days: [[]] });
   await openPlanner(page, trip.id, '?day=ideas');
 
-  const addHere = page.getByRole('button', { name: 'Adicionar aqui' });
+  const addHere = page.getByRole('button', { name: 'Add here' });
   await addHere.click();
   await expect(addHere).toHaveAttribute('aria-pressed', 'true');
 
-  const whatsHere = page.getByRole('region', { name: 'O que tem aqui?' });
-  await whatsHere.getByRole('button', { name: 'Usar este ponto exato' }).click();
-  await whatsHere.getByRole('textbox', { name: 'Nome' }).fill('Encontro com a Joana');
-  await whatsHere.getByRole('button', { name: 'Adicionar às Ideias' }).click();
+  const whatsHere = page.getByRole('region', { name: "What's here?" });
+  await whatsHere.getByRole('button', { name: 'Use this exact spot' }).click();
+  await whatsHere.getByRole('textbox', { name: 'Name' }).fill('Meeting Joana');
+  await whatsHere.getByRole('button', { name: 'Add to Ideas' }).click();
 
-  await expect(toasts(page).getByText('Encontro com a Joana adicionado às Ideias')).toBeVisible();
+  await expect(toasts(page).getByText('Meeting Joana added to Ideas')).toBeVisible();
   await expect
     .poll(async () => (await readPlan(account.api, trip.id)).places.map((p) => p.place.name))
-    .toEqual(['Encontro com a Joana']);
+    .toEqual(['Meeting Joana']);
 });

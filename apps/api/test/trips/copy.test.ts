@@ -198,6 +198,21 @@ describe('E25 copyTrip', () => {
     expect(named.title).toBe('My Rio');
   });
 
+  it('titles_the_copy_in_spanish_for_a_spanish_copier', async () => {
+    const [owner, spanish] = await Promise.all([createUser(t), createUser(t, { locale: 'es' })]);
+    const source = await publishTrip(
+      owner.agent,
+      (await callOk(owner.agent, 'createTrip', { body: { title: 'Rio' } })).id,
+    );
+
+    const copy = await callOk(spanish.agent, 'copyTrip', {
+      params: { tripId: source.id },
+      body: {},
+    });
+
+    expect(copy.title).toBe('Copia de Rio');
+  });
+
   it('copies_a_public_trip_of_someone_else_and_shows_where_it_came_from', async () => {
     const [owner, copier] = await Promise.all([createUser(t), createUser(t)]);
     const source = await sourceTrip(owner, 'Public trip');
