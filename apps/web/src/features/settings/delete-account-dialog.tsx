@@ -5,20 +5,18 @@ import { apiRoutes } from '@heremita/shared/api-routes';
 import { LIMITS } from '@heremita/shared/plain';
 import { deleteAccountBodySchema } from '@/lib/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useMutation } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useForm, type FieldError } from 'react-hook-form';
 import { apiFetch } from '@/lib/api/client';
 import { bodyFieldsOf, hasCode, SERVER_ERROR, showFieldErrors } from '@/lib/api/failure';
-import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
 import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { Dialog, DialogActions, initialFocus } from '@/shared/components/dialog/dialog';
 import { PasswordField } from '@/shared/components/password-field/password-field';
 import { showToast } from '@/shared/components/toast/toast-store';
-import { clearDrafts } from '@/shared/storage/session-drafts';
+import { useSignedOut } from '@/shared/hooks/use-signed-out';
 import styles from './settings.module.css';
 
 const FIELDS = ['password'] as const;
@@ -37,10 +35,8 @@ export interface DeleteAccountDialogProps {
  */
 export function DeleteAccountDialog({ open, onClose }: DeleteAccountDialogProps) {
   const t = useTranslations('settings.account');
+  const signedOut = useSignedOut();
   const tActions = useTranslations('common.actions');
-  const locale = useLocale();
-  const router = useRouter();
-  const queryClient = useQueryClient();
   const [failure, setFailure] = useState<{ error: unknown } | null>(null);
   const [leaving, setLeaving] = useState(false);
   const {
@@ -77,10 +73,7 @@ export function DeleteAccountDialog({ open, onClose }: DeleteAccountDialogProps)
     }
     setLeaving(true);
     showToast({ message: t('deleted') });
-    queryClient.clear();
-    clearDrafts();
-    router.replace(routes.landing(locale));
-    router.refresh();
+    signedOut();
   });
   const pending = isSubmitting || leaving;
 

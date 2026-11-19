@@ -1,16 +1,13 @@
 'use client';
 
 import { apiRoutes } from '@heremita/shared/api-routes';
-import { useQueryClient } from '@tanstack/react-query';
-import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useId, useState, type ReactNode } from 'react';
 import { apiFetch } from '@/lib/api/client';
 import { isUnauthenticated } from '@/lib/api/problem';
-import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
 import { showToast } from '@/shared/components/toast/toast-store';
-import { clearDrafts } from '@/shared/storage/session-drafts';
+import { useSignedOut } from '@/shared/hooks/use-signed-out';
 import { DeleteAccountDialog } from './delete-account-dialog';
 import styles from './settings.module.css';
 
@@ -27,9 +24,7 @@ export interface AccountActionsProps {
  */
 export function AccountActions({ logOut }: AccountActionsProps) {
   const t = useTranslations('settings.account');
-  const locale = useLocale();
-  const router = useRouter();
-  const queryClient = useQueryClient();
+  const signedOut = useSignedOut();
   const [loggingOut, setLoggingOut] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const everywhereHintId = useId();
@@ -46,10 +41,7 @@ export function AccountActions({ logOut }: AccountActionsProps) {
         return;
       }
     }
-    queryClient.clear();
-    clearDrafts();
-    router.replace(routes.landing(locale));
-    router.refresh();
+    signedOut();
   };
 
   return (
