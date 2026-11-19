@@ -271,7 +271,7 @@ The live demo runs on Vercel (web), Render (API) and Neon (database); their setu
 
 ### Signed client address
 
-Pages rendered on the server call the API from the web server, so on Vercel every signed-out render reaches the API from the same few egress addresses. To keep one busy visitor (or a crawler) from using up the anonymous rate limit of everyone, `serverFetch` (`apps/web/src/lib/api/server.ts`) sends the visitor's address (the last `X-Forwarded-For` entry, which Vercel or your proxy wrote) in `X-Heremita-Client-Ip`, plus `X-Heremita-Client-Ip-Signature: <unix ms>.<HMAC-SHA256>` over address and time with `SERVER_FETCH_SECRET`. The API (`apps/api/src/core/http/client-address.ts`) uses that address for anonymous rate limits only when the signature checks out (constant-time compare) and is at most 60 s old or ahead; otherwise, or without a secret, it uses `req.ip` as before. To rotate the secret, set the new value on both hosts and redeploy both; until both run it, server renders fall back to the shared bucket.
+Pages rendered on the server call the API from the web server, so on Vercel every signed-out render reaches the API from the same few egress addresses. To keep one busy visitor (or a crawler) from using up the anonymous rate limit of everyone, `serverFetch` (`apps/web/src/lib/api/server.ts`) sends the visitor's address (the last `X-Forwarded-For` entry, which Vercel or your proxy wrote) in `X-Heremita-Client-Ip`, plus `X-Heremita-Client-Ip-Signature: <unix ms>.<HMAC-SHA256>` over address and time with `SERVER_FETCH_SECRET`. The API (`apps/api/src/core/http/client-address.ts`) uses that address for anonymous rate limits and failed-login counting only when the signature checks out (constant-time compare) and is at most 60 s old or ahead; otherwise, or without a secret, it uses `req.ip` as before. To rotate the secret, set the new value on both hosts and redeploy both; until both run it, server renders fall back to the shared bucket.
 
 Generate the value once and paste the same string on both hosts:
 
@@ -283,6 +283,10 @@ openssl rand -base64 32
 - Vercel: project → Settings → Environment Variables → `SERVER_FETCH_SECRET`, for Production and Preview (it is read at build and at run time; never prefix it with `NEXT_PUBLIC_`).
 
 Locally, `.env.example` carries a public development value; never reuse it in production.
+
+### Failed sign-ins
+
+Wrong passwords are counted per e-mail **and** client address block (the /24 of an IPv4 address, the /64 of an IPv6 one): the sixth failure within 15 minutes from the same block answers 429 `too_many_attempts` with `Retry-After`, while the owner signing in from anywhere else is still checked normally. A backstop of 50 failures per e-mail in 15 minutes, from all addresses together, stops a guesser who rotates blocks; it is the only case where someone else can delay the owner, and it ends with the window. Nothing locks an account for good (`apps/api/src/auth/login-attempts.ts`).
 
 ## Project documents
 

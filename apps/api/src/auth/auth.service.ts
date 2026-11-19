@@ -50,11 +50,12 @@ export class AuthService {
   /**
    * E5. Unknown e-mail and wrong password take the same time and answer the
    * same body. Failures are counted per e-mail (the schema already trimmed and
-   * lower-cased it), each from before its password is checked; the attempt
-   * after the fifth in a window answers 429.
+   * lower-cased it) and client address block, each from before its password
+   * is checked; the attempt after the fifth in a window answers 429, as does
+   * any attempt once the e-mail's backstop of 50 is used up ({@link LoginAttempts}).
    */
-  async logIn(body: LogInBody): Promise<SignedIn> {
-    const retryAfter = this.loginAttempts.begin(body.email);
+  async logIn(body: LogInBody, clientAddress: string): Promise<SignedIn> {
+    const retryAfter = this.loginAttempts.begin(body.email, clientAddress);
     if (retryAfter !== null) {
       throw new ApiProblem(
         'too_many_attempts',
@@ -75,7 +76,7 @@ export class AuthService {
       throw new ApiProblem('invalid_credentials', 'The e-mail or password is wrong.');
     }
 
-    this.loginAttempts.recordSuccess(body.email);
+    this.loginAttempts.recordSuccess(body.email, clientAddress);
     return { me: toMe(user), session: await this.sessions.create(user.id) };
   }
 

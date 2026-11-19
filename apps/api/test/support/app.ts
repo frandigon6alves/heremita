@@ -20,6 +20,9 @@ import { createTestDatabase } from './test-database.js';
 /** The web origin every test client claims; unsafe requests from anywhere else get 403 `csrf_rejected`. */
 export const WEB_ORIGIN = 'http://localhost:3100';
 
+/** The web server's signing secret in tests (`SERVER_FETCH_SECRET`). */
+export const TEST_SERVER_FETCH_SECRET = 'test-server-fetch-secret-0123456789abcdef';
+
 /** Where the test clock starts unless a test passes its own clock. */
 export const TEST_START = '2026-11-18T10:00:00.000Z';
 
@@ -59,6 +62,7 @@ export async function buildTestApp(options: TestAppOptions = {}): Promise<TestAp
     DATABASE_URL: database.url,
     WEB_ORIGIN,
     COOKIE_SECURE: 'false',
+    SERVER_FETCH_SECRET: TEST_SERVER_FETCH_SECRET,
   });
 
   let builder = Test.createTestingModule({

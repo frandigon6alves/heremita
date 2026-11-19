@@ -317,7 +317,7 @@ Pointers: JSON Pointer rooted at request part: `/body/stopIds/3`, `/query/limit`
 name|limit|key
 ---|---|---
 default|120 / 60 s|user id ?? IP
-`auth`|10 / 60 s (E5, E10, E11) + login per-email failures 5 / 15 min|IP (E5), user (E10, E11)
+`auth`|10 / 60 s (E5, E10, E11) + login failures 5 / 15 min per (e-mail, IP block /24 ∨ /64) + backstop 50 / 15 min per e-mail|IP (E5), user (E10, E11); login failures IP = signed client IP ?? `req.ip`
 `signup`|5 / 3600 s|IP
 `search`|10 / 2 s|user
 `reverse`|3 / 3 s|user
@@ -882,7 +882,7 @@ V29: API changes additive-only within `/v1` [review].
 V30: Unsafe method w/ `Sec-Fetch-Site` ≠ `same-origin` → 403 `csrf_rejected`; absent `Sec-Fetch-Site` ∧ `Origin` ≠ `WEB_ORIGIN` (or missing) → 403; applies to E4/E5; real browser POST through Next rewrite on web origin succeeds (proves headers forwarded) [integration + e2e].
 V31: Session token 32 random bytes; DB holds only sha256; cookie `HttpOnly`, `SameSite=Lax`, `Path=/`, `Secure` iff `COOKIE_SECURE`, `Max-Age` = seconds to absolute expiry; FixedClock: +30 min no DB write, +2 h touch writes `last_used_at`, idle > 30 d → 401, > 90 d → 401 even if active [API unit + integration].
 V32: Argon2id hash PHC starts `$argon2id$v=19$m=19456,t=2,p=1$`; password 12–128, ⊥ ∈ blocklist, ≠ e-mail ∧ ≠ local part [unit + integration].
-V33: Login unknown e-mail ∧ wrong password → identical 401 body (`invalid_credentials`); 6th failure for e-mail in 15 min → 429 `too_many_attempts` + `Retry-After`; ⊥ lockout of correct password after window [integration w/ FixedClock].
+V33: Login unknown e-mail ∧ wrong password → identical 401 body (`invalid_credentials`); 6th failure for (e-mail, IP /24 ∨ /64) in 15 min → 429 `too_many_attempts` + `Retry-After`; same e-mail from other block w/ correct password → 201; 51st failure for e-mail from any blocks → 429 (backstop); success clears own block, −1 on backstop; ⊥ lockout of correct password after window [unit + integration w/ FixedClock].
 V34: Logout → cookie dead (401); logout everywhere → all sessions dead; password change → other sessions dead, current rotated (old cookie 401, new works) [integration].
 V35: ⊥ Server Actions: `'use server'` ⊥ in `apps/web/src` (lint); RSC → API calls GET only, forward only session cookie + `X-Request-Id` + signed client IP (iff `SERVER_FETCH_SECRET`) [lint + unit].
 
@@ -1021,3 +1021,4 @@ B6|2026-11-19|SegmentedControl segments `flex: 1 1 0` in inline-flex ∴ longest
 B7|2026-11-19|`--sheet-peek` 136 < header content 148 ∴ peek clipped day summary + day ⋯ button|`--sheet-peek: 148px` (ID-T73); `the_collapsed_sheet_shows_its_handle_chips_and_day_summary`; V56
 B8|2026-11-19|stop row `:active` `scale(0.97)` literal ⊥ `--pressed-scale` (1 under reduced motion)|`scale(var(--pressed-scale))`; `shared/styles/motion-rules.test.ts` bans literal scale + literal transition times, endless animations need own reduced-motion rule; V59
 B9|2026-11-19|`serverFetch` forwarded only cookie + request id; anon tracker = `req.ip` ∴ every signed-out RSC render shared Vercel egress IP bucket (120/60 s) → crawler/script made public pages 429 for all|signed client IP headers (HMAC-SHA256, 60 s window, constant-time) w/ `SERVER_FETCH_SECRET` both apps (! prod); `ClientAddress` → `AppThrottlerGuard`; `app-throttler.guard.test.ts`, `http-pipeline.test.ts` `gives_each_signed_client_address_its_own_bucket_behind_one_server_address`, web `server.test.ts`; V35, V36
+B10|2026-11-19|`LoginAttempts` keyed on e-mail only ∧ counted before verify ∴ anyone w/ 5 wrong guesses / 15 min kept any user (demo e-mails public) locked out|key (e-mail, IP /24 ∨ /64 via throttler `normalizeIp`) limit 5 + per-e-mail backstop 50; success clears own block; IP = signed client IP ?? `req.ip`; `login-attempts.test.ts`, `auth.test.ts` `lets_the_owner_in_from_another_address_while_a_guesser_is_locked_out`, `locks_the_email_everywhere_once_guesses_from_many_addresses_reach_the_backstop`; V33

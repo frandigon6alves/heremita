@@ -1,7 +1,8 @@
-import { Controller, Header, Res } from '@nestjs/common';
+import { Controller, Header, Req, Res } from '@nestjs/common';
 import { API_PREFIX, endpoints, type EndpointInput, type Me } from '@heremita/shared';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import type { SessionUser } from '../core/http/api-request.js';
+import { ClientAddress } from '../core/http/client-address.js';
 import { CurrentUser } from '../core/http/current-user.decorator.js';
 import { Endpoint } from '../core/http/endpoint.decorator.js';
 import { Input } from '../core/http/input.decorator.js';
@@ -16,6 +17,7 @@ export class AuthController {
     private readonly auth: AuthService,
     private readonly sessions: SessionService,
     private readonly cookies: SessionCookies,
+    private readonly clientAddress: ClientAddress,
   ) {}
 
   @Endpoint(endpoints.signUp)
@@ -33,9 +35,10 @@ export class AuthController {
   @Header('Location', `${API_PREFIX}/sessions/current`)
   async logIn(
     @Input() input: EndpointInput<typeof endpoints.logIn>,
+    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<Me> {
-    const { me, session } = await this.auth.logIn(input.body);
+    const { me, session } = await this.auth.logIn(input.body, this.clientAddress.of(request));
     this.cookies.set(response, session);
     return me;
   }

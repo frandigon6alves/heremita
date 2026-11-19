@@ -1,7 +1,13 @@
 import { createHash } from 'node:crypto';
 import { meSchema, problemDetailsSchema } from '@heremita/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import {
+  CLIENT_IP_HEADER,
+  CLIENT_IP_SIGNATURE_HEADER,
+  signClientIp,
+} from '../../src/core/http/client-address.js';
 import { PASSWORD_HASH_PREFIX } from '../../src/core/password/passwords.js';
+import { TEST_SERVER_FETCH_SECRET } from '../support/app.js';
 import {
   getMe,
   logIn,
@@ -227,14 +233,23 @@ describe('E5 login', () => {
 });
 
 describe('login attempts (V33)', () => {
+  let blocks = 0;
+  /** An address in a /24 no other test of this file uses (198.18.0.0/15, benchmarking range). */
+  function blockOfItsOwn(): (host?: number) => string {
+    blocks += 1;
+    const prefix = `198.${18 + Math.floor(blocks / 256)}.${blocks % 256}`;
+    return (host = 1) => `${prefix}.${host}`;
+  }
+
   it('answers_429_with_retry_after_on_the_sixth_failure_in_15_minutes', async () => {
+    const ip = blockOfItsOwn()();
     const { email } = await signUp(t);
     for (let i = 0; i < 5; i += 1) {
-      expect((await logIn(t, email, 'wrong password!')).status).toBe(401);
+      expect((await logIn(t, email, 'wrong password!', ip)).status).toBe(401);
       t.clock.advance(60_000);
     }
 
-    const sixth = await logIn(t, email, 'wrong password!');
+    const sixth = await logIn(t, email, 'wrong password!', ip);
 
     expect(sixth.status).toBe(429);
     expect(problemDetailsSchema.parse(sixth.body).code).toBe('too_many_attempts');
@@ -242,52 +257,116 @@ describe('login attempts (V33)', () => {
   });
 
   it('counts_failures_for_unknown_emails_too', async () => {
+    const ip = blockOfItsOwn()();
     const email = t.nextEmail();
     for (let i = 0; i < 5; i += 1) {
-      await logIn(t, email, 'wrong password!');
+      await logIn(t, email, 'wrong password!', ip);
     }
 
-    const sixth = await logIn(t, email, 'wrong password!');
+    const sixth = await logIn(t, email, 'wrong password!', ip);
 
     expect(sixth.status).toBe(429);
   });
 
   it('lets_the_right_password_in_once_the_window_ends', async () => {
+    const ip = blockOfItsOwn()();
     const { email } = await signUp(t);
     for (let i = 0; i < 5; i += 1) {
-      await logIn(t, email, 'wrong password!');
+      await logIn(t, email, 'wrong password!', ip);
     }
-    expect((await logIn(t, email, PASSWORD)).status).toBe(429);
+    expect((await logIn(t, email, PASSWORD, ip)).status).toBe(429);
 
     t.clock.advance(15 * 60 * 1000);
 
-    expect((await logIn(t, email, PASSWORD)).status).toBe(201);
+    expect((await logIn(t, email, PASSWORD, ip)).status).toBe(201);
   });
 
   it('forgets_failures_after_a_successful_login', async () => {
+    // One /24, a new address per call: the per-address request throttle (10/min) stays out of it.
+    const inBlock = blockOfItsOwn();
+    let host = 0;
+    const ip = () => inBlock((host += 1));
     const { email } = await signUp(t);
     for (let i = 0; i < 4; i += 1) {
-      await logIn(t, email, 'wrong password!');
+      await logIn(t, email, 'wrong password!', ip());
     }
-    await logIn(t, email, PASSWORD);
+    await logIn(t, email, PASSWORD, ip());
     for (let i = 0; i < 5; i += 1) {
-      await logIn(t, email, 'wrong password!');
+      await logIn(t, email, 'wrong password!', ip());
     }
 
-    expect((await logIn(t, email, 'wrong password!')).status).toBe(429);
-    expect((await logIn(t, 'someone-else@example.com', 'wrong password!')).status).toBe(401);
+    expect((await logIn(t, email, 'wrong password!', ip())).status).toBe(429);
+    expect((await logIn(t, 'someone-else@example.com', 'wrong password!', ip())).status).toBe(401);
   });
 
   it('checks_at_most_five_passwords_when_guesses_arrive_at_once', async () => {
+    const inBlock = blockOfItsOwn();
     const { email } = await signUp(t);
 
+    // One /24, one address per guess: the per-address request throttle stays out of it.
     const answers = await Promise.all(
-      Array.from({ length: 12 }, () => logIn(t, email, 'wrong password!')),
+      Array.from({ length: 12 }, (_, i) => logIn(t, email, 'wrong password!', inBlock(i + 1))),
     );
 
     const statuses = answers.map((answer) => answer.status);
     expect(statuses.filter((status) => status === 401)).toHaveLength(5);
     expect(statuses.filter((status) => status === 429)).toHaveLength(7);
+  });
+
+  it('lets_the_owner_in_from_another_address_while_a_guesser_is_locked_out', async () => {
+    const guesser = blockOfItsOwn();
+    const owner = blockOfItsOwn()();
+    const { email } = await signUp(t);
+    for (let i = 0; i < 5; i += 1) {
+      expect((await logIn(t, email, 'wrong password!', guesser(i + 1))).status).toBe(401);
+    }
+    expect((await logIn(t, email, 'wrong password!', guesser(100))).status).toBe(429);
+
+    const ownerLogin = await logIn(t, email, PASSWORD, owner);
+
+    expect(ownerLogin.status).toBe(201);
+    expect((await logIn(t, email, PASSWORD, guesser(101))).status).toBe(429);
+  });
+
+  it('locks_the_email_everywhere_once_guesses_from_many_addresses_reach_the_backstop', async () => {
+    const { email } = await signUp(t);
+    const statuses: number[] = [];
+    for (let i = 0; i < 50; i += 1) {
+      statuses.push((await logIn(t, email, 'wrong password!', blockOfItsOwn()())).status);
+    }
+
+    const owner = await logIn(t, email, PASSWORD, blockOfItsOwn()());
+
+    expect(statuses.every((status) => status === 401)).toBe(true);
+    expect(owner.status).toBe(429);
+    expect(problemDetailsSchema.parse(owner.body).code).toBe('too_many_attempts');
+  });
+
+  it('counts_server_render_failures_by_the_signed_client_address', async () => {
+    const webServer = blockOfItsOwn()();
+    const guesser = blockOfItsOwn()();
+    const owner = blockOfItsOwn()();
+    const { email } = await signUp(t);
+    const viaWebServer = (password: string, clientIp: string) =>
+      t.http
+        .post('/api/v1/sessions')
+        .set({
+          Origin: WEB_ORIGIN,
+          'X-Forwarded-For': webServer,
+          [CLIENT_IP_HEADER]: clientIp,
+          [CLIENT_IP_SIGNATURE_HEADER]: signClientIp(
+            TEST_SERVER_FETCH_SECRET,
+            clientIp,
+            t.clock.now().getTime(),
+          ),
+        })
+        .send({ email, password });
+    for (let i = 0; i < 5; i += 1) {
+      await viaWebServer('wrong password!', guesser);
+    }
+
+    expect((await viaWebServer('wrong password!', guesser)).status).toBe(429);
+    expect((await viaWebServer(PASSWORD, owner)).status).toBe(201);
   });
 });
 
