@@ -13,7 +13,7 @@ import { apiRoutes } from '@heremita/shared/api-routes';
 import { useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { apiFetch } from '@/lib/api/client';
-import { ApiProblemError } from '@/lib/api/problem';
+import { hasCode } from '@/lib/api/failure';
 import { queryKeys } from '@/lib/api/query-keys';
 import { announce, showToast } from '@/shared/components/toast/toast-store';
 import {
@@ -109,10 +109,6 @@ function readOwnerPlan(client: QueryClient, tripId: string): TripPlanOwner | nul
   return plan?.viewerRole === 'owner' ? plan : null;
 }
 
-function errorCode(error: unknown): string | null {
-  return error instanceof ApiProblemError ? error.code : null;
-}
-
 function restoreInput(tripPlace: TripPlaceOwner): PlaceInput {
   const { place } = tripPlace;
   if (place.source === 'osm' && place.key !== null) {
@@ -151,8 +147,8 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
           body: { place, note: note ?? null, schedule },
         });
       } catch (error) {
-        const existing = error instanceof ApiProblemError ? error.tripPlaceId : undefined;
-        if (errorCode(error) !== 'place_already_in_trip' || existing === undefined) {
+        const existing = hasCode(error, 'place_already_in_trip') ? error.tripPlaceId : undefined;
+        if (existing === undefined) {
           throw error;
         }
         if (schedule === null) {
@@ -190,11 +186,10 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
         dayId === null || pendingStopId === null ? null : { dayId, index, stopId: pendingStopId },
       ),
     failureMessage: ({ preview, target }, error) => {
-      const code = errorCode(error);
-      if (code === 'day_full') {
+      if (hasCode(error, 'day_full')) {
         return t('dayFull', { target });
       }
-      if (code === 'limit_reached') {
+      if (hasCode(error, 'limit_reached')) {
         return t('placeLimit');
       }
       return t('addFailed', { name: preview.name });
@@ -279,7 +274,7 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
       return t('moved', { name, position, total: stops.length, target });
     },
     failureMessage: ({ name, target }, error) =>
-      errorCode(error) === 'day_full' ? t('dayFull', { target }) : t('moveFailed', { name }),
+      hasCode(error, 'day_full') ? t('dayFull', { target }) : t('moveFailed', { name }),
   });
 
   const addStop = usePlanMutation<TargetedStop, unknown>({
@@ -289,7 +284,7 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
     optimistic: (plan, { dayId, tripPlaceId, index, stopId }) =>
       applyAddStop(plan, dayId, { id: stopId, tripPlaceId, modeToNext: null }, index),
     failureMessage: ({ name, target }, error) =>
-      errorCode(error) === 'day_full' ? t('dayFull', { target }) : t('moveFailed', { name }),
+      hasCode(error, 'day_full') ? t('dayFull', { target }) : t('moveFailed', { name }),
   });
 
   const removeStop = usePlanMutation<TargetedStop, unknown>({
@@ -401,9 +396,9 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
         body: { stopIds: [...stopIds] },
       }),
     optimistic: (plan, { dayId, stopIds }) => applyReorder(plan, dayId, stopIds),
-    canRetry: (error) => errorCode(error) !== 'plan_changed',
+    canRetry: (error) => !hasCode(error, 'plan_changed'),
     failureMessage: (_variables, error) =>
-      errorCode(error) === 'plan_changed' ? t('planChanged') : t('orderFailed'),
+      hasCode(error, 'plan_changed') ? t('planChanged') : t('orderFailed'),
     onSuccess: (_data, variables) => {
       if (variables.undo) {
         announce(t('orderRestored'));
