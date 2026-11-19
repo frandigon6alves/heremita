@@ -31,7 +31,12 @@ export interface ServerEnv extends PublicEnv {
   API_URL: string;
   SESSION_COOKIE_NAME: SessionCookieName;
   CONTACT_EMAIL: string | null;
+  /** Signs the browser's address on server renders (`lib/api/server.ts`); `null` → not sent. */
+  SERVER_FETCH_SECRET: string | null;
 }
+
+/** Shortest accepted `SERVER_FETCH_SECRET` (the API applies the same rule). */
+export const SERVER_FETCH_SECRET_MIN_LENGTH = 32;
 
 /** Thrown with every invalid variable listed, so one boot shows all problems. */
 export class InvalidEnvError extends Error {
@@ -127,6 +132,20 @@ export function parseServerEnv(source: Source): ServerEnv {
     problems.push(`CONTACT_EMAIL: not an e-mail address (${contactEmail})`);
   }
 
+  const serverFetchSecret = read(source, 'SERVER_FETCH_SECRET') ?? null;
+  if (serverFetchSecret === null && read(source, 'NODE_ENV') === 'production') {
+    problems.push(
+      'SERVER_FETCH_SECRET: required in production, the same value as the API (generate one: openssl rand -base64 32)',
+    );
+  } else if (
+    serverFetchSecret !== null &&
+    serverFetchSecret.length < SERVER_FETCH_SECRET_MIN_LENGTH
+  ) {
+    problems.push(
+      `SERVER_FETCH_SECRET: must be at least ${SERVER_FETCH_SECRET_MIN_LENGTH} characters (generate one: openssl rand -base64 32)`,
+    );
+  }
+
   if (problems.length > 0) {
     throw new InvalidEnvError(problems);
   }
@@ -135,5 +154,6 @@ export function parseServerEnv(source: Source): ServerEnv {
     API_URL: apiUrl,
     SESSION_COOKIE_NAME: cookieName as SessionCookieName,
     CONTACT_EMAIL: contactEmail,
+    SERVER_FETCH_SECRET: serverFetchSecret,
   };
 }

@@ -39,3 +39,7 @@ services:
         value: https://routing.openstreetmap.de
       - key: DEMO_PASSWORD
         generateValue: true
+      # Same value as SERVER_FETCH_SECRET on Vercel (openssl rand -base64 32).
+      # The web server signs the visitor's address with it; required in production.
+      - key: SERVER_FETCH_SECRET
+        sync: false

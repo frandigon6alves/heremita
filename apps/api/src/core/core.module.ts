@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CLOCK } from './clock/clock.js';
 import { SystemClock } from './clock/system-clock.js';
+import { ClientAddress } from './http/client-address.js';
 import { DEFAULT_THROTTLE } from './http/throttles.js';
 import { RatingSummaryReader } from './rating-summary.reader.js';
 import { TripAccessService } from './trip-access.service.js';
@@ -13,7 +14,12 @@ import { TripAccessService } from './trip-access.service.js';
     // SHORTCUT(owner): rate-limit, login-attempt and upstream token-bucket state in API process memory — ceiling: one API instance, counters reset on restart; upgrade: before a second API instance runs, move them to a Postgres-backed store
     ThrottlerModule.forRoot({ throttlers: [{ name: 'default', ...DEFAULT_THROTTLE }] }),
   ],
-  providers: [{ provide: CLOCK, useClass: SystemClock }, TripAccessService, RatingSummaryReader],
-  exports: [CLOCK, TripAccessService, RatingSummaryReader],
+  providers: [
+    { provide: CLOCK, useClass: SystemClock },
+    ClientAddress,
+    TripAccessService,
+    RatingSummaryReader,
+  ],
+  exports: [CLOCK, ClientAddress, TripAccessService, RatingSummaryReader],
 })
 export class CoreModule {}

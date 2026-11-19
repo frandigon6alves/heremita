@@ -8,6 +8,7 @@ const PRODUCTION = {
   NODE_ENV: 'production',
   PUBLIC_SITE_URL: 'https://heremita.example',
   ALLOW_FAKE_PROVIDERS: 'true',
+  SERVER_FETCH_SECRET: 'a-production-secret-of-at-least-32-chars',
 };
 
 describe('parseEnv', () => {
@@ -26,6 +27,7 @@ describe('parseEnv', () => {
       ALLOW_FAKE_PROVIDERS: false,
       NOMINATIM_ENABLED: false,
       DEMO_PASSWORD: 'heremita-demo-2026',
+      SERVER_FETCH_SECRET: null,
     });
   });
 
@@ -79,6 +81,17 @@ describe('parseEnv', () => {
     const parse = () => parseEnv({ ...MINIMAL, NODE_ENV: 'production' });
 
     expect(parse).toThrow(/- PUBLIC_SITE_URL: is required in production/);
+  });
+
+  it('requires_a_long_server_fetch_secret_in_production_only', () => {
+    expect(() => parseEnv({ ...PRODUCTION, SERVER_FETCH_SECRET: '' })).toThrow(
+      /- SERVER_FETCH_SECRET: is required in production/,
+    );
+    expect(() => parseEnv({ ...PRODUCTION, SERVER_FETCH_SECRET: 'too-short' })).toThrow(
+      /- SERVER_FETCH_SECRET: must be at least 32 characters/,
+    );
+    expect(parseEnv({ ...MINIMAL, SERVER_FETCH_SECRET: '  ' }).SERVER_FETCH_SECRET).toBeNull();
+    expect(parseEnv(PRODUCTION).SERVER_FETCH_SECRET).toBe(PRODUCTION.SERVER_FETCH_SECRET);
   });
 
   it('reads_a_whole_number_trust_proxy_as_a_hop_count', () => {

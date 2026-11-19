@@ -80,22 +80,23 @@ Workspace commands:
 
 Both apps validate their environment at start-up and stop with a list of the bad variables; the web app also fails `next build`. `apps/api/.env.example` and `apps/web/.env.example` document every variable with development values. The ones that matter beyond local development:
 
-| Variable                                  | App | Notes                                                                                                                                |
-| ----------------------------------------- | --- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `DATABASE_URL`                            | api | Dev: `postgresql://heremita:heremita@localhost:5434/heremita`. The only real secret.                                                 |
-| `TEST_DATABASE_URL`                       | api | Test template database; its name must end in `_test`.                                                                                |
-| `WEB_ORIGIN`                              | api | Exact web origin; unsafe requests must come from it (CSRF check).                                                                    |
-| `PUBLIC_SITE_URL`                         | api | Public site address, sent to the map providers in `User-Agent` and `Referer`. Required in production.                                |
-| `COOKIE_SECURE`                           | api | `true` → cookie `__Host-hm_session` + `Secure` (needs HTTPS); `false` → `hm_session`. Default: true only in production.              |
-| `SESSION_COOKIE_NAME`                     | web | Must match the API's cookie name (`hm_session` or `__Host-hm_session`).                                                              |
-| `TRUST_PROXY`                             | api | Hops allowed to set `X-Forwarded-For` (rate limits key on the client IP). A production proxy must overwrite that header, not append. |
-| `GEOCODING_PROVIDER` / `ROUTING_PROVIDER` | api | `photon` / `osrm`, or `fake`. Fakes in a production build are refused unless `ALLOW_FAKE_PROVIDERS=true` (e2e only).                 |
-| `PHOTON_URL`, `OSRM_URL`, `NOMINATIM_URL` | api | Provider base URLs; never hard-coded, so a provider can ask us to switch.                                                            |
-| `NOMINATIM_ENABLED`                       | api | `false` by default; see [Map and place providers](#map-and-place-providers).                                                         |
-| `API_URL`                                 | web | Where `/api/*` is forwarded. Read when the dev server starts and **baked in at build time** for production: change it, then rebuild. |
-| `CONTACT_EMAIL`                           | web | Operator contact shown on `/about`; the FOSSGIS terms require one. Required in production. Never commit a real address.              |
-| `NEXT_PUBLIC_MAP_STYLE_*`                 | web | Basemap styles (OpenFreeMap light/dark, VersaTiles fallbacks). `NEXT_PUBLIC_*` values are inlined at build time.                     |
-| `DEMO_PASSWORD`                           | api | Password the seed gives every demo account (at least 12 characters).                                                                 |
+| Variable                                  | App       | Notes                                                                                                                                                                              |
+| ----------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                            | api       | Dev: `postgresql://heremita:heremita@localhost:5434/heremita`. The only real secret.                                                                                               |
+| `TEST_DATABASE_URL`                       | api       | Test template database; its name must end in `_test`.                                                                                                                              |
+| `WEB_ORIGIN`                              | api       | Exact web origin; unsafe requests must come from it (CSRF check).                                                                                                                  |
+| `PUBLIC_SITE_URL`                         | api       | Public site address, sent to the map providers in `User-Agent` and `Referer`. Required in production.                                                                              |
+| `COOKIE_SECURE`                           | api       | `true` → cookie `__Host-hm_session` + `Secure` (needs HTTPS); `false` → `hm_session`. Default: true only in production.                                                            |
+| `SESSION_COOKIE_NAME`                     | web       | Must match the API's cookie name (`hm_session` or `__Host-hm_session`).                                                                                                            |
+| `TRUST_PROXY`                             | api       | Hops allowed to set `X-Forwarded-For` (rate limits key on the client IP). A production proxy must overwrite that header, not append.                                               |
+| `SERVER_FETCH_SECRET`                     | api + web | Same value in both apps. Required in production (at least 32 characters; `openssl rand -base64 32`), optional in development. See [Signed client address](#signed-client-address). |
+| `GEOCODING_PROVIDER` / `ROUTING_PROVIDER` | api       | `photon` / `osrm`, or `fake`. Fakes in a production build are refused unless `ALLOW_FAKE_PROVIDERS=true` (e2e only).                                                               |
+| `PHOTON_URL`, `OSRM_URL`, `NOMINATIM_URL` | api       | Provider base URLs; never hard-coded, so a provider can ask us to switch.                                                                                                          |
+| `NOMINATIM_ENABLED`                       | api       | `false` by default; see [Map and place providers](#map-and-place-providers).                                                                                                       |
+| `API_URL`                                 | web       | Where `/api/*` is forwarded. Read when the dev server starts and **baked in at build time** for production: change it, then rebuild.                                               |
+| `CONTACT_EMAIL`                           | web       | Operator contact shown on `/about`; the FOSSGIS terms require one. Required in production. Never commit a real address.                                                            |
+| `NEXT_PUBLIC_MAP_STYLE_*`                 | web       | Basemap styles (OpenFreeMap light/dark, VersaTiles fallbacks). `NEXT_PUBLIC_*` values are inlined at build time.                                                                   |
+| `DEMO_PASSWORD`                           | api       | Password the seed gives every demo account (at least 12 characters).                                                                                                               |
 
 ## Tests
 
@@ -232,13 +233,14 @@ The live demo already exists, so steps 1 to 4 describe how it should be configur
 
 - **Render:** if `heremita-api` was created from the Blueprint, the push of `autoDeployTrigger: checksPass` syncs on its own; otherwise (service created by hand) set Settings → Build & Deploy → Auto-Deploy → "After CI Checks Pass". Either way, confirm the dashboard shows that value.
 - **Vercel:** add the Deployment Checks `checks` and `e2e` (step 3, last bullet). Until then Vercel promotes every successful build of `main`, green CI or not.
+- **Both:** set `SERVER_FETCH_SECRET` (one value, generated once with `openssl rand -base64 32`) on Render (`heremita-api` → Environment) and on Vercel (Settings → Environment Variables, Production and Preview) **before** the next deploy of `main`. Without it the API refuses to start in production and the Vercel build fails. Set it on Render first: until Vercel is redeployed the API just keeps keying server renders by Vercel's address.
 
 1. **Neon.** The repository is already linked to a Neon project (`neon.ts`, `.neon`, branch `production`). Make sure the project's region is AWS Frankfurt (`eu-central-1`, next to the Render service), then copy the **direct** (not pooled, no `-pooler` in the host) connection string of the `production` branch, with `sslmode=require`. Check the backup / point-in-time restore window of your plan.
-2. **Render.** New → Blueprint → pick this repository; Render reads `render.yaml` and creates `heremita-api` (free plan, Frankfurt). Fill the `sync: false` variables: `DATABASE_URL` (step 1), `WEB_ORIGIN` and `PUBLIC_SITE_URL` (the Vercel production URL, e.g. `https://heremita.vercel.app`; set them after step 3 if the URL is not known yet, then redeploy). `DEMO_PASSWORD` is generated. In the service's Settings → Build & Deploy, confirm Auto-Deploy shows "After CI Checks Pass". Note the service URL (`https://heremita-api.onrender.com` or similar).
+2. **Render.** New → Blueprint → pick this repository; Render reads `render.yaml` and creates `heremita-api` (free plan, Frankfurt). Fill the `sync: false` variables: `DATABASE_URL` (step 1), `WEB_ORIGIN` and `PUBLIC_SITE_URL` (the Vercel production URL, e.g. `https://heremita.vercel.app`; set them after step 3 if the URL is not known yet, then redeploy), `SERVER_FETCH_SECRET` (generate it once with `openssl rand -base64 32`; Vercel gets the same value in step 3). `DEMO_PASSWORD` is generated. In the service's Settings → Build & Deploy, confirm Auto-Deploy shows "After CI Checks Pass". Note the service URL (`https://heremita-api.onrender.com` or similar).
 3. **Vercel.** Add New → Project → import this repository, then in the project settings:
    - Root Directory `apps/web`, with "Include files outside the root directory in the Build Step" on (the build reads `packages/shared`). Framework preset Next.js, Node.js 24.x.
    - Install Command `pnpm install --frozen-lockfile`; Build Command `pnpm --dir ../.. build:shared && pnpm build`. Add the environment variable `ENABLE_EXPERIMENTAL_COREPACK=1` so Vercel uses the pnpm version pinned in `package.json` (pnpm 11; the workspace settings in `pnpm-workspace.yaml` need it).
-   - Environment variables (Production and Preview): `API_URL` = the Render URL from step 2 (no trailing slash; baked in at build time, so change it → redeploy), `SESSION_COOKIE_NAME=__Host-hm_session` (the API runs with `NODE_ENV=production`, so its cookie is Secure), `CONTACT_EMAIL` = the operator address shown on `/about` (required in production). Optional: `NEXT_PUBLIC_MAP_STYLE_LIGHT`, `NEXT_PUBLIC_MAP_STYLE_DARK`, `NEXT_PUBLIC_MAP_STYLE_FALLBACK_LIGHT`, `NEXT_PUBLIC_MAP_STYLE_FALLBACK_DARK` (the defaults are OpenFreeMap and VersaTiles). Never set `NEXT_PUBLIC_E2E`.
+   - Environment variables (Production and Preview): `API_URL` = the Render URL from step 2 (no trailing slash; baked in at build time, so change it → redeploy), `SESSION_COOKIE_NAME=__Host-hm_session` (the API runs with `NODE_ENV=production`, so its cookie is Secure), `CONTACT_EMAIL` = the operator address shown on `/about` (required in production). `SERVER_FETCH_SECRET` = the same value as on Render (required; the build fails without it). Optional: `NEXT_PUBLIC_MAP_STYLE_LIGHT`, `NEXT_PUBLIC_MAP_STYLE_DARK`, `NEXT_PUBLIC_MAP_STYLE_FALLBACK_LIGHT`, `NEXT_PUBLIC_MAP_STYLE_FALLBACK_DARK` (the defaults are OpenFreeMap and VersaTiles). Never set `NEXT_PUBLIC_E2E`.
    - Settings → Environments → Production: automatic aliasing (auto-assign custom domains) on. Settings → Build and Deployment → Deployment Checks → Add Checks → GitHub → select `checks` and `e2e`.
 4. Back on Render, set `WEB_ORIGIN` / `PUBLIC_SITE_URL` to the final web URL if they were placeholders, and redeploy once. Then open `https://<web>/api/v1/health/ready`: it should answer `{"status":"ok","db":"up"}` through the Vercel rewrite.
 5. GitHub (optional): Settings → Branches → add a rule or ruleset for `main` that requires the `checks` and `e2e` status checks, so a pull request cannot merge red.
@@ -260,12 +262,27 @@ A migration is committed with the code that needs it. After CI passes, Render bu
 The live demo runs on Vercel (web), Render (API) and Neon (database); their setup is in [CI/CD](#cicd). In general the code assumes this shape:
 
 - A reverse proxy that terminates TLS (with HSTS), serves only the web app and overwrites `X-Forwarded-For`.
-- The web app (`next start`, port 3100) and the API (`node dist/main.js`, port 3101, not exposed publicly), with `NODE_ENV=production`, `COOKIE_SECURE=true`, `SESSION_COOKIE_NAME=__Host-hm_session`, `PUBLIC_SITE_URL`, `WEB_ORIGIN`, `CONTACT_EMAIL` and the real provider settings. Build the web app with its final `API_URL` and map styles.
+- The web app (`next start`, port 3100) and the API (`node dist/main.js`, port 3101, not exposed publicly), with `NODE_ENV=production`, `COOKIE_SECURE=true`, `SESSION_COOKIE_NAME=__Host-hm_session`, `PUBLIC_SITE_URL`, `WEB_ORIGIN`, `CONTACT_EMAIL`, the same `SERVER_FETCH_SECRET` in both apps and the real provider settings. Build the web app with its final `API_URL` and map styles.
 - PostgreSQL 18 with backups; `db:deploy` as a one-off step before each API release. The seed refuses to run in production.
 - One API instance (see [Deliberate shortcuts](#deliberate-shortcuts)).
 - Health: `GET /api/v1/health` (liveness, checks nothing external) and `GET /api/v1/health/ready` (`{ "status": "ok", "db": "up" }`, or 503 with a problem body when the database does not answer). On SIGTERM or SIGINT the API stops accepting connections, finishes in-flight requests, closes the database pool and exits 0; past 10 s it exits 1. Health checks never ping the providers.
 - Logs: one JSON line per request on stdout (`reqId`, `method`, route template, `status`, `userId`, `responseTime`). Cookies, passwords, tokens, search text and coordinates are never logged. Every response carries `X-Request-Id`.
 - Security headers and a per-request nonce Content Security Policy come from `apps/web/src/proxy.ts` (policy built in `apps/web/src/csp.ts`); a new third-party origin (tiles, fonts, scripts) must be added there or browsers block it.
+
+### Signed client address
+
+Pages rendered on the server call the API from the web server, so on Vercel every signed-out render reaches the API from the same few egress addresses. To keep one busy visitor (or a crawler) from using up the anonymous rate limit of everyone, `serverFetch` (`apps/web/src/lib/api/server.ts`) sends the visitor's address (the last `X-Forwarded-For` entry, which Vercel or your proxy wrote) in `X-Heremita-Client-Ip`, plus `X-Heremita-Client-Ip-Signature: <unix ms>.<HMAC-SHA256>` over address and time with `SERVER_FETCH_SECRET`. The API (`apps/api/src/core/http/client-address.ts`) uses that address for anonymous rate limits only when the signature checks out (constant-time compare) and is at most 60 s old or ahead; otherwise, or without a secret, it uses `req.ip` as before. To rotate the secret, set the new value on both hosts and redeploy both; until both run it, server renders fall back to the shared bucket.
+
+Generate the value once and paste the same string on both hosts:
+
+```sh
+openssl rand -base64 32
+```
+
+- Render: `heremita-api` → Environment → `SERVER_FETCH_SECRET` (declared `sync: false` in `render.yaml`).
+- Vercel: project → Settings → Environment Variables → `SERVER_FETCH_SECRET`, for Production and Preview (it is read at build and at run time; never prefix it with `NEXT_PUBLIC_`).
+
+Locally, `.env.example` carries a public development value; never reuse it in production.
 
 ## Project documents
 

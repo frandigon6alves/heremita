@@ -148,6 +148,7 @@ var|type / default|note
 `NOMINATIM_URL`|URL, ! when enabled (`https://nominatim.openstreetmap.org`)|
 `OSRM_URL`|URL, ! when osrm (`https://routing.openstreetmap.de`)|profiles `routed-foot`, `routed-bike`, `routed-car`
 `DEMO_PASSWORD`|string ≥ 12, default `heremita-demo-2026`|seed only
+`SERVER_FETCH_SECRET`|string ≥ 32, blank = unset; ! in prod|= web value; verifies signed client IP (I.throttle); gen `openssl rand -base64 32`
 
 Web `apps/web/src/env.ts` (server-only module, `import 'server-only'`; build fails on missing var):
 
@@ -160,6 +161,7 @@ var|note
 `NEXT_PUBLIC_MAP_STYLE_FALLBACK_LIGHT`|default `https://tiles.versatiles.org/assets/styles/colorful/style.json`
 `NEXT_PUBLIC_MAP_STYLE_FALLBACK_DARK`|default `https://tiles.versatiles.org/assets/styles/eclipse/style.json`
 `CONTACT_EMAIL`|operator contact shown on `/about` (FOSSGIS requires one); ! in prod; dev unset → page says "not configured". ⊥ a real person's address in repo files
+`SERVER_FETCH_SECRET`|≥ 32 chars, ! when `NODE_ENV=production` (build + run), = API value; unset → `serverFetch` ⊥ sends client IP
 `NEXT_PUBLIC_E2E`|`1` only in e2e builds → exposes `window.__heremitaMap` test hook
 
 E2E overrides: web 3110 / api 3111, `DATABASE_URL=…/heremita_e2e`, `GEOCODING_PROVIDER=fake`, `ROUTING_PROVIDER=fake`, `ALLOW_FAKE_PROVIDERS=true`, `COOKIE_SECURE=false`, `SESSION_COOKIE_NAME=hm_session`, `WEB_ORIGIN=http://localhost:3110`, `API_URL=http://localhost:3111`, map styles → `/dev/blank-style.json` (served from `apps/web/public/dev/`, `{version:8,sources:{},layers:[{id:'bg',type:'background'}]}`), `NEXT_PUBLIC_E2E=1`.
@@ -321,7 +323,7 @@ default|120 / 60 s|user id ?? IP
 `reverse`|3 / 3 s|user
 `route`|5 / 2.5 s (E27, E40, E41)|user ?? IP
 `ugc`|10 / 3600 s (E46, E49)|user
-Over limit → 429 + `Retry-After` (seconds). IP = `req.ip` under `TRUST_PROXY`.
+Over limit → 429 + `Retry-After` (seconds). IP = `req.ip` under `TRUST_PROXY`, except RSC call w/ valid signed client IP: `serverFetch` sends `X-Heremita-Client-Ip` (last `X-Forwarded-For` entry) + `X-Heremita-Client-Ip-Signature: <unix ms>.<hex HMAC-SHA256(SERVER_FETCH_SECRET, "heremita-client-ip:v1\n<ip>\n<ms>")>`; API trusts iff secret set ∧ valid IP ∧ |now − ms| ≤ 60 s ∧ `timingSafeEqual`; else `req.ip`. IPv6 → /64 (throttler `normalizeIp`).
 
 ### I.authz — authorisation matrix (test: `apps/api/test/authz-matrix.test.ts`)
 resource / action|anonymous|signed-in non-owner|owner
@@ -882,10 +884,10 @@ V31: Session token 32 random bytes; DB holds only sha256; cookie `HttpOnly`, `Sa
 V32: Argon2id hash PHC starts `$argon2id$v=19$m=19456,t=2,p=1$`; password 12–128, ⊥ ∈ blocklist, ≠ e-mail ∧ ≠ local part [unit + integration].
 V33: Login unknown e-mail ∧ wrong password → identical 401 body (`invalid_credentials`); 6th failure for e-mail in 15 min → 429 `too_many_attempts` + `Retry-After`; ⊥ lockout of correct password after window [integration w/ FixedClock].
 V34: Logout → cookie dead (401); logout everywhere → all sessions dead; password change → other sessions dead, current rotated (old cookie 401, new works) [integration].
-V35: ⊥ Server Actions: `'use server'` ⊥ in `apps/web/src` (lint); RSC → API calls GET only, forward only session cookie + `X-Request-Id` [lint + unit].
+V35: ⊥ Server Actions: `'use server'` ⊥ in `apps/web/src` (lint); RSC → API calls GET only, forward only session cookie + `X-Request-Id` + signed client IP (iff `SERVER_FETCH_SECRET`) [lint + unit].
 
 ### Rate limits
-V36: Over limit per §I.throttle → 429 `rate_limited` + `Retry-After` seconds; key = user id when signed in else `req.ip`; `X-Forwarded-For` from client ⊥ trusted beyond `TRUST_PROXY` topology [integration].
+V36: Over limit per §I.throttle → 429 `rate_limited` + `Retry-After` seconds; key = user id when signed in else signed client IP (valid, fresh) else `req.ip`; `X-Forwarded-For` from client ⊥ trusted beyond `TRUST_PROXY` topology; client-IP header w/o valid signature ⊥ trusted [unit + integration].
 
 ### Providers (policy + resilience)
 V37: E42/E43 anonymous → 401; anonymous E40/E27 → zero upstream calls (cache hits + estimates) [integration w/ counting fake].
@@ -1018,3 +1020,4 @@ B5|2026-11-19|phone planner search pill (fixed, full width, z 4) over map top ed
 B6|2026-11-19|SegmentedControl segments `flex: 1 1 0` in inline-flex ∴ longest label ("Bicicleta") squeezed its 20 px icon to 4 px|inline-grid `grid-auto-columns: 1fr`; icon-size check in `phone_targets_…`; V59
 B7|2026-11-19|`--sheet-peek` 136 < header content 148 ∴ peek clipped day summary + day ⋯ button|`--sheet-peek: 148px` (ID-T73); `the_collapsed_sheet_shows_its_handle_chips_and_day_summary`; V56
 B8|2026-11-19|stop row `:active` `scale(0.97)` literal ⊥ `--pressed-scale` (1 under reduced motion)|`scale(var(--pressed-scale))`; `shared/styles/motion-rules.test.ts` bans literal scale + literal transition times, endless animations need own reduced-motion rule; V59
+B9|2026-11-19|`serverFetch` forwarded only cookie + request id; anon tracker = `req.ip` ∴ every signed-out RSC render shared Vercel egress IP bucket (120/60 s) → crawler/script made public pages 429 for all|signed client IP headers (HMAC-SHA256, 60 s window, constant-time) w/ `SERVER_FETCH_SECRET` both apps (! prod); `ClientAddress` → `AppThrottlerGuard`; `app-throttler.guard.test.ts`, `http-pipeline.test.ts` `gives_each_signed_client_address_its_own_bucket_behind_one_server_address`, web `server.test.ts`; V35, V36

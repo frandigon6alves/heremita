@@ -9,6 +9,7 @@ describe('parseServerEnv', () => {
       ...ENV_DEFAULTS,
       SESSION_COOKIE_NAME: 'hm_session',
       CONTACT_EMAIL: null,
+      SERVER_FETCH_SECRET: null,
       NEXT_PUBLIC_E2E: false,
     });
   });
@@ -40,6 +41,23 @@ describe('parseServerEnv', () => {
       const names = (error as InvalidEnvError).problems.map((problem) => problem.split(':')[0]);
       expect(names).toEqual(['NEXT_PUBLIC_E2E', 'API_URL', 'SESSION_COOKIE_NAME', 'CONTACT_EMAIL']);
     }
+  });
+
+  it('requires_a_long_server_fetch_secret_in_production_only', () => {
+    const base = { SESSION_COOKIE_NAME: '__Host-hm_session' };
+    const secret = 'a-production-secret-of-at-least-32-chars';
+
+    expect(() => parseServerEnv({ ...base, NODE_ENV: 'production' })).toThrow(
+      /SERVER_FETCH_SECRET: required in production/,
+    );
+    expect(() =>
+      parseServerEnv({ ...base, NODE_ENV: 'production', SERVER_FETCH_SECRET: 'short' }),
+    ).toThrow(/SERVER_FETCH_SECRET: must be at least 32 characters/);
+    expect(parseServerEnv({ ...base, NODE_ENV: 'development' }).SERVER_FETCH_SECRET).toBeNull();
+    expect(
+      parseServerEnv({ ...base, NODE_ENV: 'production', SERVER_FETCH_SECRET: secret })
+        .SERVER_FETCH_SECRET,
+    ).toBe(secret);
   });
 
   it('rejects_a_missing_cookie_name', () => {

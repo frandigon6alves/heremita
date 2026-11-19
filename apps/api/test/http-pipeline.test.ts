@@ -16,6 +16,12 @@ import { configureApp } from '../src/app.setup.js';
 import { ENV } from '../src/config/config.module.js';
 import { parseEnv } from '../src/config/env.js';
 import type { ContractInput } from '../src/core/http/api-request.js';
+import {
+  CLIENT_IP_HEADER,
+  CLIENT_IP_SIGNATURE_HEADER,
+  CLIENT_IP_SIGNATURE_MAX_AGE_MS,
+  signClientIp,
+} from '../src/core/http/client-address.js';
 import { Endpoint } from '../src/core/http/endpoint.decorator.js';
 import { Input } from '../src/core/http/input.decorator.js';
 
@@ -322,5 +328,83 @@ describe('throttling', () => {
     }
 
     expect(statuses).toEqual([204, 204, 204, 204, 204, 204]);
+  });
+});
+
+describe('client address signed by the web server (V36)', () => {
+  const SECRET = 'pipeline-test-secret-0123456789abcdef';
+  /** The one address every server render reaches the API from (e.g. Vercel's egress). */
+  const WEB_SERVER_IP = '192.0.2.10';
+  let app: NestExpressApplication | undefined;
+
+  afterEach(async () => {
+    await app?.close();
+  });
+
+  function render(target: NestExpressApplication, headers: Record<string, string> = {}) {
+    return request(target.getHttpServer())
+      .get('/api/v1/probe/limited')
+      .set({ 'X-Forwarded-For': WEB_SERVER_IP, ...headers });
+  }
+
+  function signed(ip: string, { secret = SECRET, at = Date.now() } = {}) {
+    return { [CLIENT_IP_HEADER]: ip, [CLIENT_IP_SIGNATURE_HEADER]: signClientIp(secret, ip, at) };
+  }
+
+  async function statusesOf(calls: (() => Promise<{ status: number }>)[]): Promise<number[]> {
+    const statuses: number[] = [];
+    for (const call of calls) {
+      statuses.push((await call()).status);
+    }
+    return statuses;
+  }
+
+  it('gives_each_signed_client_address_its_own_bucket_behind_one_server_address', async () => {
+    app = await startApp({ TRUST_PROXY: 'loopback', SERVER_FETCH_SECRET: SECRET });
+    const target = app;
+
+    const first = await statusesOf(
+      Array.from({ length: 6 }, () => () => render(target, signed('203.0.113.7'))),
+    );
+    const second = await render(target, signed('198.51.100.23'));
+    const unsigned = await render(target);
+
+    expect(first).toEqual([204, 204, 204, 204, 204, 429]);
+    expect(second.status).toBe(204);
+    expect(unsigned.status).toBe(204);
+  });
+
+  it('keys_missing_forged_or_expired_signatures_by_the_request_address', async () => {
+    app = await startApp({ TRUST_PROXY: 'loopback', SERVER_FETCH_SECRET: SECRET });
+    const target = app;
+    const valid = signed('203.0.113.8');
+
+    const statuses = await statusesOf([
+      () => render(target),
+      () => render(target, { [CLIENT_IP_HEADER]: '203.0.113.9' }),
+      () => render(target, signed('203.0.113.10', { secret: `${SECRET}-forged` })),
+      () =>
+        render(
+          target,
+          signed('203.0.113.11', { at: Date.now() - CLIENT_IP_SIGNATURE_MAX_AGE_MS - 1_000 }),
+        ),
+      () => render(target, { ...valid, [CLIENT_IP_HEADER]: '203.0.113.12' }),
+      () => render(target, signed('not-an-address')),
+    ]);
+    const stillValid = await render(target, valid);
+
+    expect(statuses).toEqual([204, 204, 204, 204, 204, 429]);
+    expect(stillValid.status).toBe(204);
+  });
+
+  it('never_trusts_the_header_without_a_configured_secret', async () => {
+    app = await startApp({ TRUST_PROXY: 'loopback', SERVER_FETCH_SECRET: '' });
+    const target = app;
+
+    const statuses = await statusesOf(
+      Array.from({ length: 6 }, (_, index) => () => render(target, signed(`203.0.113.${index}`))),
+    );
+
+    expect(statuses).toEqual([204, 204, 204, 204, 204, 429]);
   });
 });

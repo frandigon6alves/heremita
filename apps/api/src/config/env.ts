@@ -45,6 +45,18 @@ export const envSchema = z
     OSRM_URL: httpUrl.optional(),
     /** Password of the demo accounts the seed writes. */
     DEMO_PASSWORD: z.string().min(12).default('heremita-demo-2026'),
+    /**
+     * Shared with the web app: verifies the client address its server renders
+     * sign (`core/http/client-address.ts`). Blank counts as unset; required in
+     * production.
+     */
+    SERVER_FETCH_SECRET: z.preprocess(
+      (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+      z
+        .string()
+        .min(32, 'must be at least 32 characters (generate one: openssl rand -base64 32)')
+        .optional(),
+    ),
   })
   .superRefine((env, ctx) => {
     const requireWhen = (condition: boolean, key: keyof typeof env, reason: string) => {
@@ -53,6 +65,11 @@ export const envSchema = z
       }
     };
     requireWhen(env.NODE_ENV === 'production', 'PUBLIC_SITE_URL', 'in production');
+    requireWhen(
+      env.NODE_ENV === 'production',
+      'SERVER_FETCH_SECRET',
+      'in production (the same value as the web app; generate one: openssl rand -base64 32)',
+    );
     requireWhen(
       env.GEOCODING_PROVIDER === 'photon',
       'PHOTON_URL',
@@ -72,10 +89,11 @@ export const envSchema = z
       }
     }
   })
-  .transform(({ COOKIE_SECURE, PUBLIC_SITE_URL, ...env }) => ({
+  .transform(({ COOKIE_SECURE, PUBLIC_SITE_URL, SERVER_FETCH_SECRET, ...env }) => ({
     ...env,
     COOKIE_SECURE: COOKIE_SECURE ?? env.NODE_ENV === 'production',
     PUBLIC_SITE_URL: PUBLIC_SITE_URL ?? DEV_PUBLIC_SITE_URL,
+    SERVER_FETCH_SECRET: SERVER_FETCH_SECRET ?? null,
   }));
 
 export type Env = z.output<typeof envSchema>;

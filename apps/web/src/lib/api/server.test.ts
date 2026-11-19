@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto';
 import { endpoints, type Me } from '@heremita/shared';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
@@ -21,9 +22,13 @@ vi.mock('next/headers', () => ({
     }),
   headers: () => Promise.resolve(request.headers),
 }));
-vi.mock('@/env', () => ({
-  env: { API_URL: 'http://api.test', SESSION_COOKIE_NAME: 'hm_session' },
+const SECRET = 'web-test-secret-0123456789abcdefghij';
+const testEnv = vi.hoisted(() => ({
+  API_URL: 'http://api.test',
+  SESSION_COOKIE_NAME: 'hm_session',
+  SERVER_FETCH_SECRET: null as string | null,
 }));
+vi.mock('@/env', () => ({ env: testEnv }));
 
 const { getViewer, serverFetch } = await import('./server');
 
@@ -34,6 +39,10 @@ afterAll(() => server.close());
 beforeEach(() => {
   request.cookies = new Map();
   request.headers = new Headers();
+  testEnv.SERVER_FETCH_SECRET = SECRET;
+});
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 const me: Me = {
@@ -85,6 +94,48 @@ describe('serverFetch', () => {
     expect(sent?.get('cookie')).toBe('hm_session=token-1');
     expect(sent?.get('x-request-id')).toBe('incoming-1234');
     expect(sent?.get('authorization')).toBeNull();
+    expect(sent?.get('x-heremita-client-ip')).toBeNull();
+    expect(sent?.get('x-heremita-client-ip-signature')).toBeNull();
+  });
+
+  async function headersSentFor(incoming: Record<string, string>): Promise<Headers> {
+    request.headers = new Headers(incoming);
+    let sent: Headers | undefined;
+    server.use(
+      http.get('http://api.test/api/v1/public-trips', ({ request: apiRequest }) => {
+        sent = apiRequest.headers;
+        return HttpResponse.json({ items: [], nextCursor: null });
+      }),
+    );
+    await serverFetch(endpoints.listPublicTrips, { query: { limit: 6 } });
+    if (!sent) {
+      throw new Error('The API was not called');
+    }
+    return sent;
+  }
+
+  it('signs_the_browser_address_the_proxy_reported_with_the_shared_secret', async () => {
+    vi.useFakeTimers({ toFake: ['Date'], now: Date.parse('2026-11-19T10:00:00.000Z') });
+    const now = Date.now();
+
+    const sent = await headersSentFor({ 'x-forwarded-for': '198.51.100.1, 203.0.113.7' });
+
+    const mac = createHmac('sha256', SECRET)
+      .update(`heremita-client-ip:v1\n203.0.113.7\n${now}`)
+      .digest('hex');
+    expect(sent.get('x-heremita-client-ip')).toBe('203.0.113.7');
+    expect(sent.get('x-heremita-client-ip-signature')).toBe(`${now}.${mac}`);
+  });
+
+  it('sends_no_address_without_a_secret_or_a_valid_forwarded_address', async () => {
+    const unknown = await headersSentFor({ 'x-forwarded-for': 'unknown' });
+    testEnv.SERVER_FETCH_SECRET = null;
+    const unsigned = await headersSentFor({ 'x-forwarded-for': '203.0.113.7' });
+
+    for (const sent of [unknown, unsigned]) {
+      expect(sent.get('x-heremita-client-ip')).toBeNull();
+      expect(sent.get('x-heremita-client-ip-signature')).toBeNull();
+    }
   });
 
   it('generates_a_request_id_when_the_incoming_one_is_invalid', async () => {
