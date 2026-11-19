@@ -5,7 +5,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { formatYearMonth } from '@/lib/format/dates';
-import { userReviewsQuery } from '@/lib/api/query-keys';
+import { firstPageData, userReviewsQuery } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { ErrorState } from '@/shared/components/error-state/error-state';
@@ -28,7 +28,7 @@ export function UserReviewList({ userId, initialPage }: UserReviewListProps) {
   const locale = useLocale();
   const reviews = useInfiniteQuery({
     ...userReviewsQuery(userId),
-    initialData: initialPage && { pages: [initialPage], pageParams: [null] },
+    initialData: initialPage && firstPageData(initialPage),
   });
 
   if (reviews.isPending) {

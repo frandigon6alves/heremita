@@ -4,11 +4,11 @@ import type { Page, PublicTripCard } from '@heremita/shared';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { exploreQuery } from '@/lib/api/query-keys';
+import { firstPageData, exploreQuery } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { LinkButton } from '@/shared/components/link-button/link-button';
-import { firstPageData, PublicTripFeed } from './public-trip-feed';
+import { PublicTripFeed } from './public-trip-feed';
 import styles from './explore-results.module.css';
 
 export interface ExploreResultsProps {
@@ -21,7 +21,10 @@ export interface ExploreResultsProps {
 export function ExploreResults({ q, initialPage }: ExploreResultsProps) {
   const t = useTranslations('explore.results');
   const locale = useLocale();
-  const trips = useInfiniteQuery({ ...exploreQuery(q), initialData: firstPageData(initialPage) });
+  const trips = useInfiniteQuery({
+    ...exploreQuery(q),
+    initialData: initialPage && firstPageData(initialPage),
+  });
   const planIt = (
     <LinkButton variant="primary" href={routes.newTrip(locale)}>
       {t('planIt')}

@@ -3,7 +3,7 @@
 import type { Page, Review, ReviewSort } from '@heremita/shared';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { placeReviewsQuery } from '@/lib/api/query-keys';
+import { firstPageData, placeReviewsQuery } from '@/lib/api/query-keys';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { ErrorState } from '@/shared/components/error-state/error-state';
 import { LoadMore } from '@/shared/components/load-more/load-more';
@@ -38,8 +38,7 @@ export function ReviewList({
   const [sort, setSort] = useReviewSort();
   const reviews = useInfiniteQuery({
     ...placeReviewsQuery(placeId, sort),
-    initialData:
-      initialPage?.sort === sort ? { pages: [initialPage.page], pageParams: [null] } : undefined,
+    initialData: initialPage?.sort === sort ? firstPageData(initialPage.page) : undefined,
   });
 
   if (reviewCount === 0 && myReview === null) {

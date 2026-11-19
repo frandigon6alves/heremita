@@ -21,6 +21,11 @@ const HOUR = 60 * MINUTE;
 /** Every page of a keyset list starts without a cursor. */
 const FIRST_PAGE: string | null = null;
 
+/** A server-rendered first page as `initialData` of its list's infinite query. */
+export function firstPageData<P>(page: P): { pages: [P]; pageParams: [string | null] } {
+  return { pages: [page], pageParams: [FIRST_PAGE] };
+}
+
 /** `nextCursor` is `null` on the last page, which TanStack reads as "no next page". */
 const nextCursor = (page: { nextCursor: string | null }) => page.nextCursor;
 

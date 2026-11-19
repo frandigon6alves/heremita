@@ -3,9 +3,9 @@
 import type { Page, PublicTripCard } from '@heremita/shared';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { userTripsQuery } from '@/lib/api/query-keys';
+import { firstPageData, userTripsQuery } from '@/lib/api/query-keys';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
-import { firstPageData, PublicTripFeed } from './public-trip-feed';
+import { PublicTripFeed } from './public-trip-feed';
 
 export interface UserTripsProps {
   userId: string;
@@ -17,7 +17,7 @@ export function UserTrips({ userId, initialPage }: UserTripsProps) {
   const t = useTranslations('explore.profile');
   const trips = useInfiniteQuery({
     ...userTripsQuery(userId),
-    initialData: firstPageData(initialPage),
+    initialData: initialPage && firstPageData(initialPage),
   });
 
   return (

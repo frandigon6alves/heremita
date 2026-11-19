@@ -4,7 +4,7 @@ import type { MyTripCard, Page } from '@heremita/shared';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { myTripsQuery } from '@/lib/api/query-keys';
+import { firstPageData, myTripsQuery } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
 import { ErrorState } from '@/shared/components/error-state/error-state';
@@ -26,7 +26,7 @@ export function TripList({ initialPage }: TripListProps) {
   const locale = useLocale();
   const trips = useInfiniteQuery({
     ...myTripsQuery(),
-    initialData: initialPage && { pages: [initialPage], pageParams: [null] },
+    initialData: initialPage && firstPageData(initialPage),
   });
 
   if (trips.isPending) {

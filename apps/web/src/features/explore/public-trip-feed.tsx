@@ -13,11 +13,6 @@ import styles from './public-trip-feed.module.css';
 /** E48 (`exploreQuery`) or E16 (`userTripsQuery`): both page public trip cards. */
 export type PublicTripPages = UseInfiniteQueryResult<InfiniteData<Page<PublicTripCardData>>>;
 
-/** The server-rendered first page as TanStack's `initialData`. */
-export function firstPageData(page: Page<PublicTripCardData> | undefined) {
-  return page && { pages: [page], pageParams: [null] };
-}
-
 /** Same space as the first cards, while they load. */
 export function PublicTripFeedSkeleton() {
   return (

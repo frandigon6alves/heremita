@@ -5,6 +5,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import {
   dayRouteQuery,
   exploreQuery,
+  firstPageData,
   myTripsQuery,
   placeSearchQuery,
   queryKeys,
@@ -150,5 +151,13 @@ describe('query functions', () => {
     await new QueryClient().fetchInfiniteQuery(exploreQuery('  '));
 
     expect(search).toBe('');
+  });
+});
+
+describe('firstPageData', () => {
+  it('seeds_one_page_fetched_without_a_cursor', () => {
+    const page = { items: [], nextCursor: 'c2' };
+
+    expect(firstPageData(page)).toEqual({ pages: [page], pageParams: [null] });
   });
 });

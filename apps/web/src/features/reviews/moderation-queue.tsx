@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { apiFetch } from '@/lib/api/client';
 import { hasCode } from '@/lib/api/failure';
-import { moderationReportsQuery, queryKeys } from '@/lib/api/query-keys';
+import { firstPageData, moderationReportsQuery, queryKeys } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { Button } from '@/shared/components/button/button';
 import { EmptyState } from '@/shared/components/empty-state/empty-state';
@@ -37,7 +37,7 @@ export function ModerationQueue({ initialOpenPage }: ModerationQueueProps) {
   const serverRendered = status === 'open' && initialOpenPage !== undefined;
   const reports = useInfiniteQuery({
     ...moderationReportsQuery(status),
-    initialData: serverRendered ? { pages: [initialOpenPage], pageParams: [null] } : undefined,
+    initialData: serverRendered ? firstPageData(initialOpenPage) : undefined,
     // The server page was fetched for this very render: no second request on mount.
     refetchOnMount: !serverRendered,
   });
