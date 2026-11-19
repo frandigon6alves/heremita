@@ -17,7 +17,8 @@ Plan your own trip: places on a map with your private notes, a day-by-day itiner
 ## How it fits together
 
 - The browser only talks to the web origin. Next.js rewrites `/api/*` to the API (`API_URL`), so the session cookie stays first-party. Server Components call the API server to server with the visitor's cookie (GET only). Every write goes from the browser to `/api/v1/*`; there are no Server Actions.
-- `packages/shared` is the contract. Every request and response shape is a zod schema there; the API validates every input with it, the web types its calls with it, and `packages/shared/openapi.json` is generated from it (served at `GET /api/v1/openapi.json`).
+- `packages/shared` is the contract. Every request and response shape is a zod schema there; the API validates every input with it, the web types its calls with it (and validates its forms with it), and `packages/shared/openapi.json` is generated from it (served at `GET /api/v1/openapi.json`).
+- The web app imports values from the zod-free subpaths `@heremita/shared/plain` (limits, option lists such as `LOCALES`, `cleanText`) and `@heremita/shared/api-routes` (method and path of every endpoint), and the schemas only through `apps/web/src/lib/schemas.ts`, which turns zod's JIT off first (the CSP forbids `eval`). An ESLint rule enforces it, so zod only ships to pages with a form.
 - Sessions are opaque tokens stored hashed in PostgreSQL, in an HttpOnly cookie set by the API. Passwords use Argon2id. There is no e-mail delivery at all.
 - Maps use OpenStreetMap data: basemap tiles from OpenFreeMap (VersaTiles as fallback), loaded by the browser; place search through Photon and routes through the FOSSGIS OSRM servers, called only by the API, which caches, throttles and retries them. No API keys, accounts or paid services.
 
@@ -118,26 +119,26 @@ Both apps validate their environment at start-up and stop with a list of the bad
 
 SPEC.md (section "I.web.budget") sets first-load JavaScript budgets, gzipped: 150 KB for a page, 200 KB for the planner before its map chunk (MapLibre loads afterwards, off the critical path). `pnpm budget` reads the last production build in `apps/web/.next` (run `pnpm build` first) and prints, per route, the gzip size of the shared runtime plus every client chunk its layouts and page import (1 KB = 1000 bytes), its budget and `WARNING over` when it exceeds it. It is a warning, never a gate: it always exits 0. Chunks loaded on demand (the map, the drag and drop of the planner list) are not counted.
 
-Measured on 2026-11-19 (Next 16.4.6, Turbopack), every route is over:
+Measured on 2026-11-19 (Next 16.4.6, Turbopack) before and after the performance part of the audit; every route is still over:
 
-| Route                                                                    | JS gzip  | Budget |
-| ------------------------------------------------------------------------ | -------- | ------ |
-| `/[locale]/trips/[tripId]` (planner)                                     | 272.8 KB | 200 KB |
-| `/[locale]/trips/[tripId]/settings`                                      | 258.8 KB | 150 KB |
-| `/[locale]/trips/new`                                                    | 256.2 KB | 150 KB |
-| `/[locale]/t/[tripId]`, `/[locale]/s/[shareToken]`                       | 246.8 KB | 150 KB |
-| `/[locale]/settings`                                                     | 238.5 KB | 150 KB |
-| `/[locale]/places/[placeId]/review`                                      | 233.0 KB | 150 KB |
-| `/[locale]/signup`                                                       | 229.6 KB | 150 KB |
-| `/[locale]/login`                                                        | 229.4 KB | 150 KB |
-| `/[locale]/places/[placeId]`                                             | 229.2 KB | 150 KB |
-| `/[locale]/trips`                                                        | 223.6 KB | 150 KB |
-| `/[locale]/explore`                                                      | 222.3 KB | 150 KB |
-| `/[locale]/u/[userId]`                                                   | 221.7 KB | 150 KB |
-| `/[locale]/moderation`                                                   | 221.1 KB | 150 KB |
-| `/[locale]`, `/[locale]/about`, `/[locale]/privacy`, not-found catch-all | 212.5 KB | 150 KB |
+| Route                                                                    | Before   | After    | Budget |
+| ------------------------------------------------------------------------ | -------- | -------- | ------ |
+| `/[locale]/trips/[tripId]` (planner)                                     | 277.0 KB | 227.3 KB | 200 KB |
+| `/[locale]/trips/[tripId]/settings`                                      | 262.2 KB | 240.7 KB | 150 KB |
+| `/[locale]/trips/new`                                                    | 259.5 KB | 237.4 KB | 150 KB |
+| `/[locale]/settings`                                                     | 241.2 KB | 231.5 KB | 150 KB |
+| `/[locale]/places/[placeId]/review`                                      | 235.4 KB | 225.4 KB | 150 KB |
+| `/[locale]/signup`                                                       | 232.6 KB | 222.7 KB | 150 KB |
+| `/[locale]/login`                                                        | 232.4 KB | 222.5 KB | 150 KB |
+| `/[locale]/t/[tripId]`, `/[locale]/s/[shareToken]`                       | 265.2 KB | 212.3 KB | 150 KB |
+| `/[locale]/trips`                                                        | 227.6 KB | 194.5 KB | 150 KB |
+| `/[locale]/places/[placeId]`                                             | 246.4 KB | 192.3 KB | 150 KB |
+| `/[locale]/explore`                                                      | 225.8 KB | 183.9 KB | 150 KB |
+| `/[locale]/u/[userId]`                                                   | 225.2 KB | 183.4 KB | 150 KB |
+| `/[locale]/moderation`                                                   | 223.4 KB | 181.5 KB | 150 KB |
+| `/[locale]`, `/[locale]/about`, `/[locale]/privacy`, not-found catch-all | 215.6 KB | 171.8 KB | 150 KB |
 
-The floor every page shares is about 212 KB: React DOM (73.5 KB), the Next.js client router and Turbopack runtime (about 62 KB), zod with the shared schemas (32.7 KB, in the chunk shared by the locale layout and `app/global-error.tsx`), `intl-messageformat` from next-intl (12.4 KB), TanStack Query (7.6 KB) and nuqs (6.4 KB). The drag and drop (dnd-kit, 15.6 KB) loads only when the owner's editable stop list renders, so the read-only `/t` and `/s` pages never fetch it.
+The floor every page shares is now about 172 KB: React DOM (73.4 KB), the Next.js client router and Turbopack runtime (about 62 KB), `intl-messageformat` from next-intl (12.4 KB), TanStack Query (5.5 KB) and the site header's client parts (language switcher, account menu), which Turbopack copies into the not-found chunk and again into each page's chunk (about 7 KB). zod and the shared schemas (about 39 KB) load only on the pages with a form (log in, sign up, settings, new trip, trip settings, review) and with the first failed API call; nuqs only on the planner, the read-only trip pages and the place page. Loaded on demand and not counted: the map, the planner's drag and drop (dnd-kit, only where the owner's editable list renders), the place search combobox (downshift, on the first focus of the field) and the report form (on its first open). Each page's HTML carries only the message namespaces its client components use (`ClientMessages`; `src/i18n/client-messages.test.ts` checks every route).
 
 ## Manual checks for the owner
 
@@ -177,7 +178,7 @@ These are manual on purpose and belong to the project owner.
 
 ## API contract changes
 
-1. Change the zod schema or endpoint definition in `packages/shared/src`.
+1. Change the zod schema or endpoint definition in `packages/shared/src`. A new or moved endpoint also needs its row in `src/api/route-table.ts` (a test compares both tables).
 2. Run `pnpm --filter @heremita/shared openapi:generate` and commit the new `openapi.json` with the change (the drift test fails otherwise).
 3. Implement or adjust the handler (`@Endpoint(endpoints.<name>)`) and its authorisation-matrix row.
 
