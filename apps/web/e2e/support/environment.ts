@@ -16,6 +16,9 @@ export const SESSION_COOKIE_NAME = 'hm_session';
 
 const BLANK_STYLE = '/dev/blank-style.json';
 
+/** Both production builds refuse to start without it; any 32+ characters, the same in both. */
+const SERVER_FETCH_SECRET = 'e2e-only-server-fetch-secret-never-in-production';
+
 /** Environment of the API production build under test. */
 export const apiEnvironment = {
   NODE_ENV: 'production',
@@ -30,6 +33,7 @@ export const apiEnvironment = {
   ROUTING_PROVIDER: 'fake',
   ALLOW_FAKE_PROVIDERS: 'true',
   NOMINATIM_ENABLED: 'false',
+  SERVER_FETCH_SECRET,
 } as const;
 
 /** Environment of the web production build under test (read at build and at start). */
@@ -42,6 +46,7 @@ export const webEnvironment = {
   NEXT_PUBLIC_MAP_STYLE_FALLBACK_LIGHT: BLANK_STYLE,
   NEXT_PUBLIC_MAP_STYLE_FALLBACK_DARK: BLANK_STYLE,
   NEXT_PUBLIC_E2E: '1',
+  SERVER_FETCH_SECRET,
 } as const;
 
 /** Hosts a test page may reach; every other request is aborted. */
