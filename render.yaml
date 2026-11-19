@@ -1,0 +1,39 @@
+# Render blueprint for the Heremita API (free plan).
+# The web app is deployed separately on Vercel and the database lives on Neon.
+services:
+  - type: web
+    name: heremita-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build:shared && pnpm --filter @heremita/api build
+    # Free instances have no pre-deploy step, so migrations run right before the server starts.
+    startCommand: pnpm --filter @heremita/api db:deploy && pnpm --filter @heremita/api start
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: '24'
+      - key: NODE_ENV
+        value: production
+      # Neon connection string (direct, not pooled, so migrations work).
+      - key: DATABASE_URL
+        sync: false
+      # The Vercel URL of the web app, e.g. https://heremita.vercel.app
+      - key: WEB_ORIGIN
+        sync: false
+      - key: PUBLIC_SITE_URL
+        sync: false
+      # Vercel's rewrite + Render's load balancer.
+      - key: TRUST_PROXY
+        value: '2'
+      - key: GEOCODING_PROVIDER
+        value: photon
+      - key: PHOTON_URL
+        value: https://photon.komoot.io
+      - key: ROUTING_PROVIDER
+        value: osrm
+      - key: OSRM_URL
+        value: https://routing.openstreetmap.de
+      - key: DEMO_PASSWORD
+        generateValue: true
