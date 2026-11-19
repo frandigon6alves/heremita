@@ -2,13 +2,14 @@ import { endpoints, type OrderSuggestion, type TripPlanOwner } from '@heremita/s
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { delay } from 'msw';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { applyMoveStop, applyReorder } from '@/features/itinerary/apply-plan-ops';
+import { applyAddStop, applyMoveStop, applyReorder } from '@/features/itinerary/apply-plan-ops';
 import {
   buildDayRoute,
   buildPlan,
   dayId,
   stopId,
   TRIP_ID,
+  tripPlaceId,
 } from '@/features/itinerary/test-support';
 import { resetToasts } from '@/shared/components/toast/toast-store';
 import { Toaster } from '@/shared/components/toast/toaster';
@@ -224,6 +225,25 @@ describe('PlannerScreen routes', () => {
     await waitFor(() => expect(routeRequests.at(-1)).toBe(`${dayId(1)} 8 -`));
     expect(routeRequests.filter((request) => request.endsWith(' bike'))).toHaveLength(1);
     expect(screen.getByRole('radio', { name: 'Bike' })).toBeChecked();
+  });
+
+  it('a_mode_saved_on_one_day_does_not_carry_over_to_the_next', async () => {
+    serve(
+      applyAddStop(buildPlan(), dayId(2), {
+        id: stopId(8),
+        tripPlaceId: tripPlaceId(5),
+        modeToNext: null,
+      }),
+    );
+    record(endpoints.updateDay, () => okResponse(endpoints.updateDay, { planVersion: 8 }));
+    const { user, urlUpdates } = renderPlanner();
+    await screen.findAllByText('12 min · 900 m');
+
+    await user.click(screen.getByRole('radio', { name: 'Bike' }));
+    await user.click(screen.getByRole('button', { name: 'Day 2' }));
+
+    expect(urlUpdates.at(-1)?.queryString).toBe(`?day=${dayId(2)}`);
+    expect(screen.getByRole('radio', { name: 'Walk' })).toBeChecked();
   });
 
   it('a_day_mode_that_fails_to_save_keeps_the_url_and_says_so', async () => {

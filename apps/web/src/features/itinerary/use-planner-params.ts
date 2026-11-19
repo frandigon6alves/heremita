@@ -11,8 +11,10 @@ const plannerParams = {
  * URL state of the planner and the read-only trip pages (§I.web.params):
  * `day` and `mode` replace the history entry, `place` pushes one so Back
  * deselects. Raw values: the screen resolves them against the plan.
+ * `modePerDay` (owner): a mode chosen in the URL is saved on its day, so
+ * switching day drops it and the next day shows its own saved mode.
  */
-export function usePlannerParams() {
+export function usePlannerParams({ modePerDay = false }: { modePerDay?: boolean } = {}) {
   const [params, setParams] = useQueryStates(plannerParams, { shallow: true });
 
   return {
@@ -20,7 +22,10 @@ export function usePlannerParams() {
     place: params.place,
     mode: params.mode,
     /** Switching day closes the selected place, in the same history entry. */
-    selectDay: (day: string) => setParams({ day, place: null }, { history: 'replace' }),
+    selectDay: (day: string) =>
+      setParams(modePerDay ? { day, place: null, mode: null } : { day, place: null }, {
+        history: 'replace',
+      }),
     selectPlace: (place: string | null) => setParams({ place }, { history: 'push' }),
     selectMode: (mode: TravelMode | null) => setParams({ mode }, { history: 'replace' }),
   };

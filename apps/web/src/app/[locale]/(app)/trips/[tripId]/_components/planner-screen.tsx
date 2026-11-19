@@ -104,7 +104,7 @@ export function PlannerScreen({ tripId, initialPlan, initialUpdatedAt }: Planner
     initialDataUpdatedAt: initialUpdatedAt,
   });
   const plan = data.viewerRole === 'owner' ? data : initialPlan;
-  const params = usePlannerParams();
+  const params = usePlannerParams({ modePerDay: true });
   // Without `?day=` the first render's day stays selected while the plan is edited.
   const [openingDay] = useState(() => defaultDaySelection(initialPlan));
   const selection = resolveDaySelection(plan, params.day ?? openingDay);
