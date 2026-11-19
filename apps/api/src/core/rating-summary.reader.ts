@@ -21,6 +21,14 @@ export function summariseRatings(counts: StarCounts): RatingSummary {
   return { count, average: total / count, distribution: [...counts] };
 }
 
+/** A place's summary from {@link RatingSummaryReader.read}, which answers every place it was asked about. */
+export function ratingOf(
+  ratings: ReadonlyMap<string, RatingSummary>,
+  placeId: string,
+): RatingSummary {
+  return ratings.get(placeId) ?? summariseRatings([0, 0, 0, 0, 0]);
+}
+
 interface RatingRow {
   placeId: string;
   rating: number;

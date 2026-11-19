@@ -10,8 +10,9 @@ import {
 import { andAuthorNotBlockedBy } from '../core/block-filter.js';
 import { ApiProblem } from '../core/http/api-problem.js';
 import { placeNotFound } from '../core/http/problems.js';
-import { summariseRatings, RatingSummaryReader } from '../core/rating-summary.reader.js';
+import { ratingOf, summariseRatings, RatingSummaryReader } from '../core/rating-summary.reader.js';
 import { Prisma } from '../generated/prisma/client.js';
+import { PLACE_SUMMARY_SELECT, toPlaceSummary } from '../plan/plan.mapper.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
   GEOCODING_PROVIDER,
@@ -97,18 +98,7 @@ export class PlacesService {
   async detail(placeId: string, viewerId: string | null): Promise<PlaceDetail> {
     const place = await this.prisma.place.findFirst({
       where: { id: placeId, source: 'osm' },
-      select: {
-        id: true,
-        source: true,
-        osmType: true,
-        osmId: true,
-        name: true,
-        label: true,
-        category: true,
-        lng: true,
-        lat: true,
-        countryCode: true,
-      },
+      select: PLACE_SUMMARY_SELECT,
     });
     if (!place) {
       throw placeNotFound();
@@ -119,17 +109,8 @@ export class PlacesService {
       viewerId === null ? null : this.reviewBy(place.id, viewerId),
     ]);
     return {
-      place: {
-        id: place.id,
-        source: place.source,
-        key: place.osmType && place.osmId !== null ? `osm:${place.osmType}:${place.osmId}` : null,
-        name: place.name,
-        label: place.label,
-        category: place.category,
-        location: { lng: place.lng, lat: place.lat },
-        countryCode: place.countryCode,
-      },
-      rating: ratings.get(place.id) ?? summariseRatings([0, 0, 0, 0, 0]),
+      place: toPlaceSummary(place),
+      rating: ratingOf(ratings, place.id),
       inMyTrips,
       myReview,
     };

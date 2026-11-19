@@ -6,7 +6,6 @@ import type {
   TripPlaceOwner,
   TripPlaceViewer,
 } from '@heremita/shared';
-import { summariseRatings } from '../core/rating-summary.reader.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { toIsoDate } from '../trips/trip.mapper.js';
 
@@ -81,12 +80,4 @@ export function toDayOwner(
     modeOverride: day.modeOverride,
     stops,
   };
-}
-
-/** A place's summary from `RatingSummaryReader.read`, which answers every place it was asked about. */
-export function ratingOf(
-  ratings: ReadonlyMap<string, RatingSummary>,
-  placeId: string,
-): RatingSummary {
-  return ratings.get(placeId) ?? summariseRatings([0, 0, 0, 0, 0]);
 }

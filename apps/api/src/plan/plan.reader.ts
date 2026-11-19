@@ -4,7 +4,7 @@ import type { SessionUser } from '../core/http/api-request.js';
 import { tripNotFound } from '../core/http/problems.js';
 import { TripAccessService } from '../core/trip-access.service.js';
 import type { TripRef } from '../core/trip-access.js';
-import { RatingSummaryReader } from '../core/rating-summary.reader.js';
+import { ratingOf, RatingSummaryReader } from '../core/rating-summary.reader.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { cachedLegSchema } from '../providers/core/cache-keys.js';
 import { ROUTING_PROVIDER, type RoutingProvider } from '../providers/core/contract.js';
@@ -14,7 +14,6 @@ import {
   toDayOwner,
   toTripPlaceOwner,
   toTripPlaceViewer,
-  ratingOf,
   TRIP_PLACE_SELECT,
 } from './plan.mapper.js';
 import { plannedLegs, summariseDayRoute, type RouteStop } from './route-summaries.js';

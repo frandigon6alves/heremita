@@ -11,14 +11,14 @@ import { CLOCK, type Clock } from '../core/clock/clock.js';
 import { ApiProblem } from '../core/http/api-problem.js';
 import { tripNotFound } from '../core/http/problems.js';
 import type { SessionUser } from '../core/http/api-request.js';
-import { RatingSummaryReader } from '../core/rating-summary.reader.js';
+import { ratingOf, RatingSummaryReader } from '../core/rating-summary.reader.js';
 import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { PlaceResult } from '../providers/core/contract.js';
 import { PlaceResolver } from '../providers/core/place-resolver.js';
 import { writeDayOrder } from './day-order.js';
 import { holdPlan, lockPlan } from './plan-lock.js';
-import { ratingOf, toTripPlaceOwner, TRIP_PLACE_SELECT } from './plan.mapper.js';
+import { toTripPlaceOwner, TRIP_PLACE_SELECT } from './plan.mapper.js';
 import { dayOfTrip, insertStop, stopIdsOf, tripPlaceNotFound } from './plan-queries.js';
 
 type AddTripPlaceBody = EndpointInput<typeof endpoints.addTripPlace>['body'];
