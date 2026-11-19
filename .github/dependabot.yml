@@ -1,0 +1,33 @@
+# Weekly, grouped update pull requests; CI runs on each of them like any other PR.
+version: 2
+updates:
+  # "npm" covers pnpm workspaces: every package.json, the catalog and pnpm-lock.yaml.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    # pnpm 11 refuses versions published less than 24 h ago (minimumReleaseAge),
+    # so a PR for a same-day release would fail `pnpm install --frozen-lockfile`.
+    cooldown:
+      default-days: 2
+    open-pull-requests-limit: 5
+    # Minor and patch bumps in one PR; each major gets its own, since one breaking
+    # major must not hold back the rest.
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: build
+      include: scope
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      actions:
+        patterns: ['*']
+    commit-message:
+      prefix: ci

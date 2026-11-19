@@ -119,6 +119,11 @@ G4: ⊥ v1: payments, bookings, realtime collab, native apps, offline-first sync
 - ID-final-verify: T73 x on automated parts (`e2e/a11y-mobile.spec.ts`, `tokens.test.ts` contrast pairs, `motion-rules.test.ts`); owner still owes manual pass on one real iPhone + one Android + 8 px target spacing review (V56 ⊥ asserted). T75 x: Photon search + OSRM routes ✓ live (prior run); `SortableList` via `next/dynamic` in `stop-list.tsx` ∴ dnd-kit (15.6 KB) ⊥ first-load; `pnpm budget` (`apps/web/scripts/bundle-budget.ts`, exit 0 always) → every route over (212–273 KB, numbers in README); device pass + search ranking + CSP/VersaTiles sweep → README "Manual checks for the owner".
 - ID-i18n-en-es: owner decision 2026-11-19: official lang = English, translations es + pt-BR (was pt-BR default + en). Locales `en` (default) / `es` (neutral, code exactly `es`) / `pt-BR`, order en, es, pt-BR; URLs always prefixed, unprefixed → cookie → best `Accept-Language` → `/en`; signed-in saved locale still wins; sign-up locale = route locale; DB `Locale` += `es`, default `en` (migration `20261119125830_locale_es_default_en`, existing rows kept); seed demo login English, Diego Spanish; e2e mostly en, `walking-skeleton` pt-BR, `sharing` es, settings switch en → es → pt-BR.
 
+### CI/CD (T79, 2026-11-19)
+- CI `.github/workflows/ci.yml`: push + PR → `main`; concurrency per ref, cancel superseded. Jobs parallel (e2e builds own servers ∴ waiting = slower answer): `checks` (install `--frozen-lockfile`, `env:init`, `heremita_test`, typecheck, lint, format:check, shortcuts, build, budget `continue-on-error`, test) ∧ `e2e` (Chromium cached per PW version, `pnpm e2e` as local, report artifact on failure). Each job own `postgres:18` service on `localhost:5434` heremita/heremita ∴ `.env.example` + e2e env unchanged. Node ← `.node-version`, pnpm ← `packageManager`.
+- CD: ⊥ GitHub deploy job, ⊥ secrets. API: `render.yaml` `autoDeployTrigger: checksPass` (⊥ deprecated `autoDeploy`) → Render deploys `main` commit only when all GitHub checks success/neutral/skipped. Web: Vercel Git integration + Deployment Checks (GitHub: `checks`, `e2e`) → prod alias only after green. Job rename ! update Vercel checks. Migrations: `db:deploy` at head of Render `startCommand` (free plan ⊥ pre-deploy) ∴ every migration ! compatible w/ previous release; rollback ⊥ reverts schema → forward migration.
+- Dependabot: npm (pnpm) + github-actions weekly, minor+patch grouped, majors alone, `cooldown` 2 d (pnpm 11 `minimumReleaseAge` 24 h).
+
 ## §I interfaces
 
 ### I.env — environment (zod-validated at boot; fail fast w/ list of bad vars)
@@ -1001,6 +1006,7 @@ T75|x|[integration] CP reality check in dev w/ real providers (owner present): o
 T76|x|[core] bump vitest to 5.1.1 (allowed from 2026-11-19) and re-run full suite|I.test
 T77|x|[core] FIRST, before any `pnpm format:check`: add `SPEC.md` to `.prettierignore` (Prettier would rewrite the caveman pipe tables the spec/build/check tools parse; today `prettier --check SPEC.md` fails)|I.cmd
 T78|x|[integration] LAST, after T70–T77 all x: delete temporary planning material so repo stays clean: `docs/NEXT-STEPS.md`, `docs/progress/**`, `docs/design/**`, `spikes/**`, `apps/api/test/fixtures/upstream/reference/**` (once ported); drop their `.prettierignore`/`.gitignore`/ESLint/tsconfig entries; keep durable knowledge only in `SPEC.md`, README, code + tests; `pnpm typecheck lint format:check test build` green|V74
+T79|x|[core] CI/CD: `.github/workflows/ci.yml` (`checks` + `e2e`), `.github/dependabot.yml`, `render.yaml` `autoDeployTrigger: checksPass`, Vercel Deployment Checks documented; README "CI/CD" + badge|§C CI/CD,I.cmd
 
 ## §B bugs
 id|date|cause|fix

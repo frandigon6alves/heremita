@@ -1,0 +1,147 @@
+# Continuous integration. Render (autoDeployTrigger: checksPass) and the Vercel
+# Deployment Checks both wait for these job names: rename a job → update both.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A newer push to the same branch or pull request cancels the run it supersedes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Both jobs publish PostgreSQL where the .env examples and the e2e config expect
+# it: localhost:5434, user and password "heremita" (as docker-compose.yml).
+jobs:
+  checks:
+    name: checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: heremita
+          POSTGRES_PASSWORD: heremita
+          POSTGRES_DB: heremita
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready --host=127.0.0.1 --username=heremita --dbname=heremita"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
+    steps:
+      - uses: actions/checkout@v7
+
+      # No version: pnpm/action-setup reads "packageManager" from package.json.
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Development .env files from the examples (TEST_DATABASE_URL → heremita_test on 5434).
+      - run: pnpm env:init
+
+      # What docker/postgres/init does locally; the test global setup recreates it anyway.
+      - name: Create the test template database
+        run: docker exec ${{ job.services.postgres.id }} psql --username=heremita --dbname=heremita --command='CREATE DATABASE heremita_test'
+
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm shortcuts
+
+      - name: Restore the Next.js build cache
+        uses: actions/cache@v6
+        with:
+          path: apps/web/.next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('apps/web/src/**', 'packages/shared/src/**') }}
+          restore-keys: next-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+
+      - run: pnpm build
+
+      # A warning, never a gate (SPEC.md I.web.budget): the script always exits 0.
+      - name: Bundle budget (informational)
+        run: pnpm budget
+        continue-on-error: true
+
+      - run: pnpm test
+
+  # Runs next to "checks", not after it: the e2e suite builds its own servers, so
+  # waiting would only add the checks time to every red-or-green answer.
+  e2e:
+    name: e2e
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: heremita
+          POSTGRES_PASSWORD: heremita
+          POSTGRES_DB: heremita
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready --host=127.0.0.1 --username=heremita --dbname=heremita"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm env:init
+
+      - name: Read the Playwright version
+        id: playwright
+        run: echo "version=$(pnpm --filter @heremita/web exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+      - name: Restore the Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-chromium
+
+      - name: Install Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter @heremita/web exec playwright install --with-deps chromium
+
+      # The cache holds the browser, not the system libraries it needs.
+      - name: Install Chromium system dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm --filter @heremita/web exec playwright install-deps chromium
+
+      # Same command as locally: builds both apps for production on 3110/3111 and
+      # recreates heremita_e2e before the API boots.
+      - run: pnpm e2e
+
+      - name: Upload the Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            apps/web/playwright-report/
+            apps/web/test-results/
+          retention-days: 14

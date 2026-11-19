@@ -1,5 +1,7 @@
 # Heremita
 
+[![CI](https://github.com/frandigon6alves/heremita/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/frandigon6alves/heremita/actions/workflows/ci.yml)
+
 Plan your own trip: places on a map with your private notes, a day-by-day itinerary you can reorder by touch, a route per day (walk, bike or drive) with distance and time, and reviews and public trips from other travellers. Mobile first, works on desktop. UI in English (the official language) with Spanish and Brazilian Portuguese translations, light and dark themes. Every URL carries its locale (`/en`, `/es`, `/pt-BR`); `/` goes to the visitor's last used locale, else the best `Accept-Language` match, else English.
 
 **Live demo:** https://heremita.vercel.app (web on Vercel, API on Render's free plan, PostgreSQL on Neon). The API sleeps when idle, so the first request after a while can take about a minute.
@@ -170,7 +172,7 @@ These are manual on purpose and belong to the project owner.
 - **`pnpm db:reset`.** Prisma refuses `migrate reset` when it detects an AI agent, and agents must not bypass that guard. Tests never need it (they use their own databases); run it yourself when you want a fresh dev database.
 - **Password reset.** There is no web flow and no e-mail. `pnpm --filter @heremita/api cli reset-password <email>` sets a random temporary password, prints it once and signs the user out everywhere; hand it over and ask them to change it in Settings. It needs only `DATABASE_URL`. Exit codes: 0 done, 1 unknown or malformed e-mail, 2 usage error.
 - **Moderators.** The role is set only in the database (the seed makes `ana@example.com` one): `UPDATE users SET role = 'moderator' WHERE email = '…';`. Moderators get a Moderation link in the account menu and decide reports by hand; nothing is hidden automatically.
-- **Migrations.** Change `apps/api/prisma/schema.prisma`, run `pnpm db:migrate`, read the generated SQL and add by hand what Prisma cannot express (CHECK constraints, partial indexes). One logical change per migration; never edit a migration that has shipped. In production apply them with `db:deploy` as a separate step before starting the new API, never on boot.
+- **Migrations.** Change `apps/api/prisma/schema.prisma`, run `pnpm db:migrate`, read the generated SQL and add by hand what Prisma cannot express (CHECK constraints, partial indexes). One logical change per migration; never edit a migration that has shipped. In production `db:deploy` applies them before the new API starts (on Render's free plan, at the head of the start command; see [CI/CD](#cicd)).
 
 ## API contract changes
 
@@ -190,9 +192,67 @@ Simplifications made on purpose are marked in the code with a one-line `//` (or 
 
 `pnpm shortcuts` lists them and fails when a marker lacks the ceiling or the trigger, or sits in a block comment (where a text search for markers would miss it). Review the list before each release and whenever a trigger may have fired. Two have operational impact: rate-limit, login-attempt and provider-throttle state lives in API process memory, so **run a single API instance** until it moves to PostgreSQL; and there is no tracing, only access logs with response times.
 
+## CI/CD
+
+GitHub Actions runs CI; deploys are done by the hosts themselves (Render for the API, Vercel for the web app, Neon for the database), each told to wait for CI. No GitHub secret is needed.
+
+### What runs when
+
+`.github/workflows/ci.yml` runs on every push to `main` and on every pull request to `main`. A newer push to the same branch or pull request cancels the run it supersedes. Two jobs run side by side, each with its own PostgreSQL 18 service on `localhost:5434` (same user, password and port as `docker-compose.yml`, so the `.env` examples work unchanged):
+
+| Job      | Steps                                                                                                                                                                        | Takes about |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `checks` | `pnpm install --frozen-lockfile`, `env:init`, create `heremita_test`, `typecheck`, `lint`, `format:check`, `shortcuts`, `build`, `budget` (never fails), `test`              | 5 min       |
+| `e2e`    | `pnpm install --frozen-lockfile`, `env:init`, Playwright Chromium (browser cached per Playwright version), `pnpm e2e` exactly as locally (builds, 3110/3111, `heremita_e2e`) | 6 min       |
+
+`e2e` does not wait for `checks`: it builds its own servers anyway, so running them in parallel gives the answer in the time of the slower job. Node comes from `.node-version`, pnpm from `packageManager` in `package.json`, and the pnpm store is cached on the lockfile. WebKit (`pnpm e2e:webkit`) and `test:live` stay out of CI.
+
+`.github/dependabot.yml` opens update pull requests every Monday: one for all minor and patch npm bumps, one per major, one for all GitHub Actions. It waits 2 days after a release, because pnpm 11 refuses versions younger than 24 hours. They go through CI like any other pull request.
+
+### Reading a failure
+
+- Open the red run from the pull request's checks or from the Actions tab; the failing step is expanded. Every step is a root `pnpm` command, so the same command reproduces it locally (`pnpm db:up` first for `test` and `e2e`).
+- `format:check` failing: run `pnpm format` and commit. `test` failing only in CI: look for a timing assumption first (the runner has 4 slow cores).
+- `e2e` failing: the run's Summary page has a `playwright-report` artifact (kept 14 days) with the HTML report and the traces. Download it (or `gh run download <run id> --name playwright-report`), then `pnpm --filter @heremita/web exec playwright show-report <unzipped folder>/playwright-report`; open a trace from the report or with `playwright show-trace <trace.zip>`. Retries are off on purpose (see [Tests](#tests)).
+- The `budget` step prints warnings and is green by design; read it when a change adds client JavaScript.
+
+### Deploys
+
+Only commits on `main` whose CI is green reach production:
+
+- **API (Render).** `render.yaml` sets `autoDeployTrigger: checksPass`: Render builds a new commit on `main` only after every GitHub check on it has concluded as success, neutral or skipped. A red or cancelled check, or a commit with no checks, is not deployed (push again or deploy it by hand from the dashboard).
+- **Web (Vercel).** Vercel builds every push, but with Deployment Checks a production deployment is promoted to the production domain only once the required GitHub checks (`checks`, `e2e`) pass. Pull requests get preview deployments as usual.
+- **Database (Neon).** Nothing to deploy: migrations travel with the API (below).
+
+Renaming the `checks` or `e2e` job means updating the Vercel Deployment Checks too.
+
+### One-time setup (owner, in this order)
+
+1. **Neon.** The repository is already linked to a Neon project (`neon.ts`, `.neon`, branch `production`). Make sure the project's region is AWS Frankfurt (`eu-central-1`, next to the Render service), then copy the **direct** (not pooled, no `-pooler` in the host) connection string of the `production` branch, with `sslmode=require`. Check the backup / point-in-time restore window of your plan.
+2. **Render.** New → Blueprint → pick this repository; Render reads `render.yaml` and creates `heremita-api` (free plan, Frankfurt). Fill the `sync: false` variables: `DATABASE_URL` (step 1), `WEB_ORIGIN` and `PUBLIC_SITE_URL` (the Vercel production URL, e.g. `https://heremita.vercel.app`; set them after step 3 if the URL is not known yet, then redeploy). `DEMO_PASSWORD` is generated. In the service's Settings → Build & Deploy, confirm Auto-Deploy shows "After CI Checks Pass". Note the service URL (`https://heremita-api.onrender.com` or similar).
+3. **Vercel.** Add New → Project → import this repository, then in the project settings:
+   - Root Directory `apps/web`, with "Include files outside the root directory in the Build Step" on (the build reads `packages/shared`). Framework preset Next.js, Node.js 24.x.
+   - Install Command `pnpm install --frozen-lockfile`; Build Command `pnpm --dir ../.. build:shared && pnpm build`. Add the environment variable `ENABLE_EXPERIMENTAL_COREPACK=1` so Vercel uses the pnpm version pinned in `package.json` (pnpm 11; the workspace settings in `pnpm-workspace.yaml` need it).
+   - Environment variables (Production and Preview): `API_URL` = the Render URL from step 2 (no trailing slash; baked in at build time, so change it → redeploy), `SESSION_COOKIE_NAME=__Host-hm_session` (the API runs with `NODE_ENV=production`, so its cookie is Secure), `CONTACT_EMAIL` = the operator address shown on `/about` (required in production). Optional: `NEXT_PUBLIC_MAP_STYLE_LIGHT`, `NEXT_PUBLIC_MAP_STYLE_DARK`, `NEXT_PUBLIC_MAP_STYLE_FALLBACK_LIGHT`, `NEXT_PUBLIC_MAP_STYLE_FALLBACK_DARK` (the defaults are OpenFreeMap and VersaTiles). Never set `NEXT_PUBLIC_E2E`.
+   - Settings → Environments → Production: automatic aliasing (auto-assign custom domains) on. Settings → Build and Deployment → Deployment Checks → Add Checks → GitHub → select `checks` and `e2e`.
+4. Back on Render, set `WEB_ORIGIN` / `PUBLIC_SITE_URL` to the final web URL if they were placeholders, and redeploy once. Then open `https://<web>/api/v1/health/ready`: it should answer `{"status":"ok","db":"up"}` through the Vercel rewrite.
+5. GitHub (optional): Settings → Branches → add a rule or ruleset for `main` that requires the `checks` and `e2e` status checks, so a pull request cannot merge red.
+
+The free Render instance sleeps after 15 minutes without traffic; the first request after that takes about a minute.
+
+### How migrations reach production
+
+A migration is committed with the code that needs it. After CI passes, Render builds the commit and its start command runs `pnpm --filter @heremita/api db:deploy` (`prisma migrate deploy`: applies pending migrations, never creates or resets anything) and only then starts the API. If the migration fails, the new instance never becomes healthy and Render keeps serving the previous one. Free Render instances have no pre-deploy step, hence the start command; on a paid plan move `db:deploy` to `preDeployCommand`. Because the old API keeps running while the new one migrates, every migration must also work with the previous release of the code (add first, remove in a later release).
+
+### Rolling back
+
+- **API.** Render dashboard → `heremita-api` → Events/Deploys → the last good deploy → Rollback. Rolling back pauses auto-deploys; turn them on again (Settings → Auto-Deploy → After CI Checks Pass) once the fix is on `main`. Migrations are **not** rolled back: the old code must work with the newer schema (the rule above). Undo a schema change with a new forward migration, never by editing or deleting a shipped one.
+- **Web.** Vercel dashboard → Deployments → the last good production deployment → Instant Rollback. Vercel then stops promoting new production deployments until you promote one again (Promote, or Undo Rollback). To ship a fix, `git revert` the bad commit on `main` and let CI and the hosts redeploy.
+- **Database.** For data damage, restore the Neon branch to a point in time before the incident (Neon console → Restore), within your plan's restore window; point `DATABASE_URL` at the restored branch if you restore to a new one.
+
 ## Running in production
 
-Nothing is deployed yet. The code assumes this shape:
+Nothing is deployed yet; the planned hosts and their setup are in [CI/CD](#cicd). The code assumes this shape:
 
 - A reverse proxy that terminates TLS (with HSTS), serves only the web app and overwrites `X-Forwarded-For`.
 - The web app (`next start`, port 3100) and the API (`node dist/main.js`, port 3101, not exposed publicly), with `NODE_ENV=production`, `COOKIE_SECURE=true`, `SESSION_COOKIE_NAME=__Host-hm_session`, `PUBLIC_SITE_URL`, `WEB_ORIGIN`, `CONTACT_EMAIL` and the real provider settings. Build the web app with its final `API_URL` and map styles.

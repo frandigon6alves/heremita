@@ -10,7 +10,9 @@ services:
     # Free instances have no pre-deploy step, so migrations run right before the server starts.
     startCommand: pnpm --filter @heremita/api db:deploy && pnpm --filter @heremita/api start
     healthCheckPath: /api/v1/health
-    autoDeploy: true
+    # Deploy a commit on main only once every GitHub check on it has passed
+    # (.github/workflows/ci.yml: checks + e2e). Replaces the deprecated autoDeploy.
+    autoDeployTrigger: checksPass
     envVars:
       - key: NODE_VERSION
         value: '24'
