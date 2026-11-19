@@ -4,7 +4,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { queryKeys } from '@/lib/api/query-keys';
-import { resetToasts } from '@/shared/components/toast/toast-store';
+import { getSnapshot, resetToasts, subscribe } from '@/shared/components/toast/toast-store';
 import { TestIntlProvider } from '@/test-utils/render';
 import { buildPlan, TRIP_ID } from './test-support';
 import { usePlanMutation } from './use-plan-mutation';
@@ -47,6 +47,7 @@ function setup() {
           ...plan,
           trip: { ...plan.trip, title },
         }),
+        announce: (_plan, { title }) => `Renamed to ${title}`,
         failureMessage: () => 'Not saved',
       }),
     { wrapper },
@@ -66,7 +67,36 @@ afterEach(() => {
   resetToasts();
 });
 
+function recordAnnouncements(): { texts: string[]; stop: () => void } {
+  const texts: string[] = [];
+  let last = getSnapshot().announcement;
+  const stop = subscribe(() => {
+    const { announcement } = getSnapshot();
+    if (announcement !== null && announcement !== last) {
+      texts.push(announcement.text);
+    }
+    last = announcement;
+  });
+  return { texts, stop };
+}
+
 describe('usePlanMutation rollback with queued edits (V52)', () => {
+  it('announces_a_queued_edit_once_when_the_edit_before_it_rolls_back', async () => {
+    const { texts: announced, stop } = recordAnnouncements();
+    const { mutate, title, fail } = setup();
+    act(() => {
+      mutate({ title: 'First' });
+      mutate({ title: 'Second' });
+    });
+    await waitFor(() => expect(title()).toBe('Second'));
+
+    await fail('First');
+
+    await waitFor(() => expect(announced).toContain('Not saved'));
+    stop();
+    expect(announced.filter((text) => text === 'Renamed to Second')).toHaveLength(1);
+  });
+
   it('keeps_a_queued_edit_on_screen_when_the_edit_before_it_fails', async () => {
     const { mutate, title, fail } = setup();
     act(() => {

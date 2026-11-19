@@ -237,12 +237,11 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
         params: { tripId, stopId },
         body: { dayId, index },
       }),
-    optimistic: (plan, { stopId, dayId, index, name, target }) => {
-      const moved = applyMoveStop(plan, stopId, dayId, index);
+    optimistic: (plan, { stopId, dayId, index }) => applyMoveStop(plan, stopId, dayId, index),
+    announce: (moved, { stopId, dayId, name, target }) => {
       const stops = findDay(moved, dayId)?.stops ?? [];
       const position = stops.findIndex((stop) => stop.id === stopId) + 1;
-      announce(t('moved', { name, position, total: stops.length, target }));
-      return moved;
+      return t('moved', { name, position, total: stops.length, target });
     },
     failureMessage: ({ name, target }, error) =>
       errorCode(error) === 'day_full' ? t('dayFull', { target }) : t('moveFailed', { name }),

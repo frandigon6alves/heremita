@@ -2,13 +2,15 @@ import type { TripPlan, TripPlanOwner } from '@heremita/shared';
 import { useMutation, type QueryClient, type QueryKey } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { queryKeys } from '@/lib/api/query-keys';
-import { showToast } from '@/shared/components/toast/toast-store';
+import { announce as announceText, showToast } from '@/shared/components/toast/toast-store';
 
 export interface PlanMutationConfig<TVariables, TData> {
   tripId: string;
   mutationFn: (variables: TVariables) => Promise<TData>;
   /** What the plan looks like if the call succeeds, shown at once. */
   optimistic?: (plan: TripPlanOwner, variables: TVariables) => TripPlanOwner;
+  /** Read out once the optimistic plan is on screen; never again when a rollback replays it. */
+  announce?: (plan: TripPlanOwner, variables: TVariables) => string;
   /** Toast text when the call fails (the plan is already rolled back). */
   failureMessage: (variables: TVariables, error: unknown) => string;
   onSuccess?: (data: TData, variables: TVariables, client: QueryClient) => void;
@@ -71,6 +73,7 @@ export function usePlanMutation<TVariables, TData>({
   tripId,
   mutationFn,
   optimistic,
+  announce,
   failureMessage,
   onSuccess,
   changesCounts = false,
@@ -91,7 +94,11 @@ export function usePlanMutation<TVariables, TData>({
       const redo = (current: TripPlan): TripPlan =>
         current.viewerRole === 'owner' && optimistic ? optimistic(current, variables) : current;
       if (plan?.viewerRole === 'owner' && optimistic) {
-        client.setQueryData<TripPlan>(planKey, redo(plan));
+        const next = optimistic(plan, variables);
+        client.setQueryData<TripPlan>(planKey, next);
+        if (announce) {
+          announceText(announce(next, variables));
+        }
       }
       return { plan, redo };
     },
