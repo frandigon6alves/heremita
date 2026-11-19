@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
+import { ClientMessages } from '@/i18n/client-messages';
 import { routing } from '@/i18n/routing';
 import { loadPlan } from '@/features/itinerary/load-plan';
 import { planQueryFrom, preconnectBasemap } from '@/features/itinerary/page-setup';
@@ -42,16 +43,18 @@ export default async function PublicTripPage({
   }
   preconnectBasemap();
   return (
-    <main id="main">
-      <NuqsAdapter>
-        <PublicTripViewer
-          tripId={tripId}
-          initialPlan={plan}
-          initialUpdatedAt={fetchedAt}
-          signedIn={viewer !== null}
-          path={routes.publicTrip(locale, tripId, query)}
-        />
-      </NuqsAdapter>
-    </main>
+    <ClientMessages namespaces={['itinerary', 'map', 'reviews', 'trips']}>
+      <main id="main">
+        <NuqsAdapter>
+          <PublicTripViewer
+            tripId={tripId}
+            initialPlan={plan}
+            initialUpdatedAt={fetchedAt}
+            signedIn={viewer !== null}
+            path={routes.publicTrip(locale, tripId, query)}
+          />
+        </NuqsAdapter>
+      </main>
+    </ClientMessages>
   );
 }

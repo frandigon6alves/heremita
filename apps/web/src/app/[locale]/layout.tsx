@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from 'next';
-import { hasLocale, NextIntlClientProvider } from 'next-intl';
+import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { locale as rootLocale } from 'next/root-params';
 import { NONCE_HEADER } from '@/csp';
+import { ClientMessages } from '@/i18n/client-messages';
 import { routing } from '@/i18n/routing';
 import { getViewer } from '@/lib/api/server';
 import { OfflineStatus } from '@/shared/components/offline-banner/offline-status';
@@ -65,13 +66,13 @@ export default async function LocaleLayout({ children }: LayoutProps<'/[locale]'
         />
       </head>
       <body>
-        <NextIntlClientProvider>
+        <ClientMessages namespaces={[]}>
           <Providers>
             <OfflineStatus />
             {children}
             <Toaster />
           </Providers>
-        </NextIntlClientProvider>
+        </ClientMessages>
       </body>
     </html>
   );

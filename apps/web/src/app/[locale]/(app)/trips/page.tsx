@@ -1,6 +1,7 @@
 import { apiRoutes } from '@heremita/shared/api-routes';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { ClientMessages } from '@/i18n/client-messages';
 import { MyTripsPage } from '@/features/trips/my-trips-page';
 import { TripList } from '@/features/trips/trip-list';
 import { WarmMapChunk } from '@/features/trips/warm-map-chunk';
@@ -19,13 +20,13 @@ export default async function MyTripsRoute() {
   const firstPage = await serverFetch(apiRoutes.listMyTrips).catch(() => undefined);
 
   return (
-    <>
+    <ClientMessages namespaces={['trips', 'map']}>
       <SiteHeader />
       <MyTripsPage>
         <TripList initialPage={firstPage} />
         <WarmMapChunk />
       </MyTripsPage>
       <SiteFooter />
-    </>
+    </ClientMessages>
   );
 }

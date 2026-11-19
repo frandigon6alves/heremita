@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
+import { ClientMessages } from '@/i18n/client-messages';
 import { loadSharedPlan } from '@/features/itinerary/load-plan';
 import { planQueryFrom, preconnectBasemap } from '@/features/itinerary/page-setup';
 import { getViewer } from '@/lib/api/server';
@@ -29,16 +30,18 @@ export default async function SharedTripPage({
   ]);
   preconnectBasemap();
   return (
-    <main id="main">
-      <NuqsAdapter>
-        <SharedTripViewer
-          shareToken={shareToken}
-          initialPlan={plan}
-          initialUpdatedAt={fetchedAt}
-          signedIn={viewer !== null}
-          path={routes.sharedTrip(locale, shareToken, planQueryFrom(await searchParams))}
-        />
-      </NuqsAdapter>
-    </main>
+    <ClientMessages namespaces={['itinerary', 'map', 'reviews', 'trips']}>
+      <main id="main">
+        <NuqsAdapter>
+          <SharedTripViewer
+            shareToken={shareToken}
+            initialPlan={plan}
+            initialUpdatedAt={fetchedAt}
+            signedIn={viewer !== null}
+            path={routes.sharedTrip(locale, shareToken, planQueryFrom(await searchParams))}
+          />
+        </NuqsAdapter>
+      </main>
+    </ClientMessages>
   );
 }
