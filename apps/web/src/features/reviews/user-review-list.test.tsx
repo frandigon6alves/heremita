@@ -10,36 +10,20 @@ import {
   TEST_REQUEST_ID,
 } from '../../../test/msw/handlers';
 import { renderWithProviders } from '../../../test/render';
+import { buildReview, page, PLACE_ID } from './test-support';
 import { UserReviewList } from './user-review-list';
 
 const server = setupApiServer();
 const USER_ID = '0195f0c8-0000-7000-8000-00000000c001';
-const PLACE_ID = '0195f0c8-0000-7000-8000-00000000a001';
 
-let seq = 0;
-function buildReview(overrides: Partial<Review> = {}): Review {
-  seq += 1;
-  return {
-    id: `0195f0c8-0000-7000-8000-${String(seq).padStart(12, '0')}`,
-    place: { id: PLACE_ID, name: 'Castelo de São Jorge', category: 'sight' },
-    rating: 4,
-    body: 'Vista linda sobre a cidade.',
-    visitedMonth: '2026-10',
-    language: 'pt-BR',
-    author: { id: USER_ID, displayName: 'Ana', isDemo: false },
-    status: 'published',
-    createdAt: '2026-11-01T10:00:00.000Z',
-    updatedAt: '2026-11-01T10:00:00.000Z',
-    isMine: false,
-    ...overrides,
-  };
+/** A review on this traveller's profile list. */
+function authoredReview(overrides: Partial<Review> = {}): Review {
+  return buildReview({ author: { id: USER_ID, displayName: 'Ana', isDemo: false }, ...overrides });
 }
-
-const page = (items: Review[], nextCursor: string | null = null) => ({ items, nextCursor });
 
 describe('UserReviewList', () => {
   it('shows_place_link_stars_visit_month_and_text', () => {
-    renderWithProviders(<UserReviewList userId={USER_ID} initialPage={page([buildReview()])} />);
+    renderWithProviders(<UserReviewList userId={USER_ID} initialPage={page([authoredReview()])} />);
     const review = screen.getByRole('article');
 
     expect(within(review).getByRole('link', { name: 'Castelo de São Jorge' })).toHaveAttribute(
@@ -48,12 +32,15 @@ describe('UserReviewList', () => {
     );
     expect(within(review).getByRole('img', { name: '4 out of 5 stars' })).toBeInTheDocument();
     expect(review).toHaveTextContent('Visited in Oct 2026');
-    expect(review).toHaveTextContent('Vista linda sobre a cidade.');
+    expect(review).toHaveTextContent('Vista linda sobre a cidade, vale a subida.');
   });
 
   it('tells_the_author_a_review_is_hidden', () => {
     renderWithProviders(
-      <UserReviewList userId={USER_ID} initialPage={page([buildReview({ status: 'hidden' })])} />,
+      <UserReviewList
+        userId={USER_ID}
+        initialPage={page([authoredReview({ status: 'hidden' })])}
+      />,
     );
 
     expect(screen.getByText('Hidden by moderation: only you see it.')).toBeVisible();
@@ -73,12 +60,12 @@ describe('UserReviewList', () => {
       onEndpoint(endpoints.listUserReviews, () => {
         calls += 1;
         return calls === 1
-          ? okResponse(endpoints.listUserReviews, page([buildReview()], 'cursor-3'))
+          ? okResponse(endpoints.listUserReviews, page([authoredReview()], 'cursor-3'))
           : problemResponse('internal_error');
       }),
     );
     const { user } = renderWithProviders(
-      <UserReviewList userId={USER_ID} initialPage={page([buildReview()], 'cursor-2')} />,
+      <UserReviewList userId={USER_ID} initialPage={page([authoredReview()], 'cursor-2')} />,
     );
 
     await user.click(screen.getByRole('button', { name: 'Load more' }));
