@@ -71,14 +71,4 @@ describe('Skeleton', () => {
 
     expect(screen.getByText('Loading your trips')).toBeInTheDocument();
   });
-
-  it('sizes_a_circle_from_its_height', () => {
-    const { container } = renderWithIntl(
-      <Skeleton>
-        <SkeletonBlock shape="circle" height="44px" />
-      </Skeleton>,
-    );
-
-    expect(shapes(container).firstElementChild).toHaveStyle({ width: '44px', height: '44px' });
-  });
 });

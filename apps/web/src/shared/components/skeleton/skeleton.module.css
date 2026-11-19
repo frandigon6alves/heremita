@@ -23,10 +23,6 @@
   border-radius: var(--radius-sm);
 }
 
-.circle {
-  border-radius: var(--radius-full);
-}
-
 @keyframes pulse {
   50% {
     opacity: 0.55;

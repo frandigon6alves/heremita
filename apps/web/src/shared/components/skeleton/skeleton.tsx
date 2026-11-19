@@ -40,9 +40,9 @@ export function Skeleton({ children, label }: SkeletonProps) {
 }
 
 export interface SkeletonBlockProps {
-  /** `text` = one line of body text; `block` = a card or image; `circle` = an avatar or pin. */
-  shape?: 'text' | 'block' | 'circle';
-  /** CSS length; defaults to full width (`circle`: same as `height`). */
+  /** `text` = one line of body text; `block` = a card or image. */
+  shape?: 'text' | 'block';
+  /** CSS length; defaults to full width. */
   width?: string;
   /** CSS length; ignored for `text`, which is one line high. */
   height?: string;
@@ -51,12 +51,12 @@ export interface SkeletonBlockProps {
 /** One grey placeholder shape inside a `Skeleton`. */
 export function SkeletonBlock({ shape = 'block', width, height = '1rem' }: SkeletonBlockProps) {
   const size: CSSProperties =
-    shape === 'text'
-      ? { width: width ?? '100%' }
-      : { width: width ?? (shape === 'circle' ? height : '100%'), height };
-  const shapeClass = shape === 'block' ? undefined : styles[shape];
+    shape === 'text' ? { width: width ?? '100%' } : { width: width ?? '100%', height };
 
   return (
-    <span className={shapeClass ? `${styles.block} ${shapeClass}` : styles.block} style={size} />
+    <span
+      className={shape === 'text' ? `${styles.block} ${styles.text}` : styles.block}
+      style={size}
+    />
   );
 }
