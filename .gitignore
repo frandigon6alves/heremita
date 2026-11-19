@@ -40,3 +40,4 @@ pnpm-debug.log*
 generated/
 next-env.d.ts
 .neon
+.vercel
