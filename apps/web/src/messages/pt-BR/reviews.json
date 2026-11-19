@@ -67,7 +67,6 @@
     "alreadyReported": "Você já denunciou isto.",
     "gone": "Este conteúdo não está mais disponível.",
     "own": "Você não pode denunciar o seu próprio conteúdo.",
-    "tooMany": "Muitas denúncias em pouco tempo. Tente mais tarde.",
     "failed": "Não foi possível enviar a denúncia. Tente de novo."
   },
   "block": {
@@ -109,7 +108,6 @@
     "deleted": "Avaliação excluída",
     "deleteFailed": "Não foi possível excluir a avaliação. Tente de novo.",
     "gone": "Este lugar não está mais disponível.",
-    "tooMany": "Muitas avaliações em pouco tempo. Tente mais tarde.",
     "offline": "Você está offline. Seu texto continua aqui; envie de novo quando a conexão voltar.",
     "failed": "Não foi possível salvar a avaliação. Seu texto continua aqui; tente de novo."
   },
