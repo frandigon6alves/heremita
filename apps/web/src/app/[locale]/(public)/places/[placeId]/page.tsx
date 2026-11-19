@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { loadFirstReviews, loadPlace, parseSort } from '@/features/reviews/load-place';
 import { PlaceMap } from '@/features/reviews/place-map';
 import { RatingSummary } from '@/features/reviews/rating-summary';
@@ -72,13 +73,15 @@ export default async function PlacePage({
           <h2 id="reviews-heading" className={styles.sectionTitle}>
             {t('reviewsHeading')}
           </h2>
-          <ReviewList
-            placeId={place.id}
-            reviewCount={rating.count}
-            myReview={myReview}
-            initialPage={firstPage === undefined ? undefined : { sort, page: firstPage }}
-            signedIn={viewer !== null}
-          />
+          <NuqsAdapter>
+            <ReviewList
+              placeId={place.id}
+              reviewCount={rating.count}
+              myReview={myReview}
+              initialPage={firstPage === undefined ? undefined : { sort, page: firstPage }}
+              signedIn={viewer !== null}
+            />
+          </NuqsAdapter>
         </section>
       </div>
       <WriteReviewCta href={routes.placeReview(locale, place.id)} hasReview={myReview !== null} />

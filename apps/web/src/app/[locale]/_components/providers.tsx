@@ -1,7 +1,6 @@
 'use client';
 
 import { isServer, QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import type { ReactNode } from 'react';
 import { makeQueryClient, type Navigation } from '@/lib/api/query-client';
 import { clearDrafts } from '@/shared/storage/session-drafts';
@@ -31,11 +30,11 @@ function getQueryClient(): QueryClient {
   return browserQueryClient;
 }
 
-/** Client-side providers: server-state cache and URL search-param state. */
+/**
+ * Client-side providers: the server-state cache. The nuqs adapter (URL
+ * search-param state) wraps only the pages that use it: the planner, the
+ * read-only trip pages and the place page.
+ */
 export function Providers({ children }: { children: ReactNode }) {
-  return (
-    <QueryClientProvider client={getQueryClient()}>
-      <NuqsAdapter>{children}</NuqsAdapter>
-    </QueryClientProvider>
-  );
+  return <QueryClientProvider client={getQueryClient()}>{children}</QueryClientProvider>;
 }
