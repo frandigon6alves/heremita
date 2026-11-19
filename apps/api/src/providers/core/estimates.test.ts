@@ -55,8 +55,12 @@ describe('estimateRoute', () => {
     expect(route.legs).toHaveLength(2);
     expect(route.legs.every((leg) => leg.estimated)).toBe(true);
     expect(route.snapped.map((stop) => stop.routable)).toEqual([false, false, false]);
-    expect(route.distanceMeters).toBe(route.legs[0]!.distanceMeters + route.legs[1]!.distanceMeters);
-    expect(route.durationSeconds).toBe(route.legs[0]!.durationSeconds + route.legs[1]!.durationSeconds);
+    expect(route.distanceMeters).toBe(
+      route.legs[0]!.distanceMeters + route.legs[1]!.distanceMeters,
+    );
+    expect(route.durationSeconds).toBe(
+      route.legs[0]!.durationSeconds + route.legs[1]!.durationSeconds,
+    );
   });
 });
 

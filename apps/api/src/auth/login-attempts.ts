@@ -19,6 +19,10 @@ interface Window {
  * right password works again. Unknown e-mails are counted like real ones, so
  * the 429 reveals nothing either. Kept in process memory, like the throttler
  * state (see the SHORTCUT in `core/core.module.ts`).
+ *
+ * An attempt counts as a failure from the moment it is let through until
+ * {@link recordSuccess} clears it: guesses sent all at once must not each see
+ * the count from before any of them was checked.
  */
 @Injectable()
 export class LoginAttempts {
@@ -36,7 +40,19 @@ export class LoginAttempts {
     return Math.max(1, Math.ceil(remaining / 1000));
   }
 
-  recordFailure(email: string): void {
+  /**
+   * Lets one login attempt through, counted as a failure until it succeeds,
+   * or answers the seconds to wait when `email` used up its window.
+   */
+  begin(email: string): number | null {
+    const retryAfter = this.retryAfterSeconds(email);
+    if (retryAfter === null) {
+      this.recordFailure(email);
+    }
+    return retryAfter;
+  }
+
+  private recordFailure(email: string): void {
     if (this.windows.size > SWEEP_THRESHOLD) {
       this.sweep();
     }

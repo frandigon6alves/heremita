@@ -9,6 +9,7 @@ const ENV = parseEnv({
   DATABASE_URL: 'postgresql://heremita:heremita@localhost:5434/heremita',
   GEOCODING_PROVIDER: 'fake',
   ROUTING_PROVIDER: 'fake',
+  ALLOW_FAKE_PROVIDERS: 'true',
   NODE_ENV: 'production',
   PUBLIC_SITE_URL: 'https://heremita.example',
 });

@@ -43,7 +43,10 @@ export class PlaceResolver {
     }
     const found = await this.lookUp(key, locale, signal);
     if (!found) {
-      throw new ApiProblem('geocoding_unavailable', 'The place could not be resolved; search for it again.');
+      throw new ApiProblem(
+        'geocoding_unavailable',
+        'The place could not be resolved; search for it again.',
+      );
     }
     await this.remember([found]);
     return found;

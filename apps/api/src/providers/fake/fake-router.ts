@@ -25,7 +25,11 @@ function snap(stop: LngLat): SnappedStop {
     return { location: stop, offNetworkMeters: 0, routable: true };
   }
   const location = { lng: stop.lng, lat: FAKE_UNROUTABLE_ABOVE_LAT };
-  return { location, offNetworkMeters: Math.round(haversineMeters(stop, location)), routable: false };
+  return {
+    location,
+    offNetworkMeters: Math.round(haversineMeters(stop, location)),
+    routable: false,
+  };
 }
 
 /**
@@ -38,9 +42,18 @@ export class FakeRouter implements RoutingProvider {
 
   constructor(private readonly options: FakeProviderOptions = {}) {}
 
-  async route({ mode, stops }: RouteRequest): Promise<RouteResult> {
+  route(request: RouteRequest): Promise<RouteResult> {
+    // The executor turns a thrown ProviderError into a rejection, as a real provider would.
+    return new Promise((resolve) => resolve(this.compute(request)));
+  }
+
+  private compute({ mode, stops }: RouteRequest): RouteResult {
     if (this.options.failWith) {
-      throw new ProviderError(this.id, this.options.failWith, `fake router: ${this.options.failWith}`);
+      throw new ProviderError(
+        this.id,
+        this.options.failWith,
+        `fake router: ${this.options.failWith}`,
+      );
     }
     if (stops.length > MAX_ROUTE_STOPS) {
       throw new ProviderError(this.id, 'too_many_stops', `more than ${MAX_ROUTE_STOPS} stops`);

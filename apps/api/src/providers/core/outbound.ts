@@ -267,7 +267,8 @@ export class OutboundClient {
       } else {
         host.breaker.recordAnswer();
       }
-      const waitMs = result.retry && attempt < maxRetries ? this.backoff(attempt, result) : undefined;
+      const waitMs =
+        result.retry && attempt < maxRetries ? this.backoff(attempt, result) : undefined;
       if (waitMs === undefined || this.now() + waitMs >= deadline) {
         throw result.error;
       }
@@ -303,7 +304,10 @@ export class OutboundClient {
     if (host.breaker.state === 'open') {
       throw this.circuitOpen(host);
     }
-    const budgetMs = Math.max(0, Math.min(autocomplete ? 0 : policy.maxWaitMs, deadline - this.now()));
+    const budgetMs = Math.max(
+      0,
+      Math.min(autocomplete ? 0 : policy.maxWaitMs, deadline - this.now()),
+    );
     const startedAt = this.now();
     let release: () => void;
     try {
@@ -368,7 +372,10 @@ export class OutboundClient {
       };
     }
     const status = response.status;
-    const retryAfterSeconds = parseRetryAfter(response.headers.get('retry-after'), this.clock.now());
+    const retryAfterSeconds = parseRetryAfter(
+      response.headers.get('retry-after'),
+      this.clock.now(),
+    );
     if (status === 403) {
       host.pausedUntil = this.now() + PAUSE_ON_403_MS;
       this.logger.error(
@@ -398,11 +405,7 @@ export class OutboundClient {
         hostFault: false,
         retry: true,
         retryAfterSeconds,
-        error: this.rateLimited(
-          policy,
-          'throttled with 429',
-          (retryAfterSeconds ?? 1) * SECOND,
-        ),
+        error: this.rateLimited(policy, 'throttled with 429', (retryAfterSeconds ?? 1) * SECOND),
       };
     }
     if (status >= 500) {
@@ -411,7 +414,11 @@ export class OutboundClient {
         hostFault: true,
         retry: true,
         retryAfterSeconds,
-        error: new ProviderError(policy.provider, 'unavailable', `${policy.provider} answered ${status}`),
+        error: new ProviderError(
+          policy.provider,
+          'unavailable',
+          `${policy.provider} answered ${status}`,
+        ),
       };
     }
     return { kind: 'answer', response: { status, body } };

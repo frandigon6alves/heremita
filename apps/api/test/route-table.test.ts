@@ -7,53 +7,7 @@ import { AppModule } from '../src/app.module.js';
 import { ENV } from '../src/config/config.module.js';
 import { parseEnv } from '../src/config/env.js';
 import { ENDPOINT } from '../src/core/http/endpoint.decorator.js';
-
-/** Endpoints whose handlers are not written yet. Shrinks task by task; empty at release (T71). */
-const PENDING_ENDPOINTS: readonly EndpointName[] = [
-  'updateMe',
-  'changePassword',
-  'deleteAccount',
-  'listBlocks',
-  'blockUser',
-  'unblockUser',
-  'getUserProfile',
-  'listUserTrips',
-  'listUserReviews',
-  'listMyTrips',
-  'createTrip',
-  'getTrip',
-  'updateTrip',
-  'deleteTrip',
-  'rotateShareToken',
-  'getTripPlan',
-  'copyTrip',
-  'getSharedPlan',
-  'getSharedDayRoute',
-  'copySharedTrip',
-  'addTripPlace',
-  'updateTripPlace',
-  'deleteTripPlace',
-  'createDay',
-  'updateDay',
-  'deleteDay',
-  'addStop',
-  'putStopOrder',
-  'putStopPlacement',
-  'updateStop',
-  'deleteStop',
-  'getDayRoute',
-  'getOrderSuggestion',
-  'searchPlaces',
-  'reversePlaces',
-  'getPlace',
-  'listPlaceReviews',
-  'putMyReview',
-  'deleteMyReview',
-  'listPublicTrips',
-  'createReport',
-  'listReports',
-  'decideReport',
-];
+import { PENDING_ENDPOINTS } from './support/pending-endpoints.js';
 
 interface RouteHandler {
   name: string;

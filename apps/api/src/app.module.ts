@@ -19,6 +19,10 @@ import { OpenApiModule } from './openapi/openapi.module.js';
 import { PlacesModule } from './places/places.module.js';
 import { PlanModule } from './plan/plan.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { ProvidersModule } from './providers/core/providers.module.js';
+import { nominatimAdapter } from './providers/nominatim/nominatim.geocoder.js';
+import { osrmAdapter } from './providers/osrm/osrm-router.js';
+import { photonAdapter } from './providers/photon/photon.geocoder.js';
 import { ReportsModule } from './reports/reports.module.js';
 import { ReviewsModule } from './reviews/reviews.module.js';
 import { RoutingModule } from './routing/routing.module.js';
@@ -34,6 +38,11 @@ import { UsersModule } from './users/users.module.js';
     }),
     PrismaModule,
     CoreModule,
+    ProvidersModule.forRoot({
+      photon: photonAdapter,
+      nominatim: nominatimAdapter,
+      osrm: osrmAdapter,
+    }),
     JobsModule,
     AuthModule,
     HealthModule,

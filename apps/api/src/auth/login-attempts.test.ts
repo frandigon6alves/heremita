@@ -11,7 +11,7 @@ function setup() {
 
 function fail(attempts: LoginAttempts, times: number, email = EMAIL): void {
   for (let i = 0; i < times; i += 1) {
-    attempts.recordFailure(email);
+    attempts.begin(email);
   }
 }
 
@@ -22,6 +22,14 @@ describe('LoginAttempts', () => {
     fail(attempts, LOGIN_FAILURES_ALLOWED - 1);
 
     expect(attempts.retryAfterSeconds(EMAIL)).toBeNull();
+  });
+
+  it('refuses_the_sixth_attempt_while_the_first_five_are_still_being_checked', () => {
+    const { attempts } = setup();
+    const started = Array.from({ length: LOGIN_FAILURES_ALLOWED }, () => attempts.begin(EMAIL));
+
+    expect(started).toEqual(Array.from({ length: LOGIN_FAILURES_ALLOWED }, () => null));
+    expect(attempts.begin(EMAIL)).toBe(LOGIN_WINDOW_MS / 1000);
   });
 
   it('blocks_after_five_failures_until_the_window_ends', () => {
@@ -83,13 +91,13 @@ describe('LoginAttempts', () => {
   it('keeps_counting_open_windows_when_sweeping_finished_ones', () => {
     const { clock, attempts } = setup();
     for (let i = 0; i < 1_001; i += 1) {
-      attempts.recordFailure(`old-${i}@example.com`);
+      attempts.begin(`old-${i}@example.com`);
     }
     clock.advance(LOGIN_WINDOW_MS / 2);
     fail(attempts, LOGIN_FAILURES_ALLOWED);
     clock.advance(LOGIN_WINDOW_MS / 2);
 
-    attempts.recordFailure('new@example.com');
+    attempts.begin('new@example.com');
 
     expect(attempts.retryAfterSeconds(EMAIL)).toBe(LOGIN_WINDOW_MS / 2 / 1000);
     expect(attempts.retryAfterSeconds('old-0@example.com')).toBeNull();

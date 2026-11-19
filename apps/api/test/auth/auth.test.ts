@@ -270,6 +270,18 @@ describe('login attempts (V33)', () => {
     expect((await logIn(t, email, 'wrong password!')).status).toBe(429);
     expect((await logIn(t, 'someone-else@example.com', 'wrong password!')).status).toBe(401);
   });
+
+  it('checks_at_most_five_passwords_when_guesses_arrive_at_once', async () => {
+    const { email } = await signUp(t);
+
+    const answers = await Promise.all(
+      Array.from({ length: 12 }, () => logIn(t, email, 'wrong password!')),
+    );
+
+    const statuses = answers.map((answer) => answer.status);
+    expect(statuses.filter((status) => status === 401)).toHaveLength(5);
+    expect(statuses.filter((status) => status === 429)).toHaveLength(7);
+  });
 });
 
 describe('E8 me', () => {

@@ -14,6 +14,12 @@ export default defineConfig({
     env: { GEOCODING_PROVIDER: 'fake', ROUTING_PROVIDER: 'fake', NOMINATIM_ENABLED: 'false' },
     // ...and no request leaves the machine, whatever the code under test does.
     setupFiles: ['test/support/network-lockdown.ts'],
+    // Every integration file boots the app against its own database on the one
+    // local PostgreSQL. At the default worker count (cores - 1) the workers and
+    // PostgreSQL compete for the same cores, and the heaviest plan tests (about
+    // 1.5 s alone) pass the 5 s test timeout even on an otherwise idle machine.
+    // The root `pnpm test` also runs the packages one at a time for the same reason.
+    maxWorkers: 2,
     projects: [
       {
         extends: true,

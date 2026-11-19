@@ -63,6 +63,7 @@ function responseTime(value: unknown): unknown {
 
 /** `nestjs-pino` configuration: one JSON line per request on stdout, pretty in development. */
 export function loggerParams(env: Env, destination?: DestinationStream): Params {
+  // SHORTCUT(owner): no OpenTelemetry, latency only in access logs — ceiling: no traces across web→api→provider; upgrade: first production incident logs cannot explain, or a second API instance
   const options: Options = {
     // Test runs stay quiet unless a test captures the log itself.
     level: env.NODE_ENV === 'test' && !destination ? 'silent' : env.LOG_LEVEL,

@@ -20,12 +20,7 @@ export interface FakeProviderOptions {
 
 /** Case- and diacritic-insensitive form used for matching. */
 function fold(text: string): string {
-  return text
-    .normalize('NFKD')
-    .replace(/\p{M}/gu, '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
+  return text.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
 function toResult(place: GazetteerPlace, locale: Locale): PlaceResult {
@@ -55,7 +50,10 @@ function compareCodePoints(a: string, b: string): number {
 
 function inside(box: BoundingBox, point: LngLat): boolean {
   return (
-    point.lng >= box.west && point.lng <= box.east && point.lat >= box.south && point.lat <= box.north
+    point.lng >= box.west &&
+    point.lng <= box.east &&
+    point.lat >= box.south &&
+    point.lat <= box.north
   );
 }
 
@@ -72,7 +70,8 @@ export class FakeGeocoder implements GeocodingProvider {
     return this.answer(() => {
       const text = fold(query.text);
       const matches = GAZETTEER.flatMap((place) => {
-        const names = [place.localized[query.locale].name, place.localized.en.name, place.localized['pt-BR'].name].map(fold);
+        const shown = fold(place.localized[query.locale].name);
+        const names = [shown, fold(place.localized.en.name), fold(place.localized['pt-BR'].name)];
         if (text !== '' && !names.some((name) => name.includes(text))) {
           return [];
         }
@@ -85,9 +84,9 @@ export class FakeGeocoder implements GeocodingProvider {
         return [
           {
             place,
-            prefix: text !== '' && names.some((name) => name.startsWith(text)),
+            prefix: text !== '' && shown.startsWith(text),
             distance: query.bias ? haversineMeters(query.bias.center, place.location) : 0,
-            name: fold(place.localized[query.locale].name),
+            name: shown,
           },
         ];
       });
@@ -120,10 +119,17 @@ export class FakeGeocoder implements GeocodingProvider {
     });
   }
 
-  private async answer(produce: () => PlaceResult[]): Promise<PlaceResult[]> {
-    if (this.options.failWith) {
-      throw new ProviderError(this.id, this.options.failWith, `fake geocoder: ${this.options.failWith}`);
-    }
-    return produce();
+  /** Settles like a real provider: a configured failure or anything `produce` throws rejects. */
+  private answer(produce: () => PlaceResult[]): Promise<PlaceResult[]> {
+    return new Promise((resolve) => {
+      if (this.options.failWith) {
+        throw new ProviderError(
+          this.id,
+          this.options.failWith,
+          `fake geocoder: ${this.options.failWith}`,
+        );
+      }
+      resolve(produce());
+    });
   }
 }

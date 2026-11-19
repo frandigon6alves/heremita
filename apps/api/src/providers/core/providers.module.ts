@@ -80,8 +80,11 @@ export function selectPlaceLookup(
   if (env.NOMINATIM_ENABLED) {
     return required(adapters.nominatim, 'NOMINATIM_ENABLED=true')(deps);
   }
-  const { lookup } = geocoder;
-  return lookup ? { lookup: lookup.bind(geocoder) } : null;
+  return hasLookup(geocoder) ? geocoder : null;
+}
+
+function hasLookup(geocoder: GeocodingProvider): geocoder is GeocodingProvider & PlaceLookup {
+  return geocoder.lookup !== undefined;
 }
 
 /**

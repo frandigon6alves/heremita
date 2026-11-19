@@ -29,7 +29,7 @@ export function encodePolyline(points: readonly LngLat[], precision = 5): string
   const encodeValue = (delta: number) => {
     let value = delta < 0 ? -2 * delta - 1 : 2 * delta;
     while (value >= CONTINUATION_BIT) {
-      out += String.fromCharCode((CONTINUATION_BIT | value % CHUNK_SIZE) + CHUNK_OFFSET);
+      out += String.fromCharCode((CONTINUATION_BIT | (value % CHUNK_SIZE)) + CHUNK_OFFSET);
       value = Math.floor(value / CHUNK_SIZE);
     }
     out += String.fromCharCode(value + CHUNK_OFFSET);

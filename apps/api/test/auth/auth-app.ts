@@ -1,79 +1,10 @@
-import type { Type } from '@nestjs/common';
-import type { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
 import type { Me } from '@heremita/shared';
-import request from 'supertest';
-import { AppModule } from '../../src/app.module.js';
-import { configureApp } from '../../src/app.setup.js';
-import { ENV } from '../../src/config/config.module.js';
-import { parseEnv } from '../../src/config/env.js';
-import { CLOCK } from '../../src/core/clock/clock.js';
-import { FixedClock } from '../../src/core/clock/fixed-clock.js';
-import { PrismaService } from '../../src/prisma/prisma.service.js';
-import { createTestDatabase, type TestDatabase } from '../support/test-database.js';
+import type request from 'supertest';
+import { buildTestApp, WEB_ORIGIN, type TestApp } from '../support/app.js';
 
-export const WEB_ORIGIN = 'http://localhost:3100';
+export { buildTestApp as startAuthApp, WEB_ORIGIN };
+export type AuthTestApp = TestApp;
 export const PASSWORD = 'correct horse battery';
-
-export interface AuthTestApp {
-  app: NestExpressApplication;
-  http: ReturnType<typeof request>;
-  prisma: PrismaService;
-  clock: FixedClock;
-  /** A client address of its own, so the per-IP sign-up and login throttles never meet across tests. */
-  nextIp(): string;
-  /** A fresh e-mail address for this file. */
-  nextEmail(): string;
-  close(): Promise<void>;
-}
-
-/**
- * Boots the whole API (plus any probe `controllers`) on a private database copy
- * with a `FixedClock` and plain-HTTP cookies.
- */
-export async function startAuthApp(options: { controllers?: Type[] } = {}): Promise<AuthTestApp> {
-  const database: TestDatabase = await createTestDatabase();
-  const clock = new FixedClock('2026-11-18T10:00:00.000Z');
-  const moduleRef = await Test.createTestingModule({
-    imports: [AppModule],
-    controllers: options.controllers ?? [],
-  })
-    .overrideProvider(ENV)
-    .useValue(
-      parseEnv({
-        ...process.env,
-        DATABASE_URL: database.url,
-        WEB_ORIGIN,
-        COOKIE_SECURE: 'false',
-      }),
-    )
-    .overrideProvider(CLOCK)
-    .useValue(clock)
-    .compile();
-  const app = moduleRef.createNestApplication<NestExpressApplication>({ logger: false });
-  configureApp(app);
-  await app.init();
-
-  let counter = 0;
-  return {
-    app,
-    http: request(app.getHttpServer()),
-    prisma: app.get(PrismaService),
-    clock,
-    nextIp: () => {
-      counter += 1;
-      return `10.0.${Math.floor(counter / 250)}.${(counter % 250) + 1}`;
-    },
-    nextEmail: () => {
-      counter += 1;
-      return `user-${counter}@example.com`;
-    },
-    close: async () => {
-      await app.close();
-      await database.drop();
-    },
-  };
-}
 
 /** The `Set-Cookie` headers of a response. */
 export function setCookies(response: request.Response): string[] {
