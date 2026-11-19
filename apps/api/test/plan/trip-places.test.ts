@@ -13,17 +13,16 @@ import { ProviderCacheService } from '../../src/providers/core/provider-cache.se
 import { FakeGeocoder } from '../../src/providers/fake/fake-geocoder.js';
 import { GAZETTEER } from '../../src/providers/fake/gazetteer.js';
 import { buildTestApp, type TestApp } from '../support/app.js';
+import { anonymous, expectProblem, UNKNOWN_ID } from '../support/assertions.js';
 import { snapshotTrip } from '../support/authz-world.js';
 import { addPlace, createTrip, createUser, getPlan, type TestUser } from '../support/factories.js';
 import { callOk, sendRaw } from '../support/http.js';
 import {
-  anonymous,
+  dayOf,
   expectDensePositions,
-  expectProblem,
   fillDay,
   fillTripPlaces,
   planVersionOf,
-  UNKNOWN_ID,
 } from './plan-support.js';
 
 /** The fake geocoder, counting save-time lookups (the only upstream call E29 may make). */
@@ -57,14 +56,6 @@ function gazetteerPlace(index: number) {
     throw new Error(`The gazetteer has no place ${index}`);
   }
   return place;
-}
-
-function dayOf(plan: TripPlanOwner, index = 0) {
-  const day = plan.days[index];
-  if (!day) {
-    throw new Error(`The trip has no day ${index}`);
-  }
-  return day;
 }
 
 async function emptyTrip(owner: TestUser, days = 1): Promise<TripPlanOwner> {

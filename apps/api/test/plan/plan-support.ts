@@ -1,35 +1,11 @@
-import { problemDetailsSchema, type ErrorCode, type TripPlanOwner } from '@heremita/shared';
-import request from 'supertest';
+import { type TripPlanOwner } from '@heremita/shared';
 import { expect } from 'vitest';
-import { WEB_ORIGIN, type TestApp } from '../support/app.js';
+import { type TestApp } from '../support/app.js';
 import { getPlan, type TestAgent } from '../support/factories.js';
-
-/** An id no row has. */
-export const UNKNOWN_ID = '0190d3a4-0000-7000-8000-000000000000';
-
-/** A client without a session that passes the CSRF check, so a missing session answers 401. */
-export function anonymous(t: TestApp): TestAgent {
-  return request
-    .agent(t.app.getHttpServer())
-    .set('Origin', WEB_ORIGIN)
-    .set('X-Forwarded-For', t.nextIp());
-}
 
 export async function planVersionOf(t: TestApp, tripId: string): Promise<number> {
   const trip = await t.prisma.trip.findUniqueOrThrow({ where: { id: tripId } });
   return trip.planVersion;
-}
-
-/** Asserts an error answer: status, problem body and code. */
-export function expectProblem(
-  response: request.Response,
-  status: number,
-  code: ErrorCode,
-): ReturnType<typeof problemDetailsSchema.parse> {
-  expect(response.status, JSON.stringify(response.body)).toBe(status);
-  const problem = problemDetailsSchema.parse(response.body);
-  expect(problem.code).toBe(code);
-  return problem;
 }
 
 /** Stop ids per day, in day order then visit order, as the plan read reports them. */
@@ -49,6 +25,15 @@ export async function expectDensePositions(t: TestApp, tripId: string): Promise<
   for (const day of days) {
     expect(day.stops.map((stop) => stop.position)).toEqual(day.stops.map((_, index) => index));
   }
+}
+
+/** The trip's day at `index`, failing the test when there is none. */
+export function dayOf(plan: TripPlanOwner, index = 0): TripPlanOwner['days'][number] {
+  const day = plan.days[index];
+  if (!day) {
+    throw new Error(`The trip has no day ${index}`);
+  }
+  return day;
 }
 
 /** The plan with the day ids, for tests that address days by order. */

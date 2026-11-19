@@ -2,19 +2,17 @@ import {
   API_PREFIX,
   endpoints,
   LIMITS,
-  problemDetailsSchema,
   type Page,
   type PutReviewBody,
   type Review,
 } from '@heremita/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildTestApp, WEB_ORIGIN, type TestApp } from '../support/app.js';
+import { nextMinute, problemOf, UNKNOWN_ID } from '../support/assertions.js';
 import { createUser, type TestUser } from '../support/factories.js';
 import { sendRaw, type HttpClient } from '../support/http.js';
 import { insertBlock, insertPlace, insertReview, insertTrip } from '../users/content.js';
 
-const UNKNOWN_ID = '019a0000-0000-7000-8000-000000000000';
-const MINUTE_MS = 60_000;
 const BODY: PutReviewBody = {
   rating: 4,
   body: 'Worth the queue at opening time.',
@@ -30,16 +28,6 @@ beforeAll(async () => {
 afterAll(async () => {
   await t.close();
 });
-
-function problemOf(response: { body: unknown }) {
-  return problemDetailsSchema.parse(response.body);
-}
-
-/** Each call is one minute later than the previous one, so rows sort by creation. */
-function nextMinute(): Date {
-  t.clock.advance(MINUTE_MS);
-  return t.clock.now();
-}
 
 async function reviewsOf(
   client: HttpClient,
@@ -96,10 +84,10 @@ describe('E45 listPlaceReviews', () => {
   it('lists_published_reviews_newest_first_for_anyone', async () => {
     const placeId = await insertPlace(t);
     const [older, newer] = [await createUser(t), await createUser(t)];
-    const first = await insertReview(t, older.user.id, placeId, { createdAt: nextMinute() });
+    const first = await insertReview(t, older.user.id, placeId, { createdAt: nextMinute(t) });
     const second = await insertReview(t, newer.user.id, placeId, {
       rating: 2,
-      createdAt: nextMinute(),
+      createdAt: nextMinute(t),
     });
 
     const response = await reviewsOf(t.http, placeId);
@@ -130,12 +118,12 @@ describe('E45 listPlaceReviews', () => {
 
   it('pages_recent_reviews_without_gaps_or_repeats', async () => {
     const placeId = await insertPlace(t);
-    const createdAt = nextMinute();
+    const createdAt = nextMinute(t);
     const expected: string[] = [];
     for (let index = 0; index < 5; index += 1) {
       const author = await createUser(t);
       // Three share one timestamp, so the id tie-break decides their order.
-      const at = index < 3 ? createdAt : nextMinute();
+      const at = index < 3 ? createdAt : nextMinute(t);
       expected.push(await insertReview(t, author.user.id, placeId, { createdAt: at }));
     }
     const newestFirst = [...expected.slice(3).reverse(), ...expected.slice(0, 3).sort().reverse()];
@@ -147,7 +135,7 @@ describe('E45 listPlaceReviews', () => {
     const placeId = await insertPlace(t);
     for (let index = 0; index < 2; index += 1) {
       const author = await createUser(t);
-      await insertReview(t, author.user.id, placeId, { createdAt: nextMinute() });
+      await insertReview(t, author.user.id, placeId, { createdAt: nextMinute(t) });
     }
 
     const first = await reviewsOf(t.http, placeId, { limit: 1 });
@@ -165,7 +153,7 @@ describe('E45 listPlaceReviews', () => {
     const placeId = await insertPlace(t);
     const write = async (rating: number) => {
       const author = await createUser(t);
-      return insertReview(t, author.user.id, placeId, { rating, createdAt: nextMinute() });
+      return insertReview(t, author.user.id, placeId, { rating, createdAt: nextMinute(t) });
     };
     const fiveOld = await write(5);
     const twoOld = await write(2);
@@ -212,8 +200,8 @@ describe('E45 listPlaceReviews', () => {
   it('leaves_out_authors_the_viewer_blocked (V9)', async () => {
     const placeId = await insertPlace(t);
     const [blocked, kept, viewer] = [await createUser(t), await createUser(t), await createUser(t)];
-    await insertReview(t, blocked.user.id, placeId, { createdAt: nextMinute() });
-    const keptReview = await insertReview(t, kept.user.id, placeId, { createdAt: nextMinute() });
+    await insertReview(t, blocked.user.id, placeId, { createdAt: nextMinute(t) });
+    const keptReview = await insertReview(t, kept.user.id, placeId, { createdAt: nextMinute(t) });
     await insertBlock(t, viewer.user.id, blocked.user.id);
 
     const response = await reviewsOf(viewer.agent, placeId);
@@ -242,7 +230,7 @@ describe('E45 listPlaceReviews', () => {
     const placeId = await insertPlace(t);
     for (let index = 0; index < 2; index += 1) {
       const author = await createUser(t);
-      await insertReview(t, author.user.id, placeId, { createdAt: nextMinute() });
+      await insertReview(t, author.user.id, placeId, { createdAt: nextMinute(t) });
     }
     const recent = await reviewsOf(t.http, placeId, { limit: 1 });
 
@@ -322,7 +310,7 @@ describe('E46 putMyReview', () => {
     const placeId = await insertPlace(t);
     const author = await createUser(t);
     const created = (await putReview(author.agent, placeId)).body as Review;
-    nextMinute();
+    nextMinute(t);
 
     const response = await putReview(author.agent, placeId, {
       rating: 2,

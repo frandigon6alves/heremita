@@ -1,19 +1,10 @@
-import {
-  endpoints,
-  problemDetailsSchema,
-  type Page,
-  type PublicTripCard,
-  type Review,
-  type UserCard,
-} from '@heremita/shared';
+import { endpoints, type Page, type PublicTripCard, type Review } from '@heremita/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildTestApp, type TestApp } from '../support/app.js';
+import { cardOf, nextMinute, problemOf, UNKNOWN_ID } from '../support/assertions.js';
 import { createUser, type TestUser } from '../support/factories.js';
 import { sendRaw, type HttpClient } from '../support/http.js';
 import { insertBlock, insertPlace, insertReview, insertTrip } from './content.js';
-
-const UNKNOWN_ID = '019a0000-0000-7000-8000-000000000000';
-const MINUTE_MS = 60_000;
 
 let t: TestApp;
 
@@ -25,22 +16,8 @@ afterAll(async () => {
   await t.close();
 });
 
-function problemOf(response: { body: unknown }) {
-  return problemDetailsSchema.parse(response.body);
-}
-
 function anonymous(): HttpClient {
   return t.http;
-}
-
-function cardOf({ user }: TestUser): UserCard {
-  return { id: user.id, displayName: user.displayName, isDemo: user.isDemo };
-}
-
-/** Each call is one minute later than the previous one, so rows sort by creation. */
-function nextMinute(): Date {
-  t.clock.advance(MINUTE_MS);
-  return t.clock.now();
 }
 
 function profileOf(client: HttpClient, userId: string) {
@@ -71,18 +48,18 @@ async function authorWithContent(): Promise<{ author: TestUser; tripId: string }
   const [first, second] = [await insertPlace(t), await insertPlace(t)];
   const tripId = await insertTrip(t, author.user.id, {
     visibility: 'public',
-    publishedAt: nextMinute(),
+    publishedAt: nextMinute(t),
     stops: [first],
   });
   await insertTrip(t, author.user.id, { visibility: 'link' });
   await insertTrip(t, author.user.id);
   await insertTrip(t, author.user.id, {
     visibility: 'public',
-    publishedAt: nextMinute(),
-    hiddenAt: nextMinute(),
+    publishedAt: nextMinute(t),
+    hiddenAt: nextMinute(t),
   });
-  await insertReview(t, author.user.id, first, { createdAt: nextMinute() });
-  await insertReview(t, author.user.id, second, { createdAt: nextMinute(), hidden: true });
+  await insertReview(t, author.user.id, first, { createdAt: nextMinute(t) });
+  await insertReview(t, author.user.id, second, { createdAt: nextMinute(t), hidden: true });
   return { author, tripId };
 }
 
@@ -136,7 +113,7 @@ describe('E16 listUserTrips', () => {
     const { author, tripId } = await authorWithContent();
     const stops = [await insertPlace(t), await insertPlace(t)];
     const idea = await insertPlace(t);
-    const publishedAt = nextMinute();
+    const publishedAt = nextMinute(t);
     const latest = await insertTrip(t, author.user.id, {
       visibility: 'public',
       publishedAt,
@@ -203,7 +180,7 @@ describe('E16 listUserTrips', () => {
 
   it('hides_hidden_trips_from_their_owner_too (V8)', async () => {
     const author = await createUser(t);
-    await insertTrip(t, author.user.id, { visibility: 'public', hiddenAt: nextMinute() });
+    await insertTrip(t, author.user.id, { visibility: 'public', hiddenAt: nextMinute(t) });
 
     const response = await tripsOf(author.agent, author.user.id);
 
@@ -216,7 +193,7 @@ describe('E16 listUserTrips', () => {
       const ids: string[] = [];
       for (let index = 0; index < count; index += 1) {
         ids.unshift(
-          await insertTrip(t, author.user.id, { visibility: 'public', publishedAt: nextMinute() }),
+          await insertTrip(t, author.user.id, { visibility: 'public', publishedAt: nextMinute(t) }),
         );
       }
       return { author, newestFirst: ids };
@@ -250,7 +227,7 @@ describe('E16 listUserTrips', () => {
 
     it('breaks_ties_on_the_same_instant_by_id', async () => {
       const author = await createUser(t);
-      const publishedAt = nextMinute();
+      const publishedAt = nextMinute(t);
       const ids: string[] = [];
       for (let index = 0; index < 3; index += 1) {
         ids.push(await insertTrip(t, author.user.id, { visibility: 'public', publishedAt }));
@@ -347,7 +324,7 @@ describe('E17 listUserReviews', () => {
       const ids: string[] = [];
       for (let index = 0; index < count; index += 1) {
         const placeId = await insertPlace(t);
-        ids.unshift(await insertReview(t, author.user.id, placeId, { createdAt: nextMinute() }));
+        ids.unshift(await insertReview(t, author.user.id, placeId, { createdAt: nextMinute(t) }));
       }
       return { author, newestFirst: ids };
     }

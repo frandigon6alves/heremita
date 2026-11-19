@@ -1,17 +1,16 @@
 import { addStopResponseSchema, endpoints, LIMITS, type TripPlanOwner } from '@heremita/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildTestApp, type TestApp } from '../support/app.js';
+import { anonymous, expectProblem, UNKNOWN_ID } from '../support/assertions.js';
 import { snapshotTrip, spareGazetteerKey } from '../support/authz-world.js';
 import { addPlace, createTrip, createUser, getPlan, type TestUser } from '../support/factories.js';
 import { callOk, sendRaw } from '../support/http.js';
 import {
-  anonymous,
+  dayOf,
   expectDensePositions,
-  expectProblem,
   fillDay,
   planVersionOf,
   stopIdsByDay,
-  UNKNOWN_ID,
 } from './plan-support.js';
 
 let t: TestApp;
@@ -23,14 +22,6 @@ beforeAll(async () => {
 afterAll(async () => {
   await t.close();
 });
-
-function dayOf(plan: TripPlanOwner, index = 0) {
-  const day = plan.days[index];
-  if (!day) {
-    throw new Error(`The trip has no day ${index}`);
-  }
-  return day;
-}
 
 function stopIds(plan: TripPlanOwner, dayIndex = 0): string[] {
   return dayOf(plan, dayIndex).stops.map((stop) => stop.id);

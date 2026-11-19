@@ -1,9 +1,4 @@
-import {
-  endpoints,
-  problemDetailsSchema,
-  type PlaceDetail,
-  type PlaceResults,
-} from '@heremita/shared';
+import { endpoints, type PlaceDetail, type PlaceResults } from '@heremita/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type {
   PlaceResult,
@@ -14,11 +9,10 @@ import type {
 import { FakeGeocoder } from '../../src/providers/fake/fake-geocoder.js';
 import { GAZETTEER, type GazetteerPlace } from '../../src/providers/fake/gazetteer.js';
 import { buildTestApp, type TestApp } from '../support/app.js';
+import { problemOf, UNKNOWN_ID } from '../support/assertions.js';
 import { createUser, type TestUser } from '../support/factories.js';
 import { sendRaw, type HttpClient } from '../support/http.js';
 import { insertBlock, insertReview, insertTrip } from '../users/content.js';
-
-const UNKNOWN_ID = '019a0000-0000-7000-8000-000000000000';
 
 /** The fake geocoder, counting the calls that would reach a real provider. */
 class CountingGeocoder extends FakeGeocoder {
@@ -57,10 +51,6 @@ beforeAll(async () => {
 afterAll(async () => {
   await t.close();
 });
-
-function problemOf(response: { body: unknown }) {
-  return problemDetailsSchema.parse(response.body);
-}
 
 function search(client: HttpClient, query: Record<string, unknown>) {
   return sendRaw(client, endpoints.searchPlaces, { query: { locale: 'pt-BR', ...query } });

@@ -6,12 +6,13 @@ import {
   tripPublicSchema,
   type TripOwner,
 } from '@heremita/shared';
-import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { buildTestApp, WEB_ORIGIN, type TestApp } from '../support/app.js';
+import { buildTestApp, type TestApp } from '../support/app.js';
+import { anonymous, keysOf, MINUTE_MS, UNKNOWN_ID } from '../support/assertions.js';
 import { createUser, publishTrip, type TestUser } from '../support/factories.js';
 import { callOk, sendRaw } from '../support/http.js';
 import { PlanRows } from './plan-rows.js';
+import { planVersionOf } from '../plan/plan-support.js';
 
 let t: TestApp;
 let rows: PlanRows;
@@ -25,8 +26,6 @@ afterAll(async () => {
   await t.close();
 });
 
-const MINUTE_MS = 60_000;
-const UNKNOWN_ID = '0190d3a4-0000-7000-8000-000000000000';
 const VIEWER_FORBIDDEN_KEYS = [
   'note',
   'startDate',
@@ -38,26 +37,8 @@ const VIEWER_FORBIDDEN_KEYS = [
   'ownerId',
 ];
 
-function keysOf(value: unknown): string[] {
-  if (Array.isArray(value)) {
-    return value.flatMap(keysOf);
-  }
-  if (value !== null && typeof value === 'object') {
-    return Object.entries(value).flatMap(([key, child]) => [key, ...keysOf(child)]);
-  }
-  return [];
-}
-
 function newTrip(user: TestUser, body: { title?: string; dayCount?: number } = {}) {
   return callOk(user.agent, 'createTrip', { body: { title: 'Lisboa', ...body } });
-}
-
-/** A client without a session that passes the CSRF check, so a missing session answers 401. */
-function anonymous() {
-  return request
-    .agent(t.app.getHttpServer())
-    .set('Origin', WEB_ORIGIN)
-    .set('X-Forwarded-For', t.nextIp());
 }
 
 /** Inserts trips owned by `userId` directly, to reach the per-user limit quickly. */
@@ -68,11 +49,6 @@ async function fillTrips(userId: string, count: number): Promise<void> {
       title: `Filler ${index}`,
     })),
   });
-}
-
-async function planVersionOf(tripId: string): Promise<number> {
-  const trip = await t.prisma.trip.findUniqueOrThrow({ where: { id: tripId } });
-  return trip.planVersion;
 }
 
 describe('E18 listMyTrips', () => {
@@ -181,7 +157,7 @@ describe('E18 listMyTrips', () => {
   });
 
   it('requires_a_session', async () => {
-    const response = await sendRaw(anonymous(), endpoints.listMyTrips);
+    const response = await sendRaw(anonymous(t), endpoints.listMyTrips);
 
     expect(response.status).toBe(401);
   });
@@ -306,7 +282,7 @@ describe('E19 createTrip', () => {
   });
 
   it('requires_a_session', async () => {
-    const response = await sendRaw(anonymous(), endpoints.createTrip, {
+    const response = await sendRaw(anonymous(t), endpoints.createTrip, {
       body: { title: 'Nope' },
     });
 
@@ -473,12 +449,12 @@ describe('E21 updateTrip', () => {
     const user = await createUser(t);
     const trip = await newTrip(user);
     const tripId = trip.id;
-    const start = await planVersionOf(tripId);
+    const start = await planVersionOf(t, tripId);
 
     await callOk(user.agent, 'updateTrip', { params: { tripId }, body: { defaultMode: 'walk' } });
-    const sameMode = await planVersionOf(tripId);
+    const sameMode = await planVersionOf(t, tripId);
     await callOk(user.agent, 'updateTrip', { params: { tripId }, body: { defaultMode: 'drive' } });
-    const newMode = await planVersionOf(tripId);
+    const newMode = await planVersionOf(t, tripId);
     await callOk(user.agent, 'updateTrip', {
       params: { tripId },
       body: {
@@ -488,7 +464,7 @@ describe('E21 updateTrip', () => {
         startDate: '2027-02-02',
       },
     });
-    const otherFields = await planVersionOf(tripId);
+    const otherFields = await planVersionOf(t, tripId);
 
     expect(sameMode).toBe(start);
     expect(newMode).toBe(start + 1);
@@ -535,11 +511,11 @@ describe('owner-only trip endpoints', () => {
   it('require_a_session', async () => {
     const tripId = UNKNOWN_ID;
 
-    const update = await sendRaw(anonymous(), endpoints.updateTrip, {
+    const update = await sendRaw(anonymous(t), endpoints.updateTrip, {
       params: { tripId },
       body: { title: 'Nope' },
     });
-    const remove = await sendRaw(anonymous(), endpoints.deleteTrip, { params: { tripId } });
+    const remove = await sendRaw(anonymous(t), endpoints.deleteTrip, { params: { tripId } });
 
     expect(update.status).toBe(401);
     expect(remove.status).toBe(401);
@@ -636,7 +612,7 @@ describe('E23 rotateShareToken', () => {
   });
 
   it('requires_a_session', async () => {
-    const response = await sendRaw(anonymous(), endpoints.rotateShareToken, {
+    const response = await sendRaw(anonymous(t), endpoints.rotateShareToken, {
       params: { tripId: UNKNOWN_ID },
     });
 

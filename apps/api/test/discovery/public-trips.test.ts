@@ -8,6 +8,7 @@ import {
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { BARCELONA_TRIP_ID, SEED_USERS, seedDatabase } from '../../prisma/seed-database.js';
 import { buildTestApp, type TestApp } from '../support/app.js';
+import { keysOf, MINUTE_MS } from '../support/assertions.js';
 import { createUser, publishTrip, type TestUser } from '../support/factories.js';
 import { callOk, sendRaw } from '../support/http.js';
 import { PlanRows } from '../trips/plan-rows.js';
@@ -25,7 +26,6 @@ afterAll(async () => {
   await t.close();
 });
 
-const MINUTE_MS = 60_000;
 const VIEWER_FORBIDDEN_KEYS = [
   'note',
   'startDate',
@@ -36,16 +36,6 @@ const VIEWER_FORBIDDEN_KEYS = [
   'updatedAt',
   'ownerId',
 ];
-
-function keysOf(value: unknown): string[] {
-  if (Array.isArray(value)) {
-    return value.flatMap(keysOf);
-  }
-  if (value !== null && typeof value === 'object') {
-    return Object.entries(value).flatMap(([key, child]) => [key, ...keysOf(child)]);
-  }
-  return [];
-}
 
 /** A word no other test's trips contain, so `q` scopes a test to its own trips. */
 function uniqueWord(): string {

@@ -1,8 +1,9 @@
-import { endpoints, problemDetailsSchema, type EndpointDef, type Me } from '@heremita/shared';
+import { endpoints, type EndpointDef, type Me } from '@heremita/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { PASSWORD_HASH_PREFIX } from '../../src/core/password/passwords.js';
 import { getMe, logIn, sessionCookieOf, setCookies } from '../auth/auth-app.js';
 import { buildTestApp, WEB_ORIGIN, type TestApp } from '../support/app.js';
+import { problemOf } from '../support/assertions.js';
 import { createUser, FACTORY_PASSWORD } from '../support/factories.js';
 import { sendRaw, type RawRequest } from '../support/http.js';
 
@@ -17,10 +18,6 @@ beforeAll(async () => {
 afterAll(async () => {
   await t.close();
 });
-
-function problemOf(response: { body: unknown }) {
-  return problemDetailsSchema.parse(response.body);
-}
 
 function sendAnonymous(def: EndpointDef, raw: RawRequest) {
   return sendRaw(t.http, def, raw).set('Origin', WEB_ORIGIN);

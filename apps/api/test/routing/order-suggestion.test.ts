@@ -1,7 +1,6 @@
 import {
   endpoints,
   orderSuggestionSchema,
-  problemDetailsSchema,
   type LngLat,
   type OrderSuggestion,
 } from '@heremita/shared';
@@ -9,6 +8,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { ProviderError } from '../../src/providers/core/contract.js';
 import { buildTestApp, WEB_ORIGIN, type TestApp } from '../support/app.js';
+import { expectProblem } from '../support/assertions.js';
 import { createUser, publishTrip, type TestUser } from '../support/factories.js';
 import { sendRaw, type HttpClient } from '../support/http.js';
 import { at, CountingRouter, RouteRows } from './route-rows.js';
@@ -52,13 +52,6 @@ function suggest(
 function suggestionOf(response: request.Response): OrderSuggestion {
   expect(response.status, JSON.stringify(response.body)).toBe(200);
   return orderSuggestionSchema.parse(response.body);
-}
-
-function expectProblem(response: request.Response, status: number, code: string) {
-  expect(response.status).toBe(status);
-  const problem = problemDetailsSchema.parse(response.body);
-  expect(problem.code).toBe(code);
-  return problem;
 }
 
 describe('GET /trips/{tripId}/days/{dayId}/order-suggestion (E41)', () => {

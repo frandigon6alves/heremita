@@ -1,19 +1,11 @@
-import {
-  endpoints,
-  LIMITS,
-  problemDetailsSchema,
-  type Page,
-  type ReportItem,
-  type ReportStatus,
-} from '@heremita/shared';
+import { endpoints, LIMITS, type Page, type ReportItem, type ReportStatus } from '@heremita/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildTestApp, WEB_ORIGIN, type TestApp } from '../support/app.js';
+import { nextMinute, problemOf, UNKNOWN_ID } from '../support/assertions.js';
 import { createUser, type TestUser } from '../support/factories.js';
 import { sendRaw, type HttpClient } from '../support/http.js';
 import { insertPlace, insertReview, insertTrip } from '../users/content.js';
 
-const UNKNOWN_ID = '019a0000-0000-7000-8000-000000000000';
-const MINUTE_MS = 60_000;
 const MAX_LIMIT: number = LIMITS.PAGE_SIZES.moderation.max;
 
 let t: TestApp;
@@ -27,15 +19,6 @@ beforeAll(async () => {
 afterAll(async () => {
   await t.close();
 });
-
-function problemOf(response: { body: unknown }) {
-  return problemDetailsSchema.parse(response.body);
-}
-
-function nextMinute(): Date {
-  t.clock.advance(MINUTE_MS);
-  return t.clock.now();
-}
 
 async function queue(
   client: HttpClient,
@@ -80,7 +63,7 @@ async function insertReport(
       reason: 'offensive',
       details: 'Insults in the second line.',
       status,
-      createdAt: nextMinute(),
+      createdAt: nextMinute(t),
     },
     select: { id: true },
   });
@@ -90,7 +73,7 @@ async function insertReport(
 async function reviewTarget(body?: string): Promise<{ author: TestUser; reviewId: string }> {
   const author = await createUser(t);
   const reviewId = await insertReview(t, author.user.id, await insertPlace(t), {
-    createdAt: nextMinute(),
+    createdAt: nextMinute(t),
   });
   if (body !== undefined) {
     await t.prisma.review.update({ where: { id: reviewId }, data: { body } });
@@ -233,7 +216,7 @@ describe('E51 decideReport', () => {
     const earlierDismissed = await insertReport(null, { reviewId }, 'dismissed');
     const otherTarget = await insertReport(first, { tripId: await publicTrip() });
     const before = await t.prisma.review.findUniqueOrThrow({ where: { id: reviewId } });
-    const decidedAt = nextMinute();
+    const decidedAt = nextMinute(t);
 
     const response = await decide(moderator.agent, decided, 'hide_content');
 

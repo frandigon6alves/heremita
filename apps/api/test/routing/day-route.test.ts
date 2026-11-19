@@ -1,11 +1,12 @@
-import { dayRouteSchema, endpoints, problemDetailsSchema, type DayRoute } from '@heremita/shared';
+import { dayRouteSchema, endpoints, type DayRoute } from '@heremita/shared';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { ProviderError } from '../../src/providers/core/contract.js';
 import { ESTIMATE_DETOUR_FACTOR } from '../../src/providers/core/estimates.js';
 import { haversineMeters } from '../../src/providers/core/geo.js';
 import { FAKE_DETOUR_FACTOR } from '../../src/providers/fake/fake-router.js';
-import { buildTestApp, WEB_ORIGIN, type TestApp } from '../support/app.js';
+import { buildTestApp, type TestApp } from '../support/app.js';
+import { anonymous, expectProblem } from '../support/assertions.js';
 import { createUser, publishTrip, type TestUser } from '../support/factories.js';
 import { sendRaw, type HttpClient } from '../support/http.js';
 import { at, CountingRouter, LISBON, OFF_NETWORK, RouteRows } from './route-rows.js';
@@ -30,13 +31,6 @@ beforeEach(async () => {
   await t.prisma.providerCache.deleteMany();
 });
 
-function anonymous(): HttpClient {
-  return request
-    .agent(t.app.getHttpServer())
-    .set('Origin', WEB_ORIGIN)
-    .set('X-Forwarded-For', t.nextIp());
-}
-
 function getRoute(
   client: HttpClient,
   tripId: string,
@@ -53,13 +47,6 @@ function getShared(client: HttpClient, shareToken: string, dayId: string) {
 function routeOf(response: request.Response): DayRoute {
   expect(response.status, JSON.stringify(response.body)).toBe(200);
   return dayRouteSchema.parse(response.body);
-}
-
-function expectProblem(response: request.Response, status: number, code: string) {
-  expect(response.status).toBe(status);
-  const problem = problemDetailsSchema.parse(response.body);
-  expect(problem.code).toBe(code);
-  return problem;
 }
 
 let owner: TestUser;
@@ -279,7 +266,7 @@ describe('GET /trips/{tripId}/days/{dayId}/route (E40)', () => {
     const stranger = await createUser(t);
 
     expectProblem(await getRoute(stranger.agent, day.tripId, day.dayId), 404, 'trip_not_found');
-    expectProblem(await getRoute(anonymous(), day.tripId, day.dayId), 404, 'trip_not_found');
+    expectProblem(await getRoute(anonymous(t), day.tripId, day.dayId), 404, 'trip_not_found');
     expect(router.calls).toEqual([]);
   });
 
@@ -298,13 +285,13 @@ describe('GET /trips/{tripId}/days/{dayId}/route (E40)', () => {
     const day = await rows.trip(owner, at(...LISBON.slice(0, 3)));
     await publishTrip(owner.agent, day.tripId);
 
-    const cold = routeOf(await getRoute(anonymous(), day.tripId, day.dayId));
+    const cold = routeOf(await getRoute(anonymous(t), day.tripId, day.dayId));
     expect(cold.quality).toBe('estimated');
     expect(router.calls).toEqual([]);
 
     await getRoute(owner.agent, day.tripId, day.dayId);
     router.calls.length = 0;
-    const warm = routeOf(await getRoute(anonymous(), day.tripId, day.dayId));
+    const warm = routeOf(await getRoute(anonymous(t), day.tripId, day.dayId));
 
     expect(warm.quality).toBe('routed');
     expect(router.calls).toEqual([]);
@@ -342,7 +329,7 @@ describe('GET /shared/{shareToken}/days/{dayId}/route (E27)', () => {
     const day = await rows.trip(owner, at(...LISBON.slice(0, 3)));
     const trip = await publishTrip(owner.agent, day.tripId, 'link');
 
-    const route = routeOf(await getShared(anonymous(), trip.shareToken!, day.dayId));
+    const route = routeOf(await getShared(anonymous(t), trip.shareToken!, day.dayId));
 
     expect(route.quality).toBe('estimated');
     expect(router.calls).toEqual([]);
@@ -361,6 +348,6 @@ describe('GET /shared/{shareToken}/days/{dayId}/route (E27)', () => {
     const other = await rows.trip(owner, at(...LISBON.slice(0, 2)));
     const trip = await publishTrip(owner.agent, day.tripId, 'link');
 
-    expectProblem(await getShared(anonymous(), trip.shareToken!, other.dayId), 404, 'not_found');
+    expectProblem(await getShared(anonymous(t), trip.shareToken!, other.dayId), 404, 'not_found');
   });
 });

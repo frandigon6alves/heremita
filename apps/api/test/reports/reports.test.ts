@@ -1,11 +1,10 @@
-import { API_PREFIX, endpoints, LIMITS, problemDetailsSchema } from '@heremita/shared';
+import { API_PREFIX, endpoints, LIMITS } from '@heremita/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildTestApp, WEB_ORIGIN, type TestApp } from '../support/app.js';
+import { problemOf, UNKNOWN_ID } from '../support/assertions.js';
 import { createUser, type TestUser } from '../support/factories.js';
 import { sendRaw, type HttpClient } from '../support/http.js';
 import { insertPlace, insertReview, insertTrip, type TripRows } from '../users/content.js';
-
-const UNKNOWN_ID = '019a0000-0000-7000-8000-000000000000';
 
 let t: TestApp;
 
@@ -16,10 +15,6 @@ beforeAll(async () => {
 afterAll(async () => {
   await t.close();
 });
-
-function problemOf(response: { body: unknown }) {
-  return problemDetailsSchema.parse(response.body);
-}
 
 function report(client: HttpClient, body: unknown) {
   return sendRaw(client, endpoints.createReport, { body }).set('Origin', WEB_ORIGIN);

@@ -1,7 +1,7 @@
 import { endpoints, problemDetailsSchema, tripOwnerSchema, type TripOwner } from '@heremita/shared';
-import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { buildTestApp, WEB_ORIGIN, type TestApp } from '../support/app.js';
+import { buildTestApp, type TestApp } from '../support/app.js';
+import { anonymous, UNKNOWN_ID } from '../support/assertions.js';
 import { createUser, publishTrip, type TestUser } from '../support/factories.js';
 import { callOk, sendRaw } from '../support/http.js';
 import { PlanRows } from './plan-rows.js';
@@ -79,13 +79,6 @@ async function sourceTrip(owner: TestUser, title = 'Lisboa em 3 dias'): Promise<
     canonicalPlaceId: tower.placeId,
     customPlaceId: flat.placeId,
   };
-}
-
-function anonymous() {
-  return request
-    .agent(t.app.getHttpServer())
-    .set('Origin', WEB_ORIGIN)
-    .set('X-Forwarded-For', t.nextIp());
 }
 
 describe('E25 copyTrip', () => {
@@ -268,7 +261,7 @@ describe('E25 copyTrip', () => {
     const before = await t.prisma.trip.count();
 
     const statuses = await Promise.all(
-      [privateTrip.id, linkTrip.id, hiddenTrip.id, '0190d3a4-0000-7000-8000-000000000000'].map(
+      [privateTrip.id, linkTrip.id, hiddenTrip.id, UNKNOWN_ID].map(
         async (tripId) =>
           (await sendRaw(stranger.agent, endpoints.copyTrip, { params: { tripId }, body: {} }))
             .status,
@@ -336,7 +329,7 @@ describe('E25 copyTrip', () => {
       (await callOk(owner.agent, 'createTrip', { body: { title: 'Public' } })).id,
     );
 
-    const response = await sendRaw(anonymous(), endpoints.copyTrip, {
+    const response = await sendRaw(anonymous(t), endpoints.copyTrip, {
       params: { tripId: source.id },
       body: {},
     });
@@ -433,7 +426,7 @@ describe('E28 copySharedTrip', () => {
       'link',
     );
 
-    const response = await sendRaw(anonymous(), endpoints.copySharedTrip, {
+    const response = await sendRaw(anonymous(t), endpoints.copySharedTrip, {
       params: { shareToken: shared.shareToken ?? '' },
       body: {},
     });

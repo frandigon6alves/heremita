@@ -11,6 +11,7 @@ import type { RouteRequest, RouteResult } from '../../src/providers/core/contrac
 import { ProviderCacheService } from '../../src/providers/core/provider-cache.service.js';
 import { FakeRouter } from '../../src/providers/fake/fake-router.js';
 import { buildTestApp, type TestApp } from '../support/app.js';
+import { anonymous, expectProblem, UNKNOWN_ID } from '../support/assertions.js';
 import { spareGazetteerKey } from '../support/authz-world.js';
 import {
   createTrip,
@@ -20,7 +21,8 @@ import {
   type TestUser,
 } from '../support/factories.js';
 import { callOk, sendRaw } from '../support/http.js';
-import { anonymous, expectProblem, planVersionOf } from './plan-support.js';
+import { planVersionOf } from './plan-support.js';
+import { keysOf } from '../support/assertions.js';
 
 /** The fake router, counting the calls that reach it. */
 class CountingRouter extends FakeRouter {
@@ -54,16 +56,6 @@ const VIEWER_FORBIDDEN_KEYS = [
   'updatedAt',
   'ownerId',
 ];
-
-function keysOf(value: unknown): string[] {
-  if (Array.isArray(value)) {
-    return value.flatMap(keysOf);
-  }
-  if (value !== null && typeof value === 'object') {
-    return Object.entries(value).flatMap(([key, child]) => [key, ...keysOf(child)]);
-  }
-  return [];
-}
 
 function cacheLeg(
   mode: TravelMode,
@@ -180,7 +172,7 @@ describe('E24 getTripPlan', () => {
   it('answers_404_for_an_unknown_or_malformed_trip_id', async () => {
     const owner = await createUser(t);
 
-    for (const tripId of ['0190d3a4-0000-7000-8000-000000000000', 'not-a-uuid']) {
+    for (const tripId of [UNKNOWN_ID, 'not-a-uuid']) {
       const response = await sendRaw(owner.agent, endpoints.getTripPlan, { params: { tripId } });
 
       expectProblem(response, 404, 'trip_not_found');

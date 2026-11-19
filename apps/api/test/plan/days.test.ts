@@ -1,17 +1,11 @@
 import { createDayResponseSchema, endpoints, LIMITS } from '@heremita/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildTestApp, type TestApp } from '../support/app.js';
+import { anonymous, expectProblem, UNKNOWN_ID } from '../support/assertions.js';
 import { snapshotTrip } from '../support/authz-world.js';
 import { createTrip, createUser, getPlan } from '../support/factories.js';
 import { callOk, sendRaw } from '../support/http.js';
-import {
-  anonymous,
-  dayIdsOf,
-  expectDensePositions,
-  expectProblem,
-  planVersionOf,
-  UNKNOWN_ID,
-} from './plan-support.js';
+import { dayIdsOf, expectDensePositions, planVersionOf } from './plan-support.js';
 
 let t: TestApp;
 

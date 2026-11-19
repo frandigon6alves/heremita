@@ -1,16 +1,9 @@
-import {
-  endpoints,
-  problemDetailsSchema,
-  type EndpointDef,
-  type Page,
-  type UserCard,
-} from '@heremita/shared';
+import { endpoints, type EndpointDef, type Page, type UserCard } from '@heremita/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildTestApp, WEB_ORIGIN, type TestApp } from '../support/app.js';
+import { cardOf, problemOf, UNKNOWN_ID } from '../support/assertions.js';
 import { createUser, type TestUser } from '../support/factories.js';
 import { sendRaw, type RawRequest } from '../support/http.js';
-
-const UNKNOWN_ID = '019a0000-0000-7000-8000-000000000000';
 
 let t: TestApp;
 
@@ -22,16 +15,8 @@ afterAll(async () => {
   await t.close();
 });
 
-function problemOf(response: { body: unknown }) {
-  return problemDetailsSchema.parse(response.body);
-}
-
 function sendAnonymous(def: EndpointDef, raw: RawRequest) {
   return sendRaw(t.http, def, raw).set('Origin', WEB_ORIGIN);
-}
-
-function cardOf({ user }: TestUser): UserCard {
-  return { id: user.id, displayName: user.displayName, isDemo: user.isDemo };
 }
 
 async function block(blocker: TestUser, blocked: TestUser) {
