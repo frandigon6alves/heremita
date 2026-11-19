@@ -31,6 +31,7 @@ async function chooseVisibility(page: Page, tripId: string, label: 'Público' | 
   await page.goto(`/es/trips/${tripId}/settings`);
   const radio = page.getByRole('radio', { name: new RegExp(`^${label}`) });
   await checkOnceHydrated(radio);
+  await page.getByRole('button', { name: 'Guardar visibilidad' }).click();
   await expect(page.getByText('Guardado', { exact: true })).toBeVisible();
 }
 

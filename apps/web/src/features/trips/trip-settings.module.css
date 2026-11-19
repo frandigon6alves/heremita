@@ -105,3 +105,8 @@
   display: grid;
   gap: var(--space-3);
 }
+
+.visibility {
+  display: grid;
+  gap: var(--space-3);
+}

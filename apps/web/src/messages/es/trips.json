@@ -92,7 +92,8 @@
         "label": "Público",
         "hint": "Aparece en Explorar. Tus notas y fechas siguen ocultas."
       },
-      "failed": "Visibilidad no guardada."
+      "failed": "Visibilidad no guardada.",
+      "save": "Guardar visibilidad"
     },
     "share": {
       "label": "Enlace para compartir",

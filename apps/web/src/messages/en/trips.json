@@ -92,7 +92,8 @@
         "label": "Public",
         "hint": "Listed in Explore. Your notes and dates stay hidden."
       },
-      "failed": "Visibility not saved."
+      "failed": "Visibility not saved.",
+      "save": "Save visibility"
     },
     "share": {
       "label": "Share link",

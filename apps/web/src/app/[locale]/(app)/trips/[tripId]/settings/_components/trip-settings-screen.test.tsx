@@ -148,6 +148,7 @@ describe('TripSettingsScreen visibility and sharing', () => {
 
     expect(screen.queryByRole('textbox', { name: 'Share link' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('radio', { name: /By link/ }));
+    await user.click(screen.getByRole('button', { name: 'Save visibility' }));
 
     const link = await screen.findByRole('textbox', { name: 'Share link' });
     expect(link).toHaveValue(`${window.location.origin}/en/s/${SHARE_TOKEN}`);
@@ -158,16 +159,32 @@ describe('TripSettingsScreen visibility and sharing', () => {
     expect(bodies).toEqual([{ visibility: 'link' }]);
   });
 
-  it('keeps_the_saved_choice_and_offers_retry_when_visibility_fails', async () => {
+  it('never_saves_while_the_arrow_keys_move_through_the_choices', async () => {
+    const bodies = recordUpdates();
+    const { user } = renderSettings();
+
+    await user.click(screen.getByRole('radio', { name: /Private/ }));
+    await user.keyboard('{ArrowUp}');
+    await user.keyboard('{ArrowDown}{ArrowDown}');
+
+    expect(screen.getByRole('radio', { name: /By link/ })).toBeChecked();
+    expect(screen.getByRole('group', { name: /Who can see/ })).toBeEnabled();
+    expect(screen.queryByRole('textbox', { name: 'Share link' })).not.toBeInTheDocument();
+    expect(bodies).toEqual([]);
+  });
+
+  it('keeps_the_choice_and_explains_a_failed_save', async () => {
     server.use(failWith(endpoints.updateTrip, 'internal_error'));
     const { user } = renderSettings();
 
     await user.click(screen.getByRole('radio', { name: /Public/ }));
+    await user.click(screen.getByRole('button', { name: 'Save visibility' }));
 
     expect(await screen.findByText('Not saved')).toBeVisible();
-    expect(screen.getByRole('radio', { name: /Private/ })).toBeChecked();
-    expect(lastToast()?.message).toBe('Visibility not saved.');
-    expect(lastToast()?.action?.label).toBe('Try again');
+    expect(screen.getByRole('alert')).toHaveTextContent('Visibility not saved.');
+    expect(screen.getByRole('alert')).toHaveTextContent('Code: internal_error');
+    expect(screen.getByRole('radio', { name: /Public/ })).toBeChecked();
+    expect(screen.queryByRole('textbox', { name: 'Share link' })).not.toBeInTheDocument();
   });
 
   it('copies_the_absolute_link', async () => {
