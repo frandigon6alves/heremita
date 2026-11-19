@@ -7,10 +7,16 @@ import styles from './account-menu.module.css';
 
 /**
  * The signed-in viewer in the app bar: their name opens a native popover
- * (light dismiss, Escape, focus return by the browser) with Settings and
- * Log out.
+ * (light dismiss, Escape, focus return by the browser) with Settings,
+ * Moderation for moderators, and Log out.
  */
-export function AccountMenu({ displayName }: { displayName: string }) {
+export function AccountMenu({
+  displayName,
+  moderator = false,
+}: {
+  displayName: string;
+  moderator?: boolean;
+}) {
   const locale = useLocale();
   const t = useTranslations('auth.account');
   const popoverId = useId();
@@ -36,6 +42,13 @@ export function AccountMenu({ displayName }: { displayName: string }) {
               {t('settings')}
             </Link>
           </li>
+          {moderator && (
+            <li>
+              <Link className={styles.item} href={routes.moderation(locale)}>
+                {t('moderation')}
+              </Link>
+            </li>
+          )}
           <li>
             <LogoutButton className={styles.item} />
           </li>

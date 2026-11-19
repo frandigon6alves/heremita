@@ -18,6 +18,7 @@ import { signedOutRedirect } from './gate-redirect';
  */
 export async function ViewerGate({ children }: { children: ReactNode }) {
   const viewer = await getViewer();
+  // SHORTCUT(owner): signup required to create a trip — ceiling: users who abandon at the signup form; upgrade: if signup-start → signup-done drops below 60%, add server-side guest accounts that convert on signup
   if (viewer === null) {
     const requested = (await headers()).get(REQUEST_PATH_HEADER);
     redirect(signedOutRedirect(await getLocale(), requested));

@@ -5,7 +5,7 @@ const METRES_PER_KM = 1000;
 const METRE_STEP = 10;
 
 /**
- * Route distance for display, metric only: "450 m", "1 km", "3,2 km" (pt-BR).
+ * Route distance for display, metric only: "450 m", "1 km", "3.2 km" (en), "3,2 km" (es, pt-BR).
  * A distance that rounds to 1000 m is shown as "1 km", never "1.000 m".
  */
 export function formatDistance(meters: number, locale: Locale): string {

@@ -1,11 +1,10 @@
-import { localeSchema, type Locale } from '@heremita/shared';
+import { DEFAULT_LOCALE, localeSchema, type Locale } from '@heremita/shared';
 import { defineRouting } from 'next-intl/routing';
 
-export const DEFAULT_LOCALE: Locale = 'pt-BR';
-
 /**
- * Every URL carries its locale (`/pt-BR/...`, `/en/...`). An unprefixed URL is
- * redirected by the `NEXT_LOCALE` cookie, then `Accept-Language`, then pt-BR.
+ * Every URL carries its locale (`/en/...`, `/es/...`, `/pt-BR/...`). An
+ * unprefixed URL is redirected by the `NEXT_LOCALE` cookie (the last locale the
+ * visitor used), then the best `Accept-Language` match, then English.
  */
 export const routing = defineRouting({
   locales: localeSchema.options,
@@ -14,6 +13,7 @@ export const routing = defineRouting({
 
 /** Each language named in itself, for the language switcher. */
 export const LOCALE_NAMES: Record<Locale, string> = {
-  'pt-BR': 'Português (Brasil)',
   en: 'English',
+  es: 'Español',
+  'pt-BR': 'Português (Brasil)',
 };

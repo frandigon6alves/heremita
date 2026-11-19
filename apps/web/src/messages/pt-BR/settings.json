@@ -1,1 +1,85 @@
-{}
+{
+  "metaTitle": "Configurações",
+  "title": "Configurações",
+  "sections": {
+    "label": "Seções",
+    "profile": "Perfil",
+    "preferences": "Preferências",
+    "security": "Segurança",
+    "privacy": "Privacidade",
+    "account": "Conta"
+  },
+  "profile": {
+    "displayName": "Nome",
+    "displayNameHint": "Aparece nas suas avaliações e viagens públicas.",
+    "save": "Salvar nome",
+    "saving": "Salvando…",
+    "saved": "Nome salvo",
+    "errors": {
+      "required": "Informe seu nome.",
+      "tooLong": "Use no máximo {max} caracteres.",
+      "rejected": "Este nome não pode ser usado. Tente outro."
+    }
+  },
+  "preferences": {
+    "language": "Idioma",
+    "theme": "Tema",
+    "languageNotSaved": "Idioma não salvo. Tente de novo.",
+    "themeNotSaved": "Tema não salvo. Tente de novo."
+  },
+  "password": {
+    "intro": "Ao trocar a senha, você sai de todos os outros dispositivos.",
+    "current": "Senha atual",
+    "new": "Nova senha",
+    "newHint": "Mínimo de {min} caracteres.",
+    "submit": "Trocar senha",
+    "submitting": "Trocando…",
+    "changed": "Senha trocada. Os outros dispositivos foram desconectados.",
+    "errors": {
+      "currentRequired": "Informe sua senha atual.",
+      "currentTooLong": "Use no máximo {max} caracteres.",
+      "currentWrong": "Esta não é sua senha atual.",
+      "newTooShort": "Use pelo menos {min} caracteres.",
+      "newTooLong": "Use no máximo {max} caracteres.",
+      "newIsEmail": "Não use seu e-mail como senha.",
+      "newRejected": "Esta senha é muito comum. Escolha outra."
+    }
+  },
+  "blocked": {
+    "intro": "Você não vê avaliações nem viagens públicas de quem bloqueou.",
+    "listLabel": "Pessoas bloqueadas",
+    "emptyTitle": "Você não bloqueou ninguém",
+    "emptyBody": "Bloqueie alguém pelo menu de uma das avaliações dessa pessoa.",
+    "loadFailed": "Não foi possível carregar as pessoas bloqueadas.",
+    "loadMoreFailed": "Não foi possível carregar mais. Tente de novo.",
+    "unblock": "Desbloquear",
+    "unblockLabel": "Desbloquear {name}",
+    "unblocked": "{name} desbloqueado(a)",
+    "unblockFailed": "Não foi possível desbloquear {name}."
+  },
+  "account": {
+    "logOutHint": "Encerra a sessão neste dispositivo.",
+    "logOutEverywhere": "Sair de todos os dispositivos",
+    "loggingOutEverywhere": "Saindo…",
+    "logOutEverywhereHint": "Encerra todas as sessões, inclusive esta.",
+    "logOutEverywhereFailed": "Não foi possível sair. Tente de novo.",
+    "delete": "Excluir conta",
+    "deleteHint": "Exclui suas viagens, notas e avaliações para sempre.",
+    "deleteTitle": "Excluir sua conta?",
+    "deleteBody": "Suas viagens, notas e avaliações serão excluídas, e suas viagens públicas e avaliações somem para todos. Não dá para desfazer.",
+    "deletePassword": "Senha",
+    "deleteConfirm": "Excluir conta",
+    "deleting": "Excluindo…",
+    "deleted": "Sua conta foi excluída.",
+    "errors": {
+      "passwordRequired": "Informe sua senha para confirmar.",
+      "passwordTooLong": "Use no máximo {max} caracteres.",
+      "passwordWrong": "Senha incorreta."
+    }
+  },
+  "failures": {
+    "offline": "Você está offline. Conecte-se e tente de novo.",
+    "tooMany": "Muitas tentativas. Espere um minuto e tente de novo.",
+    "failed": "Algo deu errado. Tente de novo."
+  }
+}

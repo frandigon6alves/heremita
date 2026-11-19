@@ -1,0 +1,52 @@
+.list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  position: relative;
+  background: var(--color-surface);
+}
+
+.dragging {
+  z-index: 1;
+  box-shadow: var(--shadow-2);
+}
+
+.handle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--target-min);
+  height: var(--target-min);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: grab;
+  /* The browser must not pan while a finger holds the grip (dnd-kit TouchSensor). */
+  touch-action: none;
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.handle:active,
+.handle[aria-pressed='true'] {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  transform: scale(var(--pressed-scale));
+}
+
+.handle[aria-pressed='true'] {
+  cursor: grabbing;
+}
+
+.handle[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

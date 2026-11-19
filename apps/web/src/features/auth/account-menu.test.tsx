@@ -30,4 +30,24 @@ describe('AccountMenu', () => {
     );
     expect(menu.getByRole('button', { name: 'Sair', hidden: true })).toBeInTheDocument();
   });
+
+  it('links_moderators_to_the_moderation_queue', () => {
+    renderAuth(<AccountMenu displayName="Ana" moderator />);
+
+    const trigger = screen.getByRole('button', { name: 'Account: Ana' });
+    const popover = document.getElementById(trigger.getAttribute('popovertarget') ?? '');
+    if (popover === null) {
+      throw new Error('popover missing');
+    }
+    expect(within(popover).getByRole('link', { name: 'Moderation', hidden: true })).toHaveAttribute(
+      'href',
+      '/en/moderation',
+    );
+  });
+
+  it('hides_moderation_from_other_users', () => {
+    renderAuth(<AccountMenu displayName="Ana" />);
+
+    expect(screen.queryByRole('link', { name: 'Moderation', hidden: true })).toBeNull();
+  });
 });

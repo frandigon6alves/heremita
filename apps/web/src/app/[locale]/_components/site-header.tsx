@@ -39,7 +39,10 @@ export async function SiteHeader() {
                     </NavLink>
                   </li>
                   <li>
-                    <AccountMenu displayName={viewer.displayName} />
+                    <AccountMenu
+                      displayName={viewer.displayName}
+                      moderator={viewer.role === 'moderator'}
+                    />
                   </li>
                 </>
               ) : (

@@ -1,0 +1,256 @@
+'use client';
+
+import { endpoints, LIMITS, type CreateTripBody } from '@heremita/shared';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useState, type ReactNode } from 'react';
+import { useForm, useWatch, type FieldErrors, type Resolver } from 'react-hook-form';
+import { apiFetch } from '@/lib/api/client';
+import { queryKeys } from '@/lib/api/query-keys';
+import { routes } from '@/lib/routes';
+import { Button } from '@/shared/components/button/button';
+import { SegmentedControl } from '@/shared/components/segmented-control/segmented-control';
+import { TextField } from '@/shared/components/text-field/text-field';
+import { useOnline } from '@/shared/hooks/use-online';
+import {
+  destinationAfterTyping,
+  destinationFromPlace,
+  type DestinationPicker,
+} from './destination';
+import { FormAlert } from './form-alert';
+import {
+  chosenDayCount,
+  newTripFieldOf,
+  parseNewTrip,
+  type DatesChoice,
+  type NewTripField,
+  type NewTripValues,
+} from './new-trip-model';
+import { submitFailure, type SubmitFailure } from './submit-failure';
+import styles from './trip-form.module.css';
+
+/** A field the API refused although it passed the shared schema here. */
+const SERVER = 'server';
+
+type FormFailure = Exclude<SubmitFailure, { kind: 'fields' }>;
+
+const resolver: Resolver<NewTripValues, unknown, CreateTripBody> = (values) => {
+  const parsed = parseNewTrip(values);
+  if (parsed.ok) {
+    return { values: parsed.body, errors: {} };
+  }
+  const errors = Object.fromEntries(
+    Object.entries(parsed.issues).map(([field, type]) => [field, { type, message: '' }]),
+  );
+  return { values: {}, errors: errors as FieldErrors<NewTripValues> };
+};
+
+export interface TripFormProps {
+  /**
+   * Renders the destination search (composed by the page from the
+   * place-search feature) wired to the form through `picker`.
+   */
+  renderDestination: (picker: DestinationPicker & { label: string }) => ReactNode;
+}
+
+/**
+ * Create a trip (E19): title, optional destination, and either dates (first
+ * and last day) or a number of days. Success opens the planner on Ideas.
+ */
+export function TripForm({ renderDestination }: TripFormProps) {
+  const t = useTranslations('trips.form');
+  const locale = useLocale();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const online = useOnline();
+  const [failure, setFailure] = useState<FormFailure | null>(null);
+  // Stays true after success: the button keeps its busy state until the planner shows.
+  const [leaving, setLeaving] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    setError,
+    setValue,
+    getValues,
+    control,
+    formState: { errors, isSubmitting, isSubmitted },
+  } = useForm<NewTripValues, unknown, CreateTripBody>({
+    resolver,
+    mode: 'onTouched',
+    defaultValues: {
+      title: '',
+      destination: null,
+      dates: 'none',
+      startDate: '',
+      endDate: '',
+      dayCount: 1,
+    },
+  });
+  const create = useMutation({
+    mutationFn: (body: CreateTripBody) => apiFetch(endpoints.createTrip, { body }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.trips.mine }),
+  });
+
+  const [dates, startDate, endDate, dayCount] = useWatch({
+    control,
+    name: ['dates', 'startDate', 'endDate', 'dayCount'],
+  });
+  const rangeDays =
+    dates === 'range' ? chosenDayCount({ dates, startDate, endDate, dayCount }) : null;
+
+  const onSubmit = handleSubmit(async (body) => {
+    setFailure(null);
+    try {
+      const trip = await create.mutateAsync(body);
+      setLeaving(true);
+      router.push(routes.planner(locale, trip.id, { day: 'ideas' }));
+    } catch (error) {
+      const outcome = submitFailure(error);
+      if (outcome.kind !== 'fields') {
+        setFailure(outcome);
+        return;
+      }
+      const fields = new Set(
+        outcome.paths
+          .map((path) => newTripFieldOf(path, getValues('dates')))
+          .filter((field) => field !== null),
+      );
+      if (fields.size === 0) {
+        setFailure({ kind: 'unexpected', code: 'validation_failed', requestId: null });
+      }
+      [...fields].forEach((field, index) =>
+        setError(field, { type: SERVER }, { shouldFocus: index === 0 }),
+      );
+    }
+  });
+  const pending = isSubmitting || leaving;
+
+  const picker: DestinationPicker & { label: string } = {
+    label: t('destination'),
+    defaultValue: '',
+    onPick: (place) =>
+      setValue('destination', destinationFromPlace(place), { shouldValidate: isSubmitted }),
+    onText: (text) =>
+      setValue('destination', destinationAfterTyping(getValues('destination'), text), {
+        shouldValidate: isSubmitted,
+      }),
+  };
+
+  const message = (field: NewTripField): string | undefined => {
+    const type = errors[field]?.type;
+    if (type === undefined) {
+      return undefined;
+    }
+    switch (field) {
+      case 'title':
+        if (type === 'too_big') {
+          return t('errors.titleTooLong', { max: LIMITS.TRIP_TITLE_MAX });
+        }
+        return type === SERVER ? t('errors.titleRejected') : t('errors.titleRequired');
+      case 'destination':
+        return type === 'too_big'
+          ? t('errors.destinationTooLong', { max: LIMITS.DESTINATION_NAME_MAX })
+          : t('errors.destinationRejected');
+      case 'startDate':
+        return type === 'required' ? t('errors.startRequired') : t('errors.startInvalid');
+      case 'endDate':
+        if (type === 'required') {
+          return t('errors.endRequired');
+        }
+        if (type === 'before_start') {
+          return t('errors.endBeforeStart');
+        }
+        return t('errors.rangeTooLong', { max: LIMITS.DAYS_PER_TRIP });
+      case 'dayCount':
+        return t('errors.dayCountInvalid', { max: LIMITS.DAYS_PER_TRIP });
+    }
+  };
+  const destinationError = message('destination');
+
+  return (
+    <form className={styles.form} noValidate onSubmit={(event) => void onSubmit(event)}>
+      <TextField
+        label={t('title')}
+        hint={t('titleHint')}
+        error={message('title')}
+        autoComplete="off"
+        {...register('title')}
+      />
+      <div className={styles.group}>
+        {renderDestination(picker)}
+        <p className={styles.summary}>{t('destinationHint')}</p>
+        {destinationError === undefined ? null : (
+          <p className={styles.fieldError} role="alert">
+            {destinationError}
+          </p>
+        )}
+      </div>
+      <div className={styles.group}>
+        <SegmentedControl<DatesChoice>
+          legend={t('dates')}
+          showLegend
+          options={[
+            { value: 'none', label: t('noDates') },
+            { value: 'range', label: t('withDates') },
+          ]}
+          value={dates}
+          onChange={(value) => setValue('dates', value)}
+        />
+        {dates === 'range' ? (
+          <div className={styles.dateRow}>
+            <TextField
+              type="date"
+              label={t('startDate')}
+              error={message('startDate')}
+              {...register('startDate')}
+            />
+            <TextField
+              type="date"
+              label={t('endDate')}
+              min={startDate === '' ? undefined : startDate}
+              hint={
+                rangeDays !== null && rangeDays >= 1
+                  ? t('rangeDays', { count: rangeDays })
+                  : undefined
+              }
+              error={message('endDate')}
+              {...register('endDate')}
+            />
+          </div>
+        ) : (
+          <TextField
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={LIMITS.DAYS_PER_TRIP}
+            step={1}
+            label={t('dayCount')}
+            hint={t('dayCountHint', { max: LIMITS.DAYS_PER_TRIP })}
+            error={message('dayCount')}
+            {...register('dayCount', { valueAsNumber: true })}
+          />
+        )}
+      </div>
+      {failure === null ? null : <TripFormAlert failure={failure} />}
+      <Button type="submit" variant="primary" size="large" block busy={pending} disabled={!online}>
+        {pending ? t('submitting') : t('submit')}
+      </Button>
+    </form>
+  );
+}
+
+function TripFormAlert({ failure }: { failure: FormFailure }) {
+  const t = useTranslations('trips.form.errors');
+
+  switch (failure.kind) {
+    case 'limit':
+      return <FormAlert message={t('limitReached', { max: LIMITS.TRIPS_PER_USER })} />;
+    case 'offline':
+      return <FormAlert message={t('offline')} />;
+    case 'unexpected':
+      return (
+        <FormAlert message={t('unexpected')} code={failure.code} requestId={failure.requestId} />
+      );
+  }
+}

@@ -1,0 +1,72 @@
+.card {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  height: 100%;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.card:has(.tripLink:active) {
+  background: var(--color-primary-soft);
+  transform: scale(var(--pressed-scale));
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 50;
+  line-height: var(--leading-lg);
+  overflow-wrap: anywhere;
+}
+
+.tripLink {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+/* The whole card opens the trip; the author link sits above this layer. */
+.tripLink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+}
+
+.tripLink:focus-visible {
+  outline: none;
+}
+
+.tripLink:focus-visible::after {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.meta {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  overflow-wrap: anywhere;
+}
+
+.authorLink {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.copies {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: var(--leading-sm);
+}

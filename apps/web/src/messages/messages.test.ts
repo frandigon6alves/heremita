@@ -3,11 +3,12 @@ import { createFormatter, createTranslator, IntlErrorCode, type IntlError } from
 import { describe, expect, it } from 'vitest';
 import { buildIntlConfig, TIME_ZONE } from '@/i18n/config';
 import { messages as en } from './en';
+import { messages as es } from './es';
 import { messages as ptBR } from './pt-BR';
 
-const catalogues = { en, 'pt-BR': ptBR } as const;
-
 type Tree = { readonly [key: string]: string | Tree };
+
+const catalogues: Record<Locale, Tree> = { en, es, 'pt-BR': ptBR };
 
 /** Every leaf as [dotted key, message]. */
 function leaves(tree: Tree, prefix = ''): Array<[string, string]> {
@@ -43,13 +44,13 @@ function invalidMessages(locale: Locale, catalogue: Tree): string[] {
 }
 
 describe('message catalogues', () => {
-  it('pt_br_and_en_have_identical_key_sets', () => {
-    const keys = (tree: Tree) =>
-      leaves(tree)
-        .map(([key]) => key)
-        .sort();
+  const keys = (tree: Tree) =>
+    leaves(tree)
+      .map(([key]) => key)
+      .sort();
 
-    expect(keys(ptBR)).toEqual(keys(en));
+  it.each(['es', 'pt-BR'] as const)('%s_has_the_same_key_set_as_en', (locale) => {
+    expect(keys(catalogues[locale])).toEqual(keys(en));
   });
 
   it('every_message_is_non_empty', () => {
@@ -105,6 +106,7 @@ describe('intl request config', () => {
 
   it('loads_only_the_requested_catalogue', async () => {
     expect((await buildIntlConfig('en')).messages).toBe(en);
+    expect((await buildIntlConfig('es')).messages).toBe(es);
     expect((await buildIntlConfig('pt-BR')).messages).toBe(ptBR);
   });
 });

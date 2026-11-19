@@ -12,7 +12,9 @@ function directives(policy: string): Map<string, string> {
 
 describe('contentSecurityPolicy', () => {
   it('allows_scripts_and_styles_only_by_nonce_in_production', () => {
-    const policy = directives(contentSecurityPolicy({ nonce: 'abc', isDev: false }));
+    const policy = directives(
+      contentSecurityPolicy({ nonce: 'abc', isDev: false, httpsOnly: true }),
+    );
 
     expect(policy.get('script-src')).toBe("'self' 'nonce-abc' 'strict-dynamic'");
     expect(policy.get('style-src')).toBe("'self' 'nonce-abc'");
@@ -22,7 +24,9 @@ describe('contentSecurityPolicy', () => {
   });
 
   it('relaxes_eval_inline_styles_and_websockets_only_in_development', () => {
-    const policy = directives(contentSecurityPolicy({ nonce: 'abc', isDev: true }));
+    const policy = directives(
+      contentSecurityPolicy({ nonce: 'abc', isDev: true, httpsOnly: false }),
+    );
 
     expect(policy.get('script-src')).toContain("'unsafe-eval'");
     // A nonce would make browsers ignore 'unsafe-inline'.
@@ -31,8 +35,19 @@ describe('contentSecurityPolicy', () => {
     expect(policy.has('upgrade-insecure-requests')).toBe(false);
   });
 
+  it('keeps_the_production_policy_without_upgrading_requests_over_plain_http', () => {
+    const policy = directives(
+      contentSecurityPolicy({ nonce: 'abc', isDev: false, httpsOnly: false }),
+    );
+
+    expect(policy.get('script-src')).toBe("'self' 'nonce-abc' 'strict-dynamic'");
+    expect(policy.has('upgrade-insecure-requests')).toBe(false);
+  });
+
   it('allows_map_tiles_from_both_basemap_hosts', () => {
-    const policy = directives(contentSecurityPolicy({ nonce: 'abc', isDev: false }));
+    const policy = directives(
+      contentSecurityPolicy({ nonce: 'abc', isDev: false, httpsOnly: true }),
+    );
 
     for (const name of ['img-src', 'connect-src']) {
       expect(policy.get(name)).toContain('https://tiles.openfreemap.org');
@@ -42,11 +57,11 @@ describe('contentSecurityPolicy', () => {
 });
 
 describe('securityHeaders', () => {
-  it('sends_hsts_only_in_production', () => {
-    expect(securityHeaders({ nonce: 'n', isDev: false })['Strict-Transport-Security']).toBe(
-      'max-age=31536000; includeSubDomains',
-    );
-    expect(securityHeaders({ nonce: 'n', isDev: true })).not.toHaveProperty(
+  it('sends_hsts_only_when_the_site_is_https_only', () => {
+    expect(
+      securityHeaders({ nonce: 'n', isDev: false, httpsOnly: true })['Strict-Transport-Security'],
+    ).toBe('max-age=31536000; includeSubDomains');
+    expect(securityHeaders({ nonce: 'n', isDev: false, httpsOnly: false })).not.toHaveProperty(
       'Strict-Transport-Security',
     );
   });

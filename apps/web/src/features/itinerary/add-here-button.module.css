@@ -1,0 +1,35 @@
+.fab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: var(--fab-size);
+  min-height: var(--fab-size);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: var(--shadow-2);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.fab:active:not(:disabled) {
+  transform: scale(var(--pressed-scale));
+}
+
+.fab[aria-pressed='true'] {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.fab:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.label {
+  white-space: nowrap;
+}

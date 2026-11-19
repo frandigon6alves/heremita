@@ -1,1 +1,72 @@
-{}
+{
+  "landing": {
+    "metaDescription": "Plan your own trip: mark places on a map with private notes, sort them into days, and see the route for each day.",
+    "title": "Your trip, your way.",
+    "lead": "Mark places on the map, organise the days and see the route between them, on foot, by bike or by car.",
+    "cta": "Start planning",
+    "ctaSignedIn": "Go to my trips",
+    "stepsTitle": "How it works",
+    "steps": {
+      "mark": {
+        "title": "Mark",
+        "body": "Search or tap the map to save places, with notes only you can read."
+      },
+      "organise": {
+        "title": "Organise",
+        "body": "Put places into days and reorder them with a drag or a tap."
+      },
+      "follow": {
+        "title": "Follow",
+        "body": "See distance and time for each day and open each leg in your maps app."
+      }
+    },
+    "communityTitle": "Trips from the community",
+    "communityMore": "See all in Explore"
+  },
+  "explore": {
+    "metaTitle": "Explore public trips",
+    "metaDescription": "Public trips planned by travellers: routes day by day, ready to copy and adapt.",
+    "title": "Explore",
+    "lead": "Public trips from other travellers. Copy one and make it yours."
+  },
+  "search": {
+    "label": "Search by destination or title",
+    "submit": "Search"
+  },
+  "results": {
+    "failed": "Public trips could not be loaded.",
+    "emptyTitle": "No public trips yet",
+    "emptyBody": "Be the first: plan a trip and make it public.",
+    "emptyQueryTitle": "No public trips for “{q}” yet",
+    "emptyQueryBody": "Try another destination, or plan this one yourself.",
+    "planIt": "Plan it yourself",
+    "showAll": "See all public trips"
+  },
+  "feed": {
+    "moreFailed": "More trips could not be loaded."
+  },
+  "card": {
+    "modes": {
+      "walk": "On foot",
+      "bike": "By bike",
+      "drive": "By car"
+    },
+    "by": "by <author></author>",
+    "copies": "{count, plural, =0 {Never copied} one {Copied once} other {Copied # times}}"
+  },
+  "profile": {
+    "memberSince": "Member since {month}",
+    "trips": "{count, plural, =0 {No public trips} one {# public trip} other {# public trips}}",
+    "reviews": "{count, plural, =0 {No reviews} one {# review} other {# reviews}}",
+    "tripsHeading": "Public trips",
+    "tripsEmpty": "No public trips yet.",
+    "tripsFailed": "The public trips could not be loaded.",
+    "reviewsHeading": "Reviews",
+    "reviewsEmpty": "No reviews yet.",
+    "reviewsFailed": "The reviews could not be loaded.",
+    "reviewsMoreFailed": "More reviews could not be loaded.",
+    "stars": "{rating} out of 5 stars",
+    "visited": "Visited in {month}",
+    "hidden": "Hidden by moderation: only you see it."
+  }
+}

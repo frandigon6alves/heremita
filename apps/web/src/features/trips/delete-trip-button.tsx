@@ -1,0 +1,71 @@
+'use client';
+
+import { endpoints } from '@heremita/shared';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { apiFetch } from '@/lib/api/client';
+import { queryKeys } from '@/lib/api/query-keys';
+import { routes } from '@/lib/routes';
+import { Button } from '@/shared/components/button/button';
+import { ConfirmDialog } from '@/shared/components/dialog/confirm-dialog';
+import { showToast } from '@/shared/components/toast/toast-store';
+import { useOnline } from '@/shared/hooks/use-online';
+import { Trash } from '@/shared/icons/icons';
+import { FormAlert } from './form-alert';
+import { submitFailure } from './submit-failure';
+
+/**
+ * "Excluir viagem" with a confirmation dialog (E22 cannot be undone: days,
+ * places, notes and the share link go with it). Success → My trips.
+ */
+export function DeleteTripButton({ tripId, title }: { tripId: string; title: string }) {
+  const t = useTranslations('trips.delete');
+  const locale = useLocale();
+  const router = useRouter();
+  const online = useOnline();
+  const queryClient = useQueryClient();
+  const [confirming, setConfirming] = useState(false);
+  const remove = useMutation({
+    mutationFn: () => apiFetch(endpoints.deleteTrip, { params: { tripId } }),
+    onSuccess: async () => {
+      showToast({ message: t('done', { title }) });
+      router.replace(routes.trips(locale));
+      await queryClient.invalidateQueries({ queryKey: queryKeys.trips.mine });
+    },
+  });
+  const failure = remove.isError ? submitFailure(remove.error) : null;
+
+  return (
+    <>
+      <Button
+        disabled={!online}
+        onClick={() => {
+          remove.reset();
+          setConfirming(true);
+        }}
+      >
+        <Trash size={20} />
+        {t('button')}
+      </Button>
+      <ConfirmDialog
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        title={t('title', { title })}
+        confirmLabel={t('confirm')}
+        onConfirm={() => remove.mutate()}
+        busy={remove.isPending || remove.isSuccess}
+      >
+        <p>{t('body')}</p>
+        {failure === null ? null : (
+          <FormAlert
+            message={failure.kind === 'offline' ? t('offline') : t('failed')}
+            code={failure.kind === 'unexpected' ? failure.code : null}
+            requestId={failure.kind === 'unexpected' ? failure.requestId : null}
+          />
+        )}
+      </ConfirmDialog>
+    </>
+  );
+}

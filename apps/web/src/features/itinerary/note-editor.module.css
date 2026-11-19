@@ -1,0 +1,4 @@
+.note {
+  display: grid;
+  gap: var(--space-1);
+}

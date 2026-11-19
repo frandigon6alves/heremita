@@ -9,6 +9,7 @@ describe('formatCalendarDate', () => {
   it('formats_a_trip_date_with_weekday', () => {
     expect(formatCalendarDate('2026-03-14', 'pt-BR')).toBe('sáb., 14 de mar.');
     expect(formatCalendarDate('2026-03-14', 'en')).toBe('Sat, Mar 14');
+    expect(formatCalendarDate('2026-03-14', 'es')).toBe('sáb, 14 mar');
   });
 
   // Node reads TZ on every Date operation, so the process zone can change here.
@@ -31,6 +32,7 @@ describe('formatYearMonth', () => {
   it('formats_a_visit_month', () => {
     expect(formatYearMonth('2026-10', 'pt-BR')).toBe('out. de 2026');
     expect(formatYearMonth('2026-10', 'en')).toBe('Oct 2026');
+    expect(formatYearMonth('2026-10', 'es')).toBe('oct 2026');
   });
 });
 
@@ -51,6 +53,8 @@ describe('formatRelativeTime', () => {
     ['2026-11-17T12:00:00Z', 'en', 'yesterday'],
     ['2026-11-15T12:00:00Z', 'pt-BR', 'há 3 dias'],
     ['2026-08-18T12:00:00Z', 'pt-BR', 'há 3 meses'],
+    ['2026-11-17T12:00:00Z', 'es', 'ayer'],
+    ['2026-11-15T12:00:00Z', 'es', 'hace 3 días'],
     ['2024-11-18T12:00:00Z', 'en', '2 years ago'],
   ] as const)('formats_%s_as_%s', (timestamp, locale, expected) => {
     expect(formatRelativeTime(timestamp, now, locale)).toBe(expected);

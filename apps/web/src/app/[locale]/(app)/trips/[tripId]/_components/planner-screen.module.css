@@ -1,0 +1,164 @@
+.screen {
+  --bar-bottom: calc(var(--app-bar-height) + env(safe-area-inset-top));
+  /* MapLibre's margin around each control; its top-right column is zoom (2 buttons) + locate. */
+  --map-control-margin: 10px;
+  --map-controls-width: calc(var(--target-min) + var(--map-control-margin));
+  --map-controls-height: calc(3 * var(--target-min) + 2 * var(--map-control-margin));
+
+  position: relative;
+  min-height: 100dvh;
+}
+
+.title {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 50;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search {
+  position: fixed;
+  z-index: 4;
+  top: calc(var(--bar-bottom) + var(--space-2));
+  /* Stops short of the map's control column, which stays at the top right. */
+  right: calc(var(--map-controls-width) + var(--space-2));
+  left: calc(var(--space-4) + env(safe-area-inset-left));
+}
+
+.mapRegion {
+  position: fixed;
+  z-index: 0;
+  inset: var(--bar-bottom) 0 0;
+}
+
+/* The search pill floats over the map's top-left edge on phones: the attribution starts below it. */
+.mapRegion :global(.maplibregl-ctrl-top-left) {
+  top: calc(var(--space-2) + var(--target-min));
+}
+
+.mapRegion:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: calc(-1 * var(--focus-ring-width));
+}
+
+.floating {
+  position: fixed;
+  z-index: 2;
+  /* Mid-height of the visible map, but never over the control column on short screens. */
+  top: max(
+    calc(var(--bar-bottom) + (100dvh - var(--bar-bottom) - var(--sheet-height, 0px)) / 2),
+    calc(var(--bar-bottom) + var(--map-controls-height) + var(--space-2))
+  );
+  right: calc(var(--space-4) + env(safe-area-inset-right));
+}
+
+.body {
+  padding: var(--space-2) var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom));
+}
+
+.skipLink {
+  position: fixed;
+  z-index: 100;
+  top: var(--space-2);
+  left: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: 700;
+  transform: translateY(-200%);
+}
+
+.skipLink:focus-visible {
+  transform: none;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.community {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.textLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+@media (min-width: 768px) {
+  .screen {
+    --panel-width: 360px;
+
+    display: grid;
+    grid-template:
+      'bar bar' auto
+      'panel search' auto
+      'panel map' 1fr
+      / var(--panel-width) 1fr;
+    height: 100dvh;
+  }
+
+  .screen > header {
+    grid-area: bar;
+  }
+
+  .search {
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
+    grid-area: search;
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .panelArea {
+    grid-area: panel;
+    min-height: 0;
+    border-right: 1px solid var(--color-border);
+  }
+
+  .mapRegion {
+    position: relative;
+    inset: auto;
+    grid-area: map;
+  }
+
+  .mapRegion :global(.maplibregl-ctrl-top-left) {
+    top: 0;
+  }
+
+  .floating {
+    top: auto;
+    bottom: calc(var(--space-8) + env(safe-area-inset-bottom));
+  }
+}
+
+@media (min-width: 1024px) {
+  .screen {
+    --panel-width: 400px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .screen {
+    --panel-width: 440px;
+  }
+}
+
+.optimise {
+  margin-block-start: var(--space-4);
+}

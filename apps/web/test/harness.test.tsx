@@ -104,7 +104,12 @@ describe('msw handlers', () => {
     server.use(failWith(endpoints.signUp, 'email_taken'));
 
     const error = await apiFetch(endpoints.signUp, {
-      body: { displayName: 'Ana', email: 'ana@example.com', password: 'a long passphrase', locale: 'en' },
+      body: {
+        displayName: 'Ana',
+        email: 'ana@example.com',
+        password: 'a long passphrase',
+        locale: 'en',
+      },
     }).catch((caught: unknown) => caught);
 
     expect(error).toBeInstanceOf(ApiProblemError);

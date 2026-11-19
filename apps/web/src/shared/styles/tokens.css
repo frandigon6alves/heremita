@@ -151,7 +151,8 @@
   --fab-size: 56px;
   --chip-height: 44px;
   --row-height-leg: 48px;
-  --sheet-peek: 136px;
+  /* Handle 44 + chip row 4 + 44 + 4 + summary 44 + header bottom padding 8. */
+  --sheet-peek: 148px;
   --content-max: 1200px;
   --form-max: 420px;
   --form-max-wide: 560px;

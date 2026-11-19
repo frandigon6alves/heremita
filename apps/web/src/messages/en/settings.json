@@ -1,1 +1,85 @@
-{}
+{
+  "metaTitle": "Settings",
+  "title": "Settings",
+  "sections": {
+    "label": "Sections",
+    "profile": "Profile",
+    "preferences": "Preferences",
+    "security": "Security",
+    "privacy": "Privacy",
+    "account": "Account"
+  },
+  "profile": {
+    "displayName": "Name",
+    "displayNameHint": "Shown on your reviews and public trips.",
+    "save": "Save name",
+    "saving": "Saving…",
+    "saved": "Name saved",
+    "errors": {
+      "required": "Enter your name.",
+      "tooLong": "Use at most {max} characters.",
+      "rejected": "This name cannot be used. Try another one."
+    }
+  },
+  "preferences": {
+    "language": "Language",
+    "theme": "Theme",
+    "languageNotSaved": "Language not saved. Try again.",
+    "themeNotSaved": "Theme not saved. Try again."
+  },
+  "password": {
+    "intro": "Changing your password signs you out on every other device.",
+    "current": "Current password",
+    "new": "New password",
+    "newHint": "At least {min} characters.",
+    "submit": "Change password",
+    "submitting": "Changing…",
+    "changed": "Password changed. Other devices were signed out.",
+    "errors": {
+      "currentRequired": "Enter your current password.",
+      "currentTooLong": "Use at most {max} characters.",
+      "currentWrong": "This is not your current password.",
+      "newTooShort": "Use at least {min} characters.",
+      "newTooLong": "Use at most {max} characters.",
+      "newIsEmail": "Do not use your e-mail address as your password.",
+      "newRejected": "This password is too common. Choose another one."
+    }
+  },
+  "blocked": {
+    "intro": "You do not see reviews or public trips of people you blocked.",
+    "listLabel": "Blocked people",
+    "emptyTitle": "You have not blocked anyone",
+    "emptyBody": "Block someone from the menu of one of their reviews.",
+    "loadFailed": "Could not load the people you blocked.",
+    "loadMoreFailed": "Could not load more. Try again.",
+    "unblock": "Unblock",
+    "unblockLabel": "Unblock {name}",
+    "unblocked": "{name} unblocked",
+    "unblockFailed": "Could not unblock {name}."
+  },
+  "account": {
+    "logOutHint": "Ends the session on this device.",
+    "logOutEverywhere": "Log out on all devices",
+    "loggingOutEverywhere": "Logging out…",
+    "logOutEverywhereHint": "Ends every session, this one included.",
+    "logOutEverywhereFailed": "Could not log out. Try again.",
+    "delete": "Delete account",
+    "deleteHint": "Deletes your trips, notes and reviews for good.",
+    "deleteTitle": "Delete your account?",
+    "deleteBody": "Your trips, notes and reviews are deleted, and your public trips and reviews disappear for everyone. This cannot be undone.",
+    "deletePassword": "Password",
+    "deleteConfirm": "Delete account",
+    "deleting": "Deleting…",
+    "deleted": "Your account was deleted.",
+    "errors": {
+      "passwordRequired": "Enter your password to confirm.",
+      "passwordTooLong": "Use at most {max} characters.",
+      "passwordWrong": "This password is wrong."
+    }
+  },
+  "failures": {
+    "offline": "You are offline. Connect and try again.",
+    "tooMany": "Too many attempts. Wait a minute and try again.",
+    "failed": "Something went wrong. Try again."
+  }
+}

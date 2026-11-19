@@ -5,7 +5,9 @@
   background: var(--color-surface);
 }
 
-.canvas {
+/* Outranks `.maplibregl-map { position: relative }` from MapLibre's stylesheet, which
+   loads later: with it the container collapses to 0 px and the canvas keeps its 300 px default. */
+.map > .canvas {
   position: absolute;
   inset: 0;
 }
@@ -18,4 +20,29 @@
   margin: 0;
   padding: var(--space-4);
   text-align: center;
+}
+
+/* MapLibre's control buttons are 29 px: grow them to the touch target size (V56). */
+.map :global(.maplibregl-ctrl-group button),
+.map :global(.maplibregl-ctrl-attrib-button) {
+  min-width: var(--target-min);
+  min-height: var(--target-min);
+  background-position: center;
+}
+
+.map :global(.maplibregl-ctrl-attrib) {
+  font-size: var(--text-xs);
+}
+
+/* The canvas fills the map, so its ring sits inside, on a surface-coloured band. */
+.map :global(.maplibregl-canvas:focus-visible) {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: calc(-1 * var(--focus-ring-width));
+  box-shadow: inset 0 0 0 calc(var(--focus-ring-width) + 2px) var(--color-surface);
+}
+
+.map :global(.maplibregl-ctrl button:focus-visible) {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: 0 0 0 2px var(--color-surface);
 }

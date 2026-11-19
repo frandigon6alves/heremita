@@ -1,1 +1,170 @@
-{}
+{
+  "screen": {
+    "back": "My trips",
+    "settings": "Trip settings",
+    "panelHeading": "Itinerary",
+    "skipToMap": "Skip to the map",
+    "mapLabel": "Map of {title}",
+    "loading": "Loading the trip…"
+  },
+  "sheet": {
+    "handle": "Panel: {state}. {action}",
+    "snap": {
+      "peek": "collapsed",
+      "half": "half height",
+      "full": "full height"
+    },
+    "expand": "Expand",
+    "collapse": "Collapse"
+  },
+  "days": {
+    "label": "Days",
+    "ideas": "Ideas",
+    "all": "All",
+    "day": "Day {number}",
+    "add": "Add a day"
+  },
+  "summary": {
+    "places": "{count, plural, =0 {No places} one {# place} other {# places}}",
+    "allDays": "{count, plural, =0 {No days} one {# day} other {All # days}}",
+    "includesEstimates": "includes estimates"
+  },
+  "dayMenu": {
+    "label": "Options for day {number}",
+    "delete": "Delete day {number}",
+    "confirmTitle": "Delete day {number}?",
+    "confirmBody": "{count, plural, =0 {The day has no places.} one {Its # place goes back to Ideas.} other {Its # places go back to Ideas.}} Later days move up one number."
+  },
+  "list": {
+    "dayLabel": "Places of day {number}",
+    "ideasLabel": "Ideas",
+    "emptyDay": {
+      "title": "No places on this day yet",
+      "body": "Search for a place, or tap Add here on the map."
+    },
+    "emptyIdeas": {
+      "title": "No ideas yet",
+      "body": "Places you add with Ideas selected wait here until you give them a day."
+    },
+    "emptyTrip": {
+      "title": "This trip has no places yet",
+      "body": "Pick a day, then search for a place or tap Add here on the map."
+    }
+  },
+  "row": {
+    "actions": "Actions for {name}",
+    "drag": "Move {name}",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "moveFirst": "Move to the start",
+    "moveLast": "Move to the end",
+    "moveToDay": "Move to day…",
+    "addToDay": "Add to day…",
+    "newDay": "New day",
+    "removeFromDay": "Remove from day",
+    "deleteFromTrip": "Delete from trip"
+  },
+  "drag": {
+    "instructions": "To move a place, press Space, use the up and down arrows, then press Space again to drop it or Escape to cancel.",
+    "roleDescription": "movable place",
+    "pickedUp": "Picked up {name}, position {position} of {total}.",
+    "movedTo": "{name} moved to position {position} of {total}.",
+    "dropped": "{name} dropped at position {position} of {total}.",
+    "cancelled": "Move cancelled. {name} is back at position {position} of {total}."
+  },
+  "card": {
+    "back": "Back to the list",
+    "close": "Close",
+    "dayButton": "Day: {days}",
+    "dayMenu": "Choose a day",
+    "note": "Your note",
+    "noteHint": "Only you see it.",
+    "community": "What travellers say",
+    "seeReviews": "See reviews",
+    "addToDay": "Add to day {number}",
+    "addToIdeas": "Add to Ideas",
+    "adding": "Adding…",
+    "deleteFromTrip": "Delete from trip"
+  },
+  "addHere": {
+    "button": "Add here"
+  },
+  "toasts": {
+    "added": "{target, select, ideas {{name} added to Ideas} other {{name} added to day {target}}}",
+    "addFailed": "Could not add {name}.",
+    "placeLimit": "This trip already has the most places it can hold.",
+    "dayFull": "Day {target} is full.",
+    "moved": "{name}, now {position} of {total} on day {target}",
+    "moveFailed": "Could not move {name}.",
+    "removed": "{name} removed from day {target}",
+    "removeFailed": "Could not remove {name}.",
+    "deleted": "{name} deleted from the trip",
+    "deleteFailed": "Could not delete {name}.",
+    "createDayFailed": "Could not add a day.",
+    "deleteDayFailed": "Could not delete day {number}.",
+    "dayDeleted": "Day {number} deleted",
+    "noteFailed": "Note not saved.",
+    "modeFailed": "Mode not saved.",
+    "ordered": "New order applied",
+    "orderFailed": "Could not change the order.",
+    "orderRestored": "Previous order restored",
+    "planChanged": "The trip changed somewhere else; showing the current version."
+  },
+  "categories": {
+    "sight": "Sight",
+    "food": "Restaurant",
+    "cafe": "Café",
+    "nightlife": "Nightlife",
+    "lodging": "Lodging",
+    "shopping": "Shopping",
+    "nature": "Nature",
+    "beach": "Beach",
+    "culture": "Culture",
+    "transport": "Transport",
+    "activity": "Activity",
+    "other": "Place"
+  },
+  "route": {
+    "leg": "{duration} · {distance}",
+    "legEstimated": "≈ {duration} (estimate) · {distance}",
+    "legPending": "Calculating the route…",
+    "legLabel": "Route to {name} {mode, select, walk {on foot} bike {by bike} other {by car}}: {summary}",
+    "legMode": "Mode for this stretch",
+    "directions": "Directions in",
+    "google": "Google Maps",
+    "apple": "Apple Maps",
+    "needsTwo": "Add another place to see a route.",
+    "failed": "Route unavailable. Times shown are estimates.",
+    "retry": "Try again",
+    "partial": "Could not reach {names} {mode, select, walk {on foot} bike {by bike} other {by car}}; times are estimates.",
+    "mode": {
+      "legend": "Travel mode",
+      "walk": "Walk",
+      "bike": "Bike",
+      "drive": "Drive"
+    }
+  },
+  "optimise": {
+    "open": "Optimise order",
+    "title": "Optimise day {number}",
+    "firstFixed": "The first place stays first.",
+    "keepLast": "Keep the last place last",
+    "loading": "Looking for a shorter order…",
+    "failed": "No order could be suggested",
+    "tooFew": "A day needs at least 3 places to reorder.",
+    "alreadyShortest": "This order is already the shortest.",
+    "comparison": "Before: {before} · After: {after}",
+    "estimated": "(estimates)",
+    "newOrder": "Suggested order",
+    "was": "was {number}",
+    "cancel": "Cancel",
+    "apply": "Apply"
+  },
+  "readOnly": {
+    "by": "by {name}",
+    "copy": "Copy",
+    "report": "Report this trip",
+    "emptyTrip": "This trip has no places yet.",
+    "panelHeading": "Itinerary"
+  }
+}

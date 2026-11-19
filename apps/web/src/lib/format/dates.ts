@@ -22,7 +22,7 @@ function utcMidnight(isoDate: string): Date {
   return new Date(Date.UTC(year, month - 1, day));
 }
 
-/** "sáb., 14 de mar." (pt-BR) / "Sat, Mar 14" (en) by default. */
+/** "Sat, Mar 14" (en) / "sáb, 14 mar" (es) / "sáb., 14 de mar." (pt-BR) by default. */
 export function formatCalendarDate(
   isoDate: string,
   locale: Locale,
@@ -33,7 +33,7 @@ export function formatCalendarDate(
   );
 }
 
-/** "out. de 2026" (pt-BR) / "Oct 2026" (en): a review's visit month. */
+/** "Oct 2026" (en) / "oct 2026" (es) / "out. de 2026" (pt-BR): a review's visit month. */
 export function formatYearMonth(yearMonth: string, locale: Locale): string {
   return formatCalendarDate(`${yearMonth}-01`, locale, { month: 'short', year: 'numeric' });
 }
@@ -52,7 +52,7 @@ const RELATIVE_STEPS: ReadonlyArray<[Intl.RelativeTimeFormatUnit, number]> = [
 ];
 
 /**
- * "há 3 dias" / "3 days ago" for a timestamp. `now` comes from the server
+ * "3 days ago" / "hace 3 días" / "há 3 dias" for a timestamp. `now` comes from the server
  * render and is passed down, so server HTML and hydration agree.
  */
 export function formatRelativeTime(timestamp: string, now: Date, locale: Locale): string {

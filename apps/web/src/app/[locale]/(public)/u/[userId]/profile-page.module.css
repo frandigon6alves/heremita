@@ -1,0 +1,31 @@
+.main {
+  display: grid;
+  align-content: start;
+  gap: var(--space-8);
+  min-height: calc(100dvh - var(--app-bar-height));
+  padding: var(--space-6) var(--space-4) var(--space-12);
+}
+
+.section {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.sectionTitle {
+  font-size: var(--text-xl);
+  line-height: var(--leading-xl);
+}
+
+@media (min-width: 768px) {
+  .main {
+    padding: var(--space-8);
+  }
+}
+
+@media (min-width: 1280px) {
+  .main {
+    padding-inline: calc((100% - var(--content-max)) / 2);
+  }
+}

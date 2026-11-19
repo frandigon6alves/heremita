@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
   cacheComponents: false,
   partialPrefetching: false,
 
+  // E2E builds (test hooks on) get their own output, so a run never serves or
+  // clobbers the regular build.
+  distDir: env.NEXT_PUBLIC_E2E ? '.next-e2e' : '.next',
+
   // The monorepo root: Turbopack must be able to read packages/shared.
   turbopack: {
     root: path.join(import.meta.dirname, '../..'),

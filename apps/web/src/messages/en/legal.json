@@ -1,1 +1,64 @@
-{}
+{
+  "about": {
+    "metaTitle": "About",
+    "metaDescription": "What Heremita is, the open data and free services behind its maps, search and routes, and how to reach the operator.",
+    "title": "About Heremita",
+    "lead": "Heremita is a trip planner for independent travellers. Mark places on a map with private notes, sort them into days and see the walking, cycling or driving route for each day. Read other travellers' reviews and copy public trips to make them your own.",
+    "credits": {
+      "heading": "Maps, search and routes",
+      "intro": "Heremita stands on open data and on services that volunteers and non-profits offer for free.",
+      "osm": "Map data © <link>OpenStreetMap contributors</link>, available under the Open Database License (ODbL). Something wrong or missing? <fix>Fix the map</fix>.",
+      "tiles": "Base map: <link>OpenFreeMap</link>, with <fallback>VersaTiles</fallback> when it cannot be reached.",
+      "routing": "Routes: <link>OSRM</link> on the routing servers of FOSSGIS e.V.",
+      "search": "Place search: <link>Photon</link> by komoot.",
+      "nominatim": "Extra search results and place details: <link>Nominatim</link> by the OpenStreetMap Foundation, only when this installation turns it on.",
+      "icons": "Icons adapted from <link>Lucide</link> (ISC licence)."
+    }
+  },
+  "privacy": {
+    "metaTitle": "Privacy",
+    "metaDescription": "What Heremita stores, which services receive your searches and route points, and how to delete your data.",
+    "title": "Privacy",
+    "lead": "Heremita keeps only what it needs to plan your trips. It sends no e-mail, shows no ads and uses no analytics or tracking.",
+    "stored": {
+      "heading": "What we store",
+      "account": "Your account: display name, e-mail address, language and theme. Your password is kept only as a one-way hash.",
+      "sessions": "Sign-in sessions: a hash of the session key your browser holds. A session ends when you sign out and after 90 days at most.",
+      "trips": "Your trips: title, description, destination, dates, days, places and their order. A trip is private unless you share it by link or make it public. Shared and public trips show your display name, never your dates.",
+      "notes": "Your notes on places are private: only you see them. They never appear on shared or public trips and are not copied with a trip.",
+      "reviews": "Your reviews are public, with your display name and the month of your visit.",
+      "reports": "Reports you send and the people you block, so moderators can act and blocked people stay out of your view."
+    },
+    "recipients": {
+      "heading": "Who else receives data",
+      "intro": "Searches and routes go through our server, which forwards only what each service needs: never your name, e-mail or account. These services see our server's address, not yours. Each one has its own privacy policy.",
+      "search": "<link>Photon</link> (komoot) receives the text you search for, the map position results are sorted by, and the point you tap to see what is there.",
+      "nominatim": "<link>Nominatim</link> (OpenStreetMap Foundation), only when this installation turns it on, receives searches Photon could not answer and the map identifiers of places you save.",
+      "routing": "<link>OSRM routing</link> (FOSSGIS e.V.) receives the coordinates of a day's stops to calculate its route, and keeps requests in its server logs.",
+      "tiles": "<link>OpenFreeMap</link>, and <fallback>VersaTiles</fallback> when it cannot be reached, send map images straight to your browser, so they see your IP address and the area of the map you look at.",
+      "handoff": "Google Maps and Apple Maps receive the start and end of a leg only when you open directions there.",
+      "location": "“My location” uses your device's position only in this browser, to move the map; it is never sent to our server."
+    },
+    "browser": {
+      "heading": "Cookies and browser storage",
+      "intro": "No advertising or analytics cookies. Heremita keeps only these in your browser:",
+      "session": "a sign-in cookie, while you are signed in;",
+      "language": "a language cookie (NEXT_LOCALE) with the last language you used;",
+      "theme": "your theme choice, in local storage;",
+      "drafts": "a note you are typing, in this tab's session storage, until it is saved."
+    },
+    "logs": {
+      "heading": "Server logs",
+      "body": "To find faults, our server logs each request's method, route pattern, status, duration and account identifier. It does not log passwords, notes, search text or coordinates."
+    },
+    "deletion": {
+      "heading": "Deleting your data",
+      "body": "In <link>Settings</link>, “Delete account” asks for your password and then deletes your account, sessions, trips, notes, reviews and blocks at once. Copies other people made of your public trips belong to them and stay. Reports you sent stay without your name, so moderation keeps its history."
+    }
+  },
+  "contact": {
+    "heading": "Contact",
+    "body": "Questions, corrections, abuse reports or a forgotten password: write to <email>{address}</email>.",
+    "notConfigured": "This installation has not configured a contact address yet."
+  }
+}

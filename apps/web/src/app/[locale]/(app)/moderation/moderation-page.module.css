@@ -1,0 +1,30 @@
+.main {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  min-height: calc(100dvh - var(--app-bar-height));
+  padding: var(--space-6) var(--space-4) var(--space-12);
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  line-height: var(--leading-2xl);
+}
+
+.intro {
+  max-inline-size: 60ch;
+  color: var(--color-text-muted);
+}
+
+@media (min-width: 768px) {
+  .main {
+    padding: var(--space-8);
+  }
+}
+
+@media (min-width: 1280px) {
+  .main {
+    padding-inline: calc((100% - var(--content-max)) / 2);
+  }
+}

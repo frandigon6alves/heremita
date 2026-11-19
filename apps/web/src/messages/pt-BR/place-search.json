@@ -1,1 +1,32 @@
-{}
+{
+  "search": {
+    "label": "Buscar lugares",
+    "placeholder": "Buscar lugares",
+    "clear": "Limpar busca",
+    "minChars": "Digite pelo menos {min} caracteres.",
+    "searching": "Buscando…",
+    "results": "{count, plural, =0 {Nenhum lugar encontrado} one {# lugar encontrado} other {# lugares encontrados}}",
+    "empty": "Nenhum lugar encontrado para “{query}”. Confira a grafia ou tente outro nome.",
+    "busy": "A busca está ocupada, tente de novo em instantes.",
+    "unavailable": "A busca está indisponível agora. Tente mais tarde.",
+    "offline": "Você está offline. A busca precisa de conexão.",
+    "failed": "A busca falhou."
+  },
+  "whatsHere": {
+    "title": "O que tem aqui?",
+    "nearby": "Lugares por perto",
+    "empty": "Nenhum lugar com nome a menos de 150 m deste ponto.",
+    "failed": "Não foi possível carregar os lugares por perto.",
+    "useExactPoint": "Usar este ponto exato",
+    "customName": "Nome",
+    "customNameHint": "Como este ponto aparece na sua viagem.",
+    "customNameRequired": "Dê um nome a este ponto.",
+    "customNameTooLong": "Use no máximo {max} caracteres.",
+    "coordinates": "Coordenadas",
+    "coordinatesLabel": "Latitude, longitude",
+    "coordinatesHint": "Por exemplo: 38.7139, -9.1334",
+    "coordinatesInvalid": "Digite a latitude (−90 a 90) e a longitude (−180 a 180), separadas por vírgula.",
+    "coordinatesSubmit": "Ir para estas coordenadas",
+    "point": "Ponto em {lat}, {lng}"
+  }
+}

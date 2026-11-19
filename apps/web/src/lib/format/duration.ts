@@ -27,8 +27,8 @@ function formatWithoutDurationFormat(locale: Locale, { hours, minutes }: HoursMi
 }
 
 /**
- * Travel time for display, to the minute: "12 min", "1 h e 5 min" (pt-BR),
- * "1 hr, 5 min" (en); zero units are left out ("2 h"). Under a minute →
+ * Travel time for display, to the minute: "12 min", "1 hr, 5 min" (en),
+ * "1 h y 5 min" (es), "1 h e 5 min" (pt-BR); zero units are left out ("2 h"). Under a minute →
  * "< 1 min".
  */
 export function formatDuration(seconds: number, locale: Locale): string {

@@ -1,16 +1,16 @@
 'use client';
 
-import { localeSchema } from '@heremita/shared';
+import { DEFAULT_LOCALE, localeSchema, type Locale } from '@heremita/shared';
 import { usePathname } from 'next/navigation';
-import { DEFAULT_LOCALE } from '@/i18n/routing';
 import en from '@/messages/en/common.json';
+import es from '@/messages/es/common.json';
 import ptBR from '@/messages/pt-BR/common.json';
 import styles from './[locale]/_components/status-page.module.css';
 import '@/shared/styles/tokens.css';
 import '@/shared/styles/reset.css';
 import '@/shared/styles/base.css';
 
-const COMMON = { en, 'pt-BR': ptBR } as const;
+const COMMON: Record<Locale, typeof en> = { en, es, 'pt-BR': ptBR };
 
 /**
  * Replaces the root layout when it fails, so no providers, fonts or theme

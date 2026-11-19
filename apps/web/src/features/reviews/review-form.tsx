@@ -1,0 +1,240 @@
+'use client';
+
+import {
+  endpoints,
+  LIMITS,
+  putReviewBodySchema,
+  type PutReviewBody,
+  type Review,
+} from '@heremita/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { Controller, useForm, useWatch, type FieldError } from 'react-hook-form';
+import { apiFetch } from '@/lib/api/client';
+import { ApiProblemError } from '@/lib/api/problem';
+import { queryKeys } from '@/lib/api/query-keys';
+import { routes } from '@/lib/routes';
+import { Button } from '@/shared/components/button/button';
+import { ConfirmDialog } from '@/shared/components/dialog/confirm-dialog';
+import { RatingInput } from '@/shared/components/rating-input/rating-input';
+import { TextArea } from '@/shared/components/text-area/text-area';
+import { TextField } from '@/shared/components/text-field/text-field';
+import { showToast } from '@/shared/components/toast/toast-store';
+import { VisuallyHidden } from '@/shared/components/visually-hidden/visually-hidden';
+import { FailureAlert } from './failure-alert';
+import { useThrottledValue } from './use-throttled-value';
+import styles from './review-form.module.css';
+
+const FIELDS = ['rating', 'visitedMonth', 'body'] as const;
+type ReviewField = (typeof FIELDS)[number];
+
+/** The API refused a field that passed the shared schema here. */
+const SERVER = 'server';
+/** Screen readers hear the character count at most this often while typing. */
+const COUNTER_ANNOUNCE_MS = 1000;
+
+type FormFailure = 'gone' | 'tooMany' | 'offline' | 'failed';
+
+export interface ReviewFormProps {
+  placeId: string;
+  /** The viewer's review: the form edits it ("Atualizar") and offers deleting it. */
+  myReview: Review | null;
+  /** `YYYY-MM` of today (server clock): the latest month a visit can be in. */
+  currentMonth: string;
+}
+
+/**
+ * Write or edit one's review of a place (E46 PUT, E47 DELETE): stars,
+ * visit month (not in the future), text 10–2000 with a counter. Success goes
+ * back to the place page with a toast.
+ */
+export function ReviewForm({ placeId, myReview, currentMonth }: ReviewFormProps) {
+  const t = useTranslations('reviews.form');
+  const locale = useLocale();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [failure, setFailure] = useState<{ kind: FormFailure; error: unknown } | null>(null);
+  const [leaving, setLeaving] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const {
+    register,
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<PutReviewBody>({
+    resolver: zodResolver(
+      putReviewBodySchema.refine((review) => review.visitedMonth <= currentMonth, {
+        path: ['visitedMonth'],
+      }),
+    ),
+    mode: 'onTouched',
+    defaultValues: {
+      rating: myReview?.rating,
+      visitedMonth: myReview?.visitedMonth ?? '',
+      body: myReview?.body ?? '',
+    },
+  });
+  const body = useWatch({ control, name: 'body' }) ?? '';
+  const announcedLength = useThrottledValue(body.length, COUNTER_ANNOUNCE_MS);
+
+  async function backToPlace(message: string) {
+    setLeaving(true);
+    showToast({ message });
+    await queryClient.invalidateQueries({ queryKey: queryKeys.places.place(placeId) });
+    router.push(routes.place(locale, placeId));
+  }
+
+  const onSubmit = handleSubmit(async (review) => {
+    setFailure(null);
+    try {
+      await apiFetch(endpoints.putMyReview, { params: { placeId }, body: review });
+      await backToPlace(myReview === null ? t('published') : t('updated'));
+    } catch (error) {
+      const fields = serverFields(error);
+      if (fields.length > 0) {
+        fields.forEach((field, index) =>
+          setError(field, { type: SERVER }, { shouldFocus: index === 0 }),
+        );
+      } else {
+        setFailure({ kind: failureKind(error), error });
+      }
+    }
+  });
+
+  const remove = useMutation({
+    mutationFn: () => apiFetch(endpoints.deleteMyReview, { params: { placeId } }),
+    onSuccess: async () => {
+      setConfirmingDelete(false);
+      await backToPlace(t('deleted'));
+    },
+  });
+
+  const pending = isSubmitting || leaving;
+  const editing = myReview !== null;
+
+  return (
+    <>
+      <form className={styles.form} noValidate onSubmit={(event) => void onSubmit(event)}>
+        <Controller
+          control={control}
+          name="rating"
+          render={({ field }) => (
+            <RatingInput
+              legend={t('rating')}
+              optionLabel={(count) => t('ratingOption', { count })}
+              value={field.value ?? null}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              name={field.name}
+              error={errors.rating ? t('ratingRequired') : undefined}
+            />
+          )}
+        />
+        <TextField
+          type="month"
+          label={t('visitedMonth')}
+          hint={t('visitedMonthHint')}
+          error={monthMessage(errors.visitedMonth)}
+          max={currentMonth}
+          pattern="\d{4}-\d{2}"
+          className={styles.month}
+          {...register('visitedMonth')}
+        />
+        <div className={styles.bodyField}>
+          <TextArea
+            label={t('body')}
+            hint={t('bodyHint', { min: LIMITS.REVIEW_BODY_MIN, max: LIMITS.REVIEW_BODY_MAX })}
+            error={bodyMessage(errors.body)}
+            rows={6}
+            {...register('body')}
+          />
+          <p className={styles.counter} aria-hidden="true">
+            {t('counter', { count: body.length, max: LIMITS.REVIEW_BODY_MAX })}
+          </p>
+          <VisuallyHidden aria-live="polite">
+            {t('counterLive', { count: announcedLength, max: LIMITS.REVIEW_BODY_MAX })}
+          </VisuallyHidden>
+        </div>
+        <p className={styles.note}>{t('privacyNote')}</p>
+        {failure === null ? null : <FailureAlert message={t(failure.kind)} error={failure.error} />}
+        <Button type="submit" variant="primary" size="large" block busy={pending}>
+          {submitLabel()}
+        </Button>
+      </form>
+      {editing ? (
+        <div className={styles.danger}>
+          <Button variant="ghost" onClick={() => setConfirmingDelete(true)} disabled={pending}>
+            {t('delete')}
+          </Button>
+          <ConfirmDialog
+            open={confirmingDelete}
+            onClose={() => {
+              remove.reset();
+              setConfirmingDelete(false);
+            }}
+            title={t('deleteTitle')}
+            confirmLabel={t('deleteConfirm')}
+            onConfirm={() => remove.mutate()}
+            busy={remove.isPending || leaving}
+          >
+            <p>{t('deleteBody')}</p>
+            {remove.isError ? (
+              <FailureAlert message={t('deleteFailed')} error={remove.error} />
+            ) : null}
+          </ConfirmDialog>
+        </div>
+      ) : null}
+    </>
+  );
+
+  function submitLabel(): string {
+    if (editing) {
+      return pending ? t('updating') : t('update');
+    }
+    return pending ? t('publishing') : t('publish');
+  }
+
+  function monthMessage(error: FieldError | undefined): string | undefined {
+    if (error === undefined) {
+      return undefined;
+    }
+    return error.type === 'custom' || error.type === SERVER
+      ? t('visitedMonthFuture')
+      : t('visitedMonthRequired');
+  }
+
+  function bodyMessage(error: FieldError | undefined): string | undefined {
+    if (error === undefined) {
+      return undefined;
+    }
+    return error.type === 'too_big'
+      ? t('bodyTooLong', { max: LIMITS.REVIEW_BODY_MAX })
+      : t('bodyTooShort', { min: LIMITS.REVIEW_BODY_MIN });
+  }
+}
+
+/** Fields named by the pointers of a 422 (`/body/visitedMonth` → `visitedMonth`). */
+function serverFields(error: unknown): ReviewField[] {
+  if (!(error instanceof ApiProblemError) || error.status !== 422) {
+    return [];
+  }
+  const named = error.fieldErrors.map(({ pointer }) => /^\/body\/([^/]+)/.exec(pointer)?.[1]);
+  return FIELDS.filter((field) => named.includes(field));
+}
+
+function failureKind(error: unknown): FormFailure {
+  if (error instanceof TypeError) {
+    return 'offline';
+  }
+  if (error instanceof ApiProblemError && error.code === 'place_not_found') {
+    return 'gone';
+  }
+  if (error instanceof ApiProblemError && error.status === 429) {
+    return 'tooMany';
+  }
+  return 'failed';
+}

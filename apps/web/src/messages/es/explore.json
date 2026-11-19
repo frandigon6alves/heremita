@@ -1,0 +1,72 @@
+{
+  "landing": {
+    "metaDescription": "Planifica tu propio viaje: marca lugares en un mapa con notas privadas, organízalos por días y mira la ruta de cada día.",
+    "title": "Tu viaje, a tu manera.",
+    "lead": "Marca lugares en el mapa, organiza los días y mira la ruta entre ellos, a pie, en bicicleta o en auto.",
+    "cta": "Empezar a planificar",
+    "ctaSignedIn": "Ir a mis viajes",
+    "stepsTitle": "Cómo funciona",
+    "steps": {
+      "mark": {
+        "title": "Marca",
+        "body": "Busca o toca el mapa para guardar lugares, con notas que solo tú puedes leer."
+      },
+      "organise": {
+        "title": "Organiza",
+        "body": "Reparte los lugares por días y cámbialos de orden arrastrando o con un toque."
+      },
+      "follow": {
+        "title": "Sigue",
+        "body": "Consulta la distancia y el tiempo de cada día y abre cada tramo en tu app de mapas."
+      }
+    },
+    "communityTitle": "Viajes de la comunidad",
+    "communityMore": "Ver todos en Explorar"
+  },
+  "explore": {
+    "metaTitle": "Explorar viajes públicos",
+    "metaDescription": "Viajes públicos planificados por viajeros: rutas día a día, listas para copiar y adaptar.",
+    "title": "Explorar",
+    "lead": "Viajes públicos de otros viajeros. Copia uno y hazlo tuyo."
+  },
+  "search": {
+    "label": "Buscar por destino o título",
+    "submit": "Buscar"
+  },
+  "results": {
+    "failed": "No se pudieron cargar los viajes públicos.",
+    "emptyTitle": "Aún no hay viajes públicos",
+    "emptyBody": "Sé el primero: planifica un viaje y hazlo público.",
+    "emptyQueryTitle": "Aún no hay viajes públicos para “{q}”",
+    "emptyQueryBody": "Prueba con otro destino o planifica este tú mismo.",
+    "planIt": "Planifícalo tú",
+    "showAll": "Ver todos los viajes públicos"
+  },
+  "feed": {
+    "moreFailed": "No se pudieron cargar más viajes."
+  },
+  "card": {
+    "modes": {
+      "walk": "A pie",
+      "bike": "En bicicleta",
+      "drive": "En auto"
+    },
+    "by": "por <author></author>",
+    "copies": "{count, plural, =0 {Nunca copiado} one {Copiado una vez} many {Copiado # veces} other {Copiado # veces}}"
+  },
+  "profile": {
+    "memberSince": "Miembro desde {month}",
+    "trips": "{count, plural, =0 {Sin viajes públicos} one {# viaje público} many {# viajes públicos} other {# viajes públicos}}",
+    "reviews": "{count, plural, =0 {Sin reseñas} one {# reseña} many {# reseñas} other {# reseñas}}",
+    "tripsHeading": "Viajes públicos",
+    "tripsEmpty": "Aún no hay viajes públicos.",
+    "tripsFailed": "No se pudieron cargar los viajes públicos.",
+    "reviewsHeading": "Reseñas",
+    "reviewsEmpty": "Aún no hay reseñas.",
+    "reviewsFailed": "No se pudieron cargar las reseñas.",
+    "reviewsMoreFailed": "No se pudieron cargar más reseñas.",
+    "stars": "{rating} de 5 estrellas",
+    "visited": "Visitado en {month}",
+    "hidden": "Oculta por moderación: solo tú la ves."
+  }
+}

@@ -1,0 +1,35 @@
+.form {
+  display: grid;
+  gap: var(--space-6);
+  max-inline-size: var(--form-max-wide);
+}
+
+.month {
+  max-inline-size: 14rem;
+}
+
+.bodyField {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.counter {
+  justify-self: end;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.note {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+}
+
+.danger {
+  margin-block-start: var(--space-12);
+  padding-block-start: var(--space-6);
+  border-top: 1px solid var(--color-border);
+  max-inline-size: var(--form-max-wide);
+}

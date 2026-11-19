@@ -1,1 +1,141 @@
-{}
+{
+  "mine": {
+    "metaTitle": "My trips",
+    "title": "My trips",
+    "newTrip": "New trip",
+    "emptyTitle": "You have no trips yet",
+    "emptyBody": "Start one now: mark places on the map and sort them into days.",
+    "emptyExplore": "Or copy one from Explore",
+    "failed": "Your trips could not be loaded.",
+    "moreFailed": "More trips could not be loaded."
+  },
+  "card": {
+    "visibility": {
+      "private": "Private",
+      "link": "By link",
+      "public": "Public"
+    }
+  },
+  "new": {
+    "metaTitle": "New trip",
+    "title": "New trip",
+    "back": "My trips"
+  },
+  "form": {
+    "title": "Title",
+    "titleHint": "For example: Lisbon in March",
+    "destination": "Destination",
+    "destinationHint": "Optional. Pick a suggestion to open the map there, or just type a name.",
+    "dates": "Dates",
+    "noDates": "No dates",
+    "withDates": "With dates",
+    "startDate": "First day",
+    "endDate": "Last day",
+    "rangeDays": "{count, plural, =0 {No days} one {# day} other {# days}}",
+    "dayCount": "Number of days",
+    "dayCountHint": "From 1 to {max}. You can add or remove days later.",
+    "submit": "Create and open",
+    "submitting": "Creating…",
+    "errors": {
+      "titleRequired": "Give the trip a title.",
+      "titleTooLong": "Use at most {max} characters.",
+      "titleRejected": "This title was not accepted. Try another one.",
+      "destinationTooLong": "Use at most {max} characters for the destination.",
+      "destinationRejected": "This destination was not accepted. Try another one.",
+      "startRequired": "Choose the first day.",
+      "startInvalid": "This date was not accepted.",
+      "endRequired": "Choose the last day.",
+      "endBeforeStart": "The last day cannot come before the first.",
+      "rangeTooLong": "A trip has at most {max} days.",
+      "dayCountInvalid": "Enter a whole number of days from 1 to {max}.",
+      "limitReached": "You have reached the limit of {max} trips. Delete one to create another.",
+      "offline": "No connection. Check it and try again.",
+      "unexpected": "The trip could not be saved. Try again."
+    }
+  },
+  "modes": {
+    "walk": "Walk",
+    "bike": "Bike",
+    "drive": "Drive"
+  },
+  "settings": {
+    "metaTitle": "Trip settings · {title}",
+    "title": "Trip settings",
+    "back": "Back to the trip",
+    "sharingHeading": "Visibility and sharing",
+    "details": {
+      "heading": "Details",
+      "description": "Description",
+      "descriptionHint": "Optional, up to {max} characters. Shown to whoever can see the trip.",
+      "descriptionTooLong": "Use at most {max} characters.",
+      "descriptionRejected": "This description was not accepted. Try another one.",
+      "startDate": "First day",
+      "startDateHint": "Optional. The number of days changes in the planner.",
+      "defaultMode": "Default way of getting around",
+      "modeRejected": "This mode was not accepted.",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "failed": "The changes could not be saved. Try again.",
+      "offline": "No connection. Check it and try again."
+    },
+    "visibility": {
+      "legend": "Who can see this trip",
+      "private": {
+        "label": "Private",
+        "hint": "Only you."
+      },
+      "link": {
+        "label": "By link",
+        "hint": "Anyone with the link. Never listed in Explore."
+      },
+      "public": {
+        "label": "Public",
+        "hint": "Listed in Explore. Your notes and dates stay hidden."
+      },
+      "failed": "Visibility not saved."
+    },
+    "share": {
+      "label": "Share link",
+      "hint": "Whoever opens it sees the trip without your notes or dates.",
+      "copy": "Copy link",
+      "copied": "Link copied.",
+      "copyFailed": "The link could not be copied. Select it and copy it by hand.",
+      "share": "Share",
+      "shareFailed": "The link could not be shared.",
+      "rotate": "Create a new link",
+      "rotateTitle": "Create a new link?",
+      "rotateBody": "The current link stops working at once. Anyone who has it will need the new one.",
+      "rotateConfirm": "Create new link",
+      "rotated": "New link created. The old one no longer works.",
+      "rotateFailed": "A new link could not be created. Try again.",
+      "rotateOffline": "No connection. Check it and try again.",
+      "nowPrivate": "The trip is private now, so it has no link."
+    },
+    "duplicate": {
+      "heading": "Duplicate",
+      "body": "Make a private copy of this trip with the same days and places, without notes or dates.",
+      "button": "Duplicate"
+    },
+    "danger": {
+      "heading": "Delete trip",
+      "body": "Deleting removes the days, places, notes and share link for good."
+    }
+  },
+  "copy": {
+    "copying": "Copying…",
+    "done": "Copy created: {title}",
+    "open": "Open copy",
+    "limitReached": "You have reached the limit of trips. Delete one to copy another.",
+    "failed": "The trip could not be copied.",
+    "offline": "No connection. The trip was not copied."
+  },
+  "delete": {
+    "button": "Delete trip",
+    "title": "Delete “{title}”?",
+    "body": "This cannot be undone. Days, places, notes and the share link are deleted with it.",
+    "confirm": "Delete trip",
+    "done": "Trip deleted: {title}",
+    "failed": "The trip could not be deleted. Try again.",
+    "offline": "No connection. The trip was not deleted."
+  }
+}

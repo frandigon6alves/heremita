@@ -1,1 +1,32 @@
-{}
+{
+  "search": {
+    "label": "Search places",
+    "placeholder": "Search places",
+    "clear": "Clear search",
+    "minChars": "Type at least {min} characters.",
+    "searching": "Searching…",
+    "results": "{count, plural, =0 {No places found} one {# place found} other {# places found}}",
+    "empty": "No places found for “{query}”. Check the spelling or try another name.",
+    "busy": "Search is busy, try again in a moment.",
+    "unavailable": "Search is unavailable right now. Try again later.",
+    "offline": "You are offline. Search needs a connection.",
+    "failed": "Search failed."
+  },
+  "whatsHere": {
+    "title": "What's here?",
+    "nearby": "Places nearby",
+    "empty": "No named places within 150 m of this spot.",
+    "failed": "Nearby places could not be loaded.",
+    "useExactPoint": "Use this exact spot",
+    "customName": "Name",
+    "customNameHint": "How this spot appears in your trip.",
+    "customNameRequired": "Give this spot a name.",
+    "customNameTooLong": "Use at most {max} characters.",
+    "coordinates": "Coordinates",
+    "coordinatesLabel": "Latitude, longitude",
+    "coordinatesHint": "For example: 38.7139, -9.1334",
+    "coordinatesInvalid": "Type the latitude (−90 to 90) and the longitude (−180 to 180), separated by a comma.",
+    "coordinatesSubmit": "Go to these coordinates",
+    "point": "Spot at {lat}, {lng}"
+  }
+}

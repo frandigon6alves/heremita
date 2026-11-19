@@ -1,0 +1,23 @@
+.stars {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.row {
+  display: inline-flex;
+  color: var(--color-border-control);
+}
+
+/* The filled copy sits on top, clipped to the rating's share of the width. */
+.filled {
+  position: absolute;
+  inset: 0 auto 0 0;
+  overflow: hidden;
+  color: var(--color-accent);
+}
+
+.filled svg {
+  flex: none;
+  fill: currentcolor;
+}

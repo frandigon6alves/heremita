@@ -1,0 +1,27 @@
+.trigger {
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 48px;
+  padding-inline: calc(28px + var(--space-3)) var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: start;
+}
+
+.estimated {
+  text-decoration: underline dashed;
+  text-underline-offset: 3px;
+}
+
+.pending {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 48px;
+  margin: 0;
+  padding-inline: calc(28px + var(--space-3)) var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}

@@ -1,0 +1,14 @@
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.link:active {
+  background: var(--color-primary-soft);
+  transform: scale(var(--pressed-scale));
+}

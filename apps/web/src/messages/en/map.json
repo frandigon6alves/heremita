@@ -1,1 +1,20 @@
-{}
+{
+  "title": "Trip map",
+  "unavailable": "The map cannot be shown in this browser. Every place is still in the list.",
+  "geolocateError": "Could not find your location. Check the location permission.",
+  "draftPin": "New pin. Move it with the arrow keys (Shift moves further), press Enter to choose this spot.",
+  "controls": {
+    "toggleAttribution": "Show map credits",
+    "mapFeedback": "Improve this map",
+    "findMyLocation": "My location",
+    "locationNotAvailable": "Location not available",
+    "marker": "Map pin",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "resetBearing": "Point north",
+    "closePopup": "Close",
+    "cooperativeWindows": "Use Ctrl + scroll to zoom the map",
+    "cooperativeMac": "Use ⌘ + scroll to zoom the map",
+    "cooperativeMobile": "Use two fingers to move the map"
+  }
+}

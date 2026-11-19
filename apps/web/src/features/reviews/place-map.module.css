@@ -1,0 +1,9 @@
+.frame {
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  block-size: 180px;
+}
+
+.map {
+  block-size: 100%;
+}

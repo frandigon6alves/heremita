@@ -1,0 +1,96 @@
+.sheet {
+  --sheet-min: calc(var(--sheet-peek) + env(safe-area-inset-bottom));
+  --sheet-max: calc(100dvh - var(--app-bar-height) - env(safe-area-inset-top) - var(--space-2));
+
+  position: fixed;
+  z-index: 3;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: var(--sheet-min);
+  max-height: var(--sheet-max);
+  padding-bottom: env(safe-area-inset-bottom);
+  overflow: hidden;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-3);
+  transition: height var(--duration-slow) var(--ease-out);
+}
+
+.sheet[data-snap='peek'] {
+  height: var(--sheet-min);
+}
+
+.sheet[data-snap='half'] {
+  height: 50dvh;
+}
+
+.sheet[data-snap='full'] {
+  height: var(--sheet-max);
+}
+
+.dragging {
+  transition: none;
+}
+
+.header {
+  flex: none;
+  padding: 0 var(--space-4) var(--space-2);
+  /* Vertical moves drag the sheet; the chip row still scrolls sideways. */
+  touch-action: pan-x;
+  user-select: none;
+}
+
+.handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--target-min);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: grab;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.handle:active {
+  background: var(--color-primary-soft);
+}
+
+.dragging .handle {
+  cursor: grabbing;
+}
+
+.grabber {
+  width: 40px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-border-control);
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.panelHeader {
+  flex: none;
+  padding: var(--space-3) var(--space-4) var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}

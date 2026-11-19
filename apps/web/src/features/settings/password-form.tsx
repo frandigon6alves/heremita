@@ -1,0 +1,136 @@
+'use client';
+
+import {
+  changePasswordBodySchema,
+  endpoints,
+  LIMITS,
+  type ChangePasswordBody,
+} from '@heremita/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { useForm, type FieldError } from 'react-hook-form';
+import { apiFetch } from '@/lib/api/client';
+import { Button } from '@/shared/components/button/button';
+import { PasswordField } from '@/shared/components/password-field/password-field';
+import { showToast } from '@/shared/components/toast/toast-store';
+import { FailureAlert } from './failure-alert';
+import { submitOutcome, type SubmitOutcome } from './submit-failure';
+import styles from './settings.module.css';
+
+const FIELDS = ['currentPassword', 'newPassword'] as const;
+/** The API refused a value that passed the shared schema here. */
+const SERVER = 'server';
+/** E10 422 `wrong_password`: the current password does not match. */
+const WRONG = 'wrong';
+/** The new password is the e-mail address or its local part. */
+const IS_EMAIL = 'custom';
+
+type FormFailure = Extract<SubmitOutcome<string>, { kind: 'form' }>;
+
+function isDerivedFromEmail(password: string, email: string): boolean {
+  const candidate = password.toLowerCase();
+  return candidate === email || candidate === email.slice(0, email.lastIndexOf('@'));
+}
+
+/**
+ * Change password (E10). The API keeps this session (with a new cookie) and
+ * ends every other one; the form says so and empties itself.
+ */
+export function PasswordForm({ email }: { email: string }) {
+  const t = useTranslations('settings.password');
+  const [failure, setFailure] = useState<FormFailure | null>(null);
+  const {
+    register,
+    handleSubmit,
+    setError,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ChangePasswordBody>({
+    resolver: zodResolver(
+      changePasswordBodySchema.refine((body) => !isDerivedFromEmail(body.newPassword, email), {
+        path: ['newPassword'],
+      }),
+    ),
+    mode: 'onTouched',
+    defaultValues: { currentPassword: '', newPassword: '' },
+  });
+  const change = useMutation({
+    mutationFn: (body: ChangePasswordBody) => apiFetch(endpoints.changePassword, { body }),
+  });
+
+  const onSubmit = handleSubmit(async (body) => {
+    setFailure(null);
+    try {
+      await change.mutateAsync(body);
+      reset();
+      showToast({ message: t('changed') });
+    } catch (error) {
+      const outcome = submitOutcome(error, FIELDS);
+      if (outcome.kind === 'fields') {
+        outcome.fields.forEach((field, index) =>
+          setError(
+            field,
+            { type: outcome.wrongPassword ? WRONG : SERVER },
+            { shouldFocus: index === 0 },
+          ),
+        );
+      } else {
+        setFailure(outcome);
+      }
+    }
+  });
+
+  return (
+    <form className={styles.form} noValidate onSubmit={(event) => void onSubmit(event)}>
+      <p className={styles.note}>{t('intro')}</p>
+      <PasswordField
+        label={t('current')}
+        error={currentMessage(errors.currentPassword)}
+        autoComplete="current-password"
+        {...register('currentPassword')}
+      />
+      <PasswordField
+        label={t('new')}
+        hint={t('newHint', { min: LIMITS.PASSWORD_MIN })}
+        error={newMessage(errors.newPassword)}
+        autoComplete="new-password"
+        {...register('newPassword')}
+      />
+      {failure === null ? null : (
+        <FailureAlert failure={failure.failure} requestId={failure.requestId} />
+      )}
+      <Button className={styles.submit} type="submit" variant="primary" busy={isSubmitting}>
+        {isSubmitting ? t('submitting') : t('submit')}
+      </Button>
+    </form>
+  );
+
+  function currentMessage(error: FieldError | undefined): string | undefined {
+    if (error === undefined) {
+      return undefined;
+    }
+    if (error.type === WRONG) {
+      return t('errors.currentWrong');
+    }
+    return error.type === 'too_big'
+      ? t('errors.currentTooLong', { max: LIMITS.PASSWORD_MAX })
+      : t('errors.currentRequired');
+  }
+
+  function newMessage(error: FieldError | undefined): string | undefined {
+    switch (error?.type) {
+      case undefined:
+        return undefined;
+      case SERVER:
+        return t('errors.newRejected');
+      case IS_EMAIL:
+        return t('errors.newIsEmail');
+      case 'too_big':
+        return t('errors.newTooLong', { max: LIMITS.PASSWORD_MAX });
+      default:
+        return t('errors.newTooShort', { min: LIMITS.PASSWORD_MIN });
+    }
+  }
+}

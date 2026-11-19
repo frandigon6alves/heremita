@@ -1,0 +1,35 @@
+.thumbnail {
+  display: block;
+  width: 100%;
+  aspect-ratio: 5 / 3;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-soft);
+}
+
+.empty {
+  display: grid;
+  place-items: center;
+  color: var(--color-text-muted);
+}
+
+.route {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stop,
+.start {
+  stroke: var(--color-surface);
+  stroke-width: 1.5;
+}
+
+.stop {
+  fill: var(--color-primary);
+}
+
+.start {
+  fill: var(--color-accent);
+}

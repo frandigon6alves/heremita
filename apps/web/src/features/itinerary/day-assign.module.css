@@ -1,0 +1,4 @@
+.trigger {
+  border: 1px solid var(--color-border-control);
+  font-weight: 600;
+}

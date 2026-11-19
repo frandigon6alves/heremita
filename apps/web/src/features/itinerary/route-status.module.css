@@ -1,0 +1,59 @@
+.status {
+  display: grid;
+  gap: var(--space-2);
+  margin-block-end: var(--space-2);
+}
+
+/* Thin bar while a route loads; it shows only when loading lasts (slow network). */
+.progress {
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: transparent;
+}
+
+.progress[data-active] {
+  background: linear-gradient(90deg, transparent, var(--color-primary), transparent) 0 0 / 40% 100%
+    no-repeat;
+  animation: slide 1.2s linear 250ms infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress[data-active] {
+    background: var(--color-primary);
+    animation: none;
+  }
+}
+
+@keyframes slide {
+  from {
+    background-position: -40% 0;
+  }
+
+  to {
+    background-position: 140% 0;
+  }
+}
+
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-inline-start: 4px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  font-size: var(--text-sm);
+}
+
+.banner p {
+  margin: 0;
+}
+
+.note {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}

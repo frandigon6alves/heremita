@@ -5,9 +5,11 @@ import { NextIntlClientProvider } from 'next-intl';
 import type { ReactElement, ReactNode } from 'react';
 import { TIME_ZONE } from '@/i18n/config';
 import { messages as en } from '@/messages/en';
+import { messages as es } from '@/messages/es';
 import { messages as ptBR } from '@/messages/pt-BR';
+import type { Messages } from '@/messages/types';
 
-const catalogues = { en, 'pt-BR': ptBR } as const;
+const catalogues: Record<Locale, Messages> = { en, es, 'pt-BR': ptBR };
 
 /** The app's intl provider with the real catalogue of `locale` and UTC dates. */
 export function TestIntlProvider({ locale, children }: { locale: Locale; children: ReactNode }) {
