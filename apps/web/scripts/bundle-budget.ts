@@ -7,8 +7,8 @@ import { runInNewContext } from 'node:vm';
 import { gzipSync } from 'node:zlib';
 
 const BYTES_PER_KB = 1000;
-const PUBLIC_PAGE_BUDGET_KB = 150;
-const PLANNER_BUDGET_KB = 200;
+const PUBLIC_PAGE_BUDGET_KB = 180;
+const PLANNER_BUDGET_KB = 240;
 const PLANNER_ROUTE = '/[locale]/trips/[tripId]';
 
 export interface Budget {

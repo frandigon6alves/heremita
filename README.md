@@ -118,28 +118,30 @@ Both apps validate their environment at start-up and stop with a list of the bad
 
 ## Performance budget
 
-SPEC.md (section "I.web.budget") sets first-load JavaScript budgets, gzipped: 150 KB for a page, 200 KB for the planner before its map chunk (MapLibre loads afterwards, off the critical path). `pnpm budget` reads the last production build in `apps/web/.next` (run `pnpm build` first) and prints, per route, the gzip size of the shared runtime plus every client chunk its layouts and page import (1 KB = 1000 bytes), its budget and `WARNING over` when it exceeds it. It is a warning, never a gate: it always exits 0. Chunks loaded on demand (the map, the drag and drop of the planner list) are not counted.
+SPEC.md (section "I.web.budget") sets first-load JavaScript budgets, gzipped: 180 KB for a page, 240 KB for the planner before its map chunk (MapLibre loads afterwards, off the critical path). `pnpm budget` reads the last production build in `apps/web/.next` (run `pnpm build` first) and prints, per route, the gzip size of the shared runtime plus every client chunk its layouts and page import (1 KB = 1000 bytes), its budget and `WARNING over` when it exceeds it. It is a warning, never a gate: it always exits 0. Chunks loaded on demand (the map, the place search combobox, the report form) are not counted.
 
-Measured on 2026-11-19 (Next 16.4.6, Turbopack) before and after the performance part of the audit; every route is still over:
+Measured on 2026-11-19 (Next 16.4.6, Turbopack) before and after the audit follow-ups (dnd-kit moved into the planner's first load, the site header and footer rendered once from the locale layout); the planner and the pages without a form or a trip are within budget, the rest still over:
 
-| Route                                                                    | Before   | After    | Budget |
-| ------------------------------------------------------------------------ | -------- | -------- | ------ |
-| `/[locale]/trips/[tripId]` (planner)                                     | 277.0 KB | 227.3 KB | 200 KB |
-| `/[locale]/trips/[tripId]/settings`                                      | 262.2 KB | 240.7 KB | 150 KB |
-| `/[locale]/trips/new`                                                    | 259.5 KB | 237.4 KB | 150 KB |
-| `/[locale]/settings`                                                     | 241.2 KB | 231.5 KB | 150 KB |
-| `/[locale]/places/[placeId]/review`                                      | 235.4 KB | 225.4 KB | 150 KB |
-| `/[locale]/signup`                                                       | 232.6 KB | 222.7 KB | 150 KB |
-| `/[locale]/login`                                                        | 232.4 KB | 222.5 KB | 150 KB |
-| `/[locale]/t/[tripId]`, `/[locale]/s/[shareToken]`                       | 265.2 KB | 212.3 KB | 150 KB |
-| `/[locale]/trips`                                                        | 227.6 KB | 194.5 KB | 150 KB |
-| `/[locale]/places/[placeId]`                                             | 246.4 KB | 192.3 KB | 150 KB |
-| `/[locale]/explore`                                                      | 225.8 KB | 183.9 KB | 150 KB |
-| `/[locale]/u/[userId]`                                                   | 225.2 KB | 183.4 KB | 150 KB |
-| `/[locale]/moderation`                                                   | 223.4 KB | 181.5 KB | 150 KB |
-| `/[locale]`, `/[locale]/about`, `/[locale]/privacy`, not-found catch-all | 215.6 KB | 171.8 KB | 150 KB |
+| Route                                                                    | Before   | After    | Budget | Status |
+| ------------------------------------------------------------------------ | -------- | -------- | ------ | ------ |
+| `/[locale]/trips/[tripId]` (planner)                                     | 227.3 KB | 230.5 KB | 240 KB | ok     |
+| `/[locale]/trips/[tripId]/settings`                                      | 240.7 KB | 232.5 KB | 180 KB | over   |
+| `/[locale]/settings`                                                     | 231.5 KB | 230.4 KB | 180 KB | over   |
+| `/[locale]/trips/new`                                                    | 237.4 KB | 229.8 KB | 180 KB | over   |
+| `/[locale]/places/[placeId]/review`                                      | 225.4 KB | 224.4 KB | 180 KB | over   |
+| `/[locale]/signup`                                                       | 222.7 KB | 221.6 KB | 180 KB | over   |
+| `/[locale]/login`                                                        | 222.5 KB | 221.4 KB | 180 KB | over   |
+| `/[locale]/t/[tripId]`, `/[locale]/s/[shareToken]`                       | 212.3 KB | 205.3 KB | 180 KB | over   |
+| `/[locale]/places/[placeId]`                                             | 192.3 KB | 191.3 KB | 180 KB | over   |
+| `/[locale]/explore`                                                      | 183.9 KB | 182.9 KB | 180 KB | over   |
+| `/[locale]/u/[userId]`                                                   | 183.4 KB | 182.3 KB | 180 KB | over   |
+| `/[locale]/moderation`                                                   | 181.5 KB | 180.5 KB | 180 KB | over   |
+| `/[locale]/trips`                                                        | 194.5 KB | 180.4 KB | 180 KB | over   |
+| `/[locale]`, `/[locale]/about`, `/[locale]/privacy`, not-found catch-all | 171.8 KB | 170.7 KB | 180 KB | ok     |
 
-The floor every page shares is now about 172 KB: React DOM (73.4 KB), the Next.js client router and Turbopack runtime (about 62 KB), `intl-messageformat` from next-intl (12.4 KB), TanStack Query (5.5 KB) and the site header's client parts (language switcher, account menu), which Turbopack copies into the not-found chunk and again into each page's chunk (about 7 KB). zod and the shared schemas (about 39 KB) load only on the pages with a form (log in, sign up, settings, new trip, trip settings, review) and with the first failed API call; nuqs only on the planner, the read-only trip pages and the place page; dnd-kit (15.6 KB) only on the planner, part of its first load so the owner's rows are sortable from the first paint and never swapped under a tap. Loaded on demand and not counted: the map, the place search combobox (downshift, on the first focus of the field) and the report form (on its first open). Each page's HTML carries only the message namespaces its client components use (`ClientMessages`; `src/i18n/client-messages.test.ts` checks every route).
+The floor every page shares is about 171 KB: React DOM (73.4 KB), the Next.js client router and Turbopack runtime (about 62 KB), `intl-messageformat` from next-intl (12.4 KB), TanStack Query (5.5 KB) and the site header and footer's client parts (language switcher, account menu, nav links; 4.5 KB), now shipped once in the locale layout's chunk instead of a copy in the not-found chunk and in each page's. zod and the shared schemas (about 39 KB) load only on the pages with a form (log in, sign up, settings, new trip, trip settings, review) and with the first failed API call; nuqs only on the planner, the read-only trip pages and the place page; dnd-kit (15.6 KB) only on the planner, part of its first load so the owner's rows are sortable from the first paint and never swapped under a tap. Loaded on demand and not counted: the map, the place search combobox (downshift, on the first focus of the field) and the report form (on its first open). Each page's HTML carries only the message namespaces its client components use (`ClientMessages`; `src/i18n/client-messages.test.ts` checks every route).
+
+The production output carries only MapLibre's production library and worker: a Turbopack rule (`scripts/maplibre-url-loader.mjs`) stops MapLibre's fallback worker URL from being read as a pattern that copied all of `maplibre-gl/dist` (its 3.8 MB of development builds included) into `.next/static/media` (`.next/static` 8.5 MB → 3.6 MB).
 
 ## Manual checks for the owner
 

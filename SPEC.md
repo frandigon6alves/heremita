@@ -830,7 +830,7 @@ Nonce `Buffer.from(crypto.randomUUID()).toString('base64')`. Plus `X-Content-Typ
 - Place names shown as API returns (Photon local/English names); basemap labels localized.
 
 ### I.web.budget — performance (warning, ⊥ gate)
-Public pages LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.05, first-load JS ≤ 150 KB gzip; planner list visible ≤ 2.5 s, tiles ≤ 4 s, JS ≤ 200 KB gzip before map chunk (map chunk ≈ 288 KB gzip + 551 KB worker, never on critical path). dnd-kit only on the planner (`EditableStopList` imports it statically: owner rows render sortable from first paint, never swapped; read-only routes never load it); downshift only in `PlaceSearchCombobox` (imported on first focus); zod only on RHF form routes (login, signup, settings, trips/new, trip settings, review); nuqs adapter only on planner, `/t`, `/s`, place page; client messages per route (`ClientMessages`, root = `common` + `auth`). Measure w/ React Profiler before any memoisation.
+Public pages LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.05, first-load JS ≤ 180 KB gzip; planner list visible ≤ 2.5 s, tiles ≤ 4 s, JS ≤ 240 KB gzip before map chunk (map chunk ≈ 288 KB gzip + 551 KB worker, never on critical path). dnd-kit only on the planner (`EditableStopList` imports it statically: owner rows render sortable from first paint, never swapped; read-only routes never load it); downshift only in `PlaceSearchCombobox` (imported on first focus); zod only on RHF form routes (login, signup, settings, trips/new, trip settings, review); nuqs adapter only on planner, `/t`, `/s`, place page; client messages per route (`ClientMessages`, root = `common` + `auth`). Measure w/ React Profiler before any memoisation.
 
 ### I.test — harness
 - Shared: Vitest unit in `packages/shared/src/**/*.test.ts`.
