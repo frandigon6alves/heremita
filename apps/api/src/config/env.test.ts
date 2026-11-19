@@ -81,6 +81,11 @@ describe('parseEnv', () => {
     expect(parse).toThrow(/- PUBLIC_SITE_URL: is required in production/);
   });
 
+  it('reads_a_whole_number_trust_proxy_as_a_hop_count', () => {
+    expect(parseEnv({ ...MINIMAL, TRUST_PROXY: '2' }).TRUST_PROXY).toBe(2);
+    expect(parseEnv({ ...MINIMAL, TRUST_PROXY: 'loopback' }).TRUST_PROXY).toBe('loopback');
+  });
+
   it('refuses_fake_providers_in_production', () => {
     const parse = () => parseEnv({ ...PRODUCTION, ALLOW_FAKE_PROVIDERS: 'false' });
 

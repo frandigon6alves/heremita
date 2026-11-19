@@ -23,8 +23,17 @@ export const envSchema = z
     PUBLIC_SITE_URL: httpUrl.optional(),
     /** Unset: secure cookies in production only. */
     COOKIE_SECURE: booleanFlag.optional(),
-    /** Express `trust proxy` value: the hops allowed to set `X-Forwarded-For`. */
-    TRUST_PROXY: z.string().trim().min(1).default('loopback, uniquelocal'),
+    /**
+     * Express `trust proxy` value: the proxies allowed to set `X-Forwarded-For`.
+     * Either a list of addresses/subnets, or a whole number of hops (e.g. `2`
+     * behind Vercel's rewrite plus Render's load balancer).
+     */
+    TRUST_PROXY: z
+      .string()
+      .trim()
+      .min(1)
+      .default('loopback, uniquelocal')
+      .transform((value) => (/^\d+$/.test(value) ? Number(value) : value)),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug']).default('info'),
     GEOCODING_PROVIDER: z.enum(['photon', 'fake']),
     ROUTING_PROVIDER: z.enum(['osrm', 'fake']),
