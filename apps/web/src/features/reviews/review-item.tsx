@@ -12,7 +12,7 @@ import { PopoverMenu } from '@/shared/components/popover-menu/popover-menu';
 import { RatingStars } from '@/shared/components/rating-stars/rating-stars';
 import { Ellipsis } from '@/shared/icons/icons';
 import { BlockUserDialog } from './block-user-dialog';
-import { ReportDialog } from './report-dialog';
+import { LazyReportDialog } from './lazy-report-dialog';
 import styles from './review-item.module.css';
 
 export interface ReviewItemProps {
@@ -80,7 +80,7 @@ export function ReviewItem({ review, signedIn }: ReviewItemProps) {
       </p>
       {signedIn && !review.isMine ? (
         <>
-          <ReportDialog
+          <LazyReportDialog
             open={dialog === 'report'}
             onClose={() => setDialog(null)}
             target={{ type: 'review', id: review.id }}

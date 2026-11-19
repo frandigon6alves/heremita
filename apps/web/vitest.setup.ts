@@ -25,6 +25,8 @@ if (typeof HTMLDialogElement.prototype.showModal !== 'function') {
     if (returnValue !== undefined) {
       this.returnValue = returnValue;
     }
-    this.dispatchEvent(new Event('close'));
+    // Browsers fire `close` from a queued task, never inside `close()`: a dialog
+    // closed and reopened in one commit (Strict Mode effects) sees it reopened.
+    queueMicrotask(() => this.dispatchEvent(new Event('close')));
   };
 }

@@ -1,5 +1,5 @@
 import { act, screen, within } from '@testing-library/react';
-import { useState } from 'react';
+import { StrictMode, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithIntl } from '@/test-utils/render';
 import { ConfirmDialog } from './confirm-dialog';
@@ -113,7 +113,7 @@ describe('ConfirmDialog', () => {
 });
 
 describe('Dialog', () => {
-  it('tells_the_parent_when_the_browser_closed_it', () => {
+  it('tells_the_parent_when_the_browser_closed_it', async () => {
     const onClose = vi.fn();
     renderWithIntl(
       <Dialog open onClose={onClose} title="Report">
@@ -121,11 +121,29 @@ describe('Dialog', () => {
       </Dialog>,
     );
 
-    act(() => {
+    await act(async () => {
       screen.getByRole<HTMLDialogElement>('dialog').close();
+      await Promise.resolve();
     });
 
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('stays_open_when_it_first_renders_open_under_strict_mode', async () => {
+    const onClose = vi.fn();
+    renderWithIntl(
+      <StrictMode>
+        <Dialog open onClose={onClose} title="Report">
+          <p>Why?</p>
+        </Dialog>
+      </StrictMode>,
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog')).toHaveTextContent('Why?');
   });
 
   it('focuses_the_first_marked_control', () => {

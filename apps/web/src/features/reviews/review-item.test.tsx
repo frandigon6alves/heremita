@@ -32,9 +32,15 @@ function renderItem(signedIn = true) {
   return renderWithProviders(<ReviewItem review={review} signedIn={signedIn} />);
 }
 
-async function openMenuItem(user: ReturnType<typeof renderItem>['user'], name: string) {
+async function chooseMenuItem(user: ReturnType<typeof renderItem>['user'], name: string) {
   await user.click(screen.getByRole('button', { name: 'Actions for the review by Bia' }));
   await user.click(screen.getByRole('button', { name, hidden: true }));
+}
+
+/** Chooses a menu item that opens a dialog; the report form loads on its first open. */
+async function openMenuItem(user: ReturnType<typeof renderItem>['user'], name: string) {
+  await chooseMenuItem(user, name);
+  await screen.findByRole('dialog');
 }
 
 function lastToast(): string | undefined {
@@ -188,7 +194,7 @@ describe('ReviewItem signed out', () => {
   it('sends_the_viewer_to_log_in_and_back_to_the_place', async () => {
     const { user } = renderItem(false);
 
-    await openMenuItem(user, 'Report');
+    await chooseMenuItem(user, 'Report');
 
     expect(push).toHaveBeenCalledWith(
       `/en/login?next=${encodeURIComponent(`/en/places/${PLACE_ID}`)}`,

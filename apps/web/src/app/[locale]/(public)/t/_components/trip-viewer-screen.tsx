@@ -24,7 +24,7 @@ import { planPins } from '@/features/itinerary/trip-to-geojson';
 import type { PlanSource } from '@/features/itinerary/use-day-routes';
 import { usePlannerParams } from '@/features/itinerary/use-planner-params';
 import { useSelectionRoute } from '@/features/itinerary/use-selection-route';
-import { ReportDialog } from '@/features/reviews/report-dialog';
+import { LazyReportDialog } from '@/features/reviews/lazy-report-dialog';
 import { CopyTripButton } from '@/features/trips/copy-trip-button';
 import { useCopyTrip } from '@/features/trips/use-copy-trip';
 import { planQuery, sharedPlanQuery } from '@/lib/api/query-keys';
@@ -259,7 +259,7 @@ function TripViewerScreen({ source, plan, signedIn, path }: TripViewerScreenProp
         </div>
       </TripScreenShell>
       {signedIn ? (
-        <ReportDialog
+        <LazyReportDialog
           open={reporting}
           onClose={() => setReporting(false)}
           target={{ type: 'trip', id: plan.trip.id }}

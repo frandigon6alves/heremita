@@ -244,7 +244,7 @@ describe('TripViewerScreen', () => {
 
     await user.click(screen.getByRole('button', { name: 'Report this trip' }));
 
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
   });
 
   it('explains_an_empty_trip', () => {
