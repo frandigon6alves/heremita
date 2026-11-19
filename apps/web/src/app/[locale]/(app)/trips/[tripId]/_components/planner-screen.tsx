@@ -121,6 +121,8 @@ export function PlannerScreen({ tripId, initialPlan, initialUpdatedAt }: Planner
   const [mapView] = useState(() => initialMapView(initialPlan));
   const [optimising, setOptimising] = useState(false);
   const whatsHereRef = useRef<HTMLDivElement>(null);
+  // Whether the next search pick comes from Enter (keyboard) rather than a tap or click.
+  const pickedByKey = useRef(false);
 
   const actions = usePlanActions(tripId, (tripPlaceId) => {
     setCandidate(null);
@@ -400,11 +402,19 @@ export function PlannerScreen({ tripId, initialPlan, initialUpdatedAt }: Planner
       >
         <h1 className={styles.title}>{plan.trip.title}</h1>
       </AppBar>
-      <div className={styles.search}>
+      <div
+        className={styles.search}
+        onKeyDownCapture={(event) => {
+          pickedByKey.current = event.key === 'Enter';
+        }}
+        onPointerDownCapture={() => {
+          pickedByKey.current = false;
+        }}
+      >
         <PlaceSearch
           near={centre?.center}
           zoom={centre?.zoom}
-          onSelect={(result) => showResult(result, false)}
+          onSelect={(result) => showResult(result, pickedByKey.current)}
         />
       </div>
       <div className={styles.panelArea}>

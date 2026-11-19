@@ -511,6 +511,30 @@ describe('PlannerScreen adds', () => {
     await waitFor(() => expect(urlUpdates.at(-1)?.queryString).toBe(`?place=${created.id}`));
   });
 
+  it('a_result_picked_with_the_keyboard_takes_focus_to_its_card', async () => {
+    serveSearch();
+    const { user } = renderPlanner();
+
+    await user.type(screen.getByRole('combobox', { name: 'Search places' }), 'azulejo');
+    await screen.findByRole('option', { name: /Museu do Azulejo/ });
+    await user.keyboard('{ArrowDown}{Enter}');
+
+    expect(
+      await screen.findByRole('heading', { level: 3, name: 'Museu do Azulejo' }),
+    ).toHaveFocus();
+  });
+
+  it('a_result_picked_with_a_tap_leaves_focus_in_the_search', async () => {
+    serveSearch();
+    const { user } = renderPlanner();
+
+    await chooseResult(user);
+
+    expect(
+      await screen.findByRole('heading', { level: 3, name: 'Museu do Azulejo' }),
+    ).not.toHaveFocus();
+  });
+
   it('a_place_already_in_the_trip_is_put_on_the_day_instead', async () => {
     serveSearch();
     record(endpoints.addTripPlace, () =>
