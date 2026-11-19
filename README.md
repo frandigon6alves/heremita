@@ -2,6 +2,8 @@
 
 Plan your own trip: places on a map with your private notes, a day-by-day itinerary you can reorder by touch, a route per day (walk, bike or drive) with distance and time, and reviews and public trips from other travellers. Mobile first, works on desktop. UI in English (the official language) with Spanish and Brazilian Portuguese translations, light and dark themes. Every URL carries its locale (`/en`, `/es`, `/pt-BR`); `/` goes to the visitor's last used locale, else the best `Accept-Language` match, else English.
 
+**Live demo:** https://heremita.vercel.app (web on Vercel, API on Render's free plan, PostgreSQL on Neon). The API sleeps when idle, so the first request after a while can take about a minute.
+
 | Workspace         | What it is                                                                          | Dev port |
 | ----------------- | ----------------------------------------------------------------------------------- | -------- |
 | `apps/web`        | Next.js 16 (App Router, React 19), MapLibre GL JS, TanStack Query, next-intl, nuqs  | 3100     |
