@@ -512,7 +512,7 @@ describe('PlannerScreen note', () => {
 
     await waitFor(() => expect(bodies).toEqual([{ note: 'Go early' }]), { timeout: 2000 });
     expect(await screen.findByText('Saved')).toBeInTheDocument();
-    expect(window.sessionStorage.getItem(`hm-note:${tripPlaceId(1)}`)).toBeNull();
+    expect(window.sessionStorage.getItem(`hm-draft:note:${tripPlaceId(1)}`)).toBeNull();
   });
 
   it('a_failed_save_keeps_the_text_and_mirrors_it_for_a_reload', async () => {
@@ -525,7 +525,41 @@ describe('PlannerScreen note', () => {
 
     expect(await screen.findByText('Not saved')).toBeInTheDocument();
     expect(note).toHaveValue('Tickets');
-    expect(window.sessionStorage.getItem(`hm-note:${tripPlaceId(1)}`)).toBe('Tickets');
+    expect(window.sessionStorage.getItem(`hm-draft:note:${tripPlaceId(1)}`)).toBe('Tickets');
+  });
+});
+
+describe('PlannerScreen note draft', () => {
+  const draftKey = `hm-draft:note:${tripPlaceId(1)}`;
+
+  it('saves_a_draft_left_by_an_earlier_visit', async () => {
+    window.sessionStorage.setItem(draftKey, 'Book a table');
+    const bodies = record(endpoints.updateTripPlace, (body) =>
+      okResponse(endpoints.updateTripPlace, {
+        tripPlace: { ...buildTripPlace(1), note: (body as { note: string }).note },
+        planVersion: 7,
+      }),
+    );
+    renderPlanner(buildPlan(), `/en/trips/${TRIP_ID}?place=${tripPlaceId(1)}`);
+
+    expect(await screen.findByRole('textbox', { name: 'Your note' })).toHaveValue('Book a table');
+    await waitFor(() => expect(bodies).toEqual([{ note: 'Book a table' }]), { timeout: 2000 });
+    await waitFor(() => expect(window.sessionStorage.getItem(draftKey)).toBeNull());
+  });
+
+  it('drops_a_draft_the_server_already_has', async () => {
+    const plan = buildPlan();
+    const noted = {
+      ...plan,
+      places: plan.places.map((place) =>
+        place.id === tripPlaceId(1) ? { ...place, note: 'Go early' } : place,
+      ),
+    };
+    window.sessionStorage.setItem(draftKey, 'Go early');
+    renderPlanner(noted, `/en/trips/${TRIP_ID}?place=${tripPlaceId(1)}`);
+
+    expect(await screen.findByRole('textbox', { name: 'Your note' })).toHaveValue('Go early');
+    await waitFor(() => expect(window.sessionStorage.getItem(draftKey)).toBeNull());
   });
 });
 
