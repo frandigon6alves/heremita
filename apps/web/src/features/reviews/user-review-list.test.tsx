@@ -8,9 +8,9 @@ import {
   problemResponse,
   setupApiServer,
   TEST_REQUEST_ID,
-} from '../../../../../../../test/msw/handlers';
-import { renderWithProviders } from '../../../../../../../test/render';
-import { UserReviews } from './user-reviews';
+} from '../../../test/msw/handlers';
+import { renderWithProviders } from '../../../test/render';
+import { UserReviewList } from './user-review-list';
 
 const server = setupApiServer();
 const USER_ID = '0195f0c8-0000-7000-8000-00000000c001';
@@ -37,9 +37,9 @@ function buildReview(overrides: Partial<Review> = {}): Review {
 
 const page = (items: Review[], nextCursor: string | null = null) => ({ items, nextCursor });
 
-describe('UserReviews', () => {
+describe('UserReviewList', () => {
   it('shows_place_link_stars_visit_month_and_text', () => {
-    renderWithProviders(<UserReviews userId={USER_ID} initialPage={page([buildReview()])} />);
+    renderWithProviders(<UserReviewList userId={USER_ID} initialPage={page([buildReview()])} />);
     const review = screen.getByRole('article');
 
     expect(within(review).getByRole('link', { name: 'Castelo de São Jorge' })).toHaveAttribute(
@@ -53,14 +53,14 @@ describe('UserReviews', () => {
 
   it('tells_the_author_a_review_is_hidden', () => {
     renderWithProviders(
-      <UserReviews userId={USER_ID} initialPage={page([buildReview({ status: 'hidden' })])} />,
+      <UserReviewList userId={USER_ID} initialPage={page([buildReview({ status: 'hidden' })])} />,
     );
 
     expect(screen.getByText('Hidden by moderation: only you see it.')).toBeVisible();
   });
 
   it('says_when_there_are_none', () => {
-    renderWithProviders(<UserReviews userId={USER_ID} initialPage={page([])} />, {
+    renderWithProviders(<UserReviewList userId={USER_ID} initialPage={page([])} />, {
       locale: 'pt-BR',
     });
 
@@ -78,7 +78,7 @@ describe('UserReviews', () => {
       }),
     );
     const { user } = renderWithProviders(
-      <UserReviews userId={USER_ID} initialPage={page([buildReview()], 'cursor-2')} />,
+      <UserReviewList userId={USER_ID} initialPage={page([buildReview()], 'cursor-2')} />,
     );
 
     await user.click(screen.getByRole('button', { name: 'Load more' }));
@@ -92,7 +92,7 @@ describe('UserReviews', () => {
 
   it('shows_an_error_with_retry_when_the_first_page_fails', async () => {
     server.use(failWith(endpoints.listUserReviews, 'internal_error'));
-    renderWithProviders(<UserReviews userId={USER_ID} />);
+    renderWithProviders(<UserReviewList userId={USER_ID} />);
 
     expect(
       await screen.findByRole('heading', { name: 'The reviews could not be loaded.' }),

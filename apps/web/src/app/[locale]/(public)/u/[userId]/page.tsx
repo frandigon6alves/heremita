@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { ProfileHeader } from '@/features/explore/profile-header';
 import { UserTrips } from '@/features/explore/user-trips';
+import { UserReviewList } from '@/features/reviews/user-review-list';
 import { routes } from '@/lib/routes';
 import { routing } from '@/i18n/routing';
-import { UserReviews } from './_components/user-reviews';
 import { loadFirstPages, loadProfile } from './load-profile';
 import styles from './profile-page.module.css';
 
@@ -44,7 +44,7 @@ export default async function ProfilePage({ params }: PageProps<'/[locale]/u/[us
         <h2 id="reviews-heading" className={styles.sectionTitle}>
           {t('reviewsHeading')}
         </h2>
-        <UserReviews userId={profile.id} initialPage={firstPages.reviews} />
+        <UserReviewList userId={profile.id} initialPage={firstPages.reviews} />
       </section>
     </main>
   );

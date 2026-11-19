@@ -13,9 +13,9 @@ import { ErrorState } from '@/shared/components/error-state/error-state';
 import { FormAlert } from '@/shared/components/form-alert/form-alert';
 import { RatingStars } from '@/shared/components/rating-stars/rating-stars';
 import { Skeleton, SkeletonBlock } from '@/shared/components/skeleton/skeleton';
-import styles from './user-reviews.module.css';
+import styles from './user-review-list.module.css';
 
-export interface UserReviewsProps {
+export interface UserReviewListProps {
   userId: string;
   initialPage?: Page<Review>;
 }
@@ -24,7 +24,7 @@ export interface UserReviewsProps {
  * A traveller's reviews (E17), newest first: place (link to its page),
  * stars, visit month and text. Own hidden reviews say so.
  */
-export function UserReviews({ userId, initialPage }: UserReviewsProps) {
+export function UserReviewList({ userId, initialPage }: UserReviewListProps) {
   const t = useTranslations('explore.profile');
   const tActions = useTranslations('common.actions');
   const locale = useLocale();
