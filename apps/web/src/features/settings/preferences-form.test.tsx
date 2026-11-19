@@ -70,6 +70,24 @@ describe('PreferencesForm', () => {
     expect(router.refresh).toHaveBeenCalled();
   });
 
+  it('keeps_the_chosen_theme_when_a_viewer_refetch_was_in_flight', async () => {
+    recordPatches();
+    server.use(
+      onEndpoint(endpoints.getMe, async () => {
+        await delay(100);
+        return okResponse(endpoints.getMe, buildMe({ theme: 'light' }));
+      }),
+    );
+    const { user, queryClient } = renderForm();
+    void queryClient.refetchQueries({ queryKey: queryKeys.viewer });
+
+    await user.click(screen.getByRole('radio', { name: 'Dark' }));
+    await delay(150);
+
+    expect(queryClient.getQueryData(queryKeys.viewer)).toMatchObject({ theme: 'dark' });
+    expect(screen.getByRole('radio', { name: 'Dark' })).toBeChecked();
+  });
+
   it('chooses_a_theme_with_the_keyboard', async () => {
     const bodies = recordPatches();
     const { user } = renderForm();

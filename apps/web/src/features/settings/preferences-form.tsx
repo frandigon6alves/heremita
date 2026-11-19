@@ -54,7 +54,9 @@ export function PreferencesForm() {
 
   const theme = useMutation({
     mutationFn: (value: Theme) => apiFetch(endpoints.updateMe, { body: { theme: value } }),
-    onMutate: (value) => {
+    onMutate: async (value) => {
+      // A viewer refetch in flight would land after the optimistic theme and undo it.
+      await queryClient.cancelQueries({ queryKey: queryKeys.viewer });
       const previous = queryClient.getQueryData<Me | null>(queryKeys.viewer);
       if (previous) {
         queryClient.setQueryData(queryKeys.viewer, { ...previous, theme: value });
