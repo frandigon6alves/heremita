@@ -113,7 +113,8 @@
 
   /* Type: font families come from next/font (variables set on <html> by the root layout). */
   --font-heading: var(--font-fraunces), Georgia, 'Times New Roman', serif;
-  --font-body: var(--font-atkinson), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body:
+    var(--font-atkinson), 'Atkinson Fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   --text-xs: 12px;
   --text-sm: 14px;

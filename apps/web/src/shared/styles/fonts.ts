@@ -14,6 +14,7 @@ export const atkinson = Atkinson_Hyperlegible_Next({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-atkinson',
-  // next/font has no metric overrides for this family; the stack in tokens.css is the fallback.
+  // next/font has no metric overrides for this family: base.css declares the
+  // metric-matched 'Atkinson Fallback' that tokens.css puts next in the stack.
   adjustFontFallback: false,
 });

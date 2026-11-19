@@ -1,5 +1,20 @@
 /* Document-wide styles on top of the reset. Everything else lives in CSS Modules. */
 
+/*
+ * Arial resized to Atkinson Hyperlegible Next's metrics, so body text keeps its
+ * line breaks and height when the web font swaps in (no layout shift). next/font
+ * has no override values for this family; these come from the latin file with
+ * next/font's own formula (fontkit; size-adjust from the average a–z width).
+ */
+@font-face {
+  font-family: 'Atkinson Fallback';
+  src: local('Arial');
+  ascent-override: 99.04%;
+  descent-override: 31.8%;
+  line-gap-override: 0%;
+  size-adjust: 99.36%;
+}
+
 html {
   background: var(--color-bg);
   color: var(--color-text);
