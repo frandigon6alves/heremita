@@ -193,9 +193,12 @@ export function PinsLayer({ pins, selectedId, onSelect, cluster = false }: PinsL
     }
   }, [map, theme, cluster, fonts]);
 
-  useEffect(() => {
+  // Callers build `pins` on every render: only a change of content re-clusters the source.
+  const content = JSON.stringify(pins);
+  const pushData = useEffectEvent(() => {
     void map.getSource<GeoJSONSource>(PINS_SOURCE)?.setData(toFeatureCollection(pins));
-  }, [map, pins, theme, cluster, fonts]);
+  });
+  useEffect(() => pushData(), [map, content, theme, cluster, fonts]);
 
   useEffect(() => {
     if (selectedId === null) {

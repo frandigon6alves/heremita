@@ -255,6 +255,23 @@ describe('PinsLayer', () => {
     ]);
   });
 
+  it('keeps_the_source_when_rerendered_with_equal_pins', () => {
+    const { map, rerender } = renderInMap(
+      <PinsLayer pins={pins} selectedId={null} onSelect={vi.fn()} />,
+    );
+    const source = map.getSource('h-places');
+    if (!source) {
+      throw new Error('pins source missing');
+    }
+    const setData = vi.spyOn(source, 'setData');
+
+    rerender(
+      <PinsLayer pins={pins.map((pin) => ({ ...pin }))} selectedId={null} onSelect={vi.fn()} />,
+    );
+
+    expect(setData).not.toHaveBeenCalled();
+  });
+
   it('clusters_pins_below_zoom_12_when_asked', () => {
     const { map } = renderInMap(
       <PinsLayer pins={pins} selectedId={null} onSelect={vi.fn()} cluster />,

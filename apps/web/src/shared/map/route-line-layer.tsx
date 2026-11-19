@@ -1,7 +1,7 @@
 'use client';
 
 import type { GeoJSONSource } from 'maplibre-gl';
-import { useEffect } from 'react';
+import { useEffect, useEffectEvent } from 'react';
 import type { LngLat } from './geo';
 import { isMapAlive, useMap } from './map-context';
 import { PINS_HIT_LAYER } from './pins-layer';
@@ -120,9 +120,12 @@ export function RouteLineLayer({ lines, dimmed = false }: RouteLineLayerProps) {
     }
   }, [map, dimmed]);
 
-  useEffect(() => {
+  // Callers build `lines` on every render: only a change of content resets the source.
+  const content = JSON.stringify(lines);
+  const pushData = useEffectEvent(() => {
     void map.getSource<GeoJSONSource>(SOURCE)?.setData(toFeatureCollection(lines));
-  }, [map, lines, theme]);
+  });
+  useEffect(() => pushData(), [map, content, theme]);
 
   return null;
 }

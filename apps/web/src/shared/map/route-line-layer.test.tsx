@@ -50,6 +50,27 @@ const routeData = (map: FakeMap) =>
   map.getSource('h-route')?.data as GeoJSON.FeatureCollection<GeoJSON.LineString>;
 
 describe('RouteLineLayer', () => {
+  it('keeps_the_source_when_rerendered_with_equal_lines', () => {
+    const { map, rerender } = renderInMap(<RouteLineLayer lines={[routed, estimate]} />);
+    const source = map.getSource('h-route');
+    if (!source) {
+      throw new Error('route source missing');
+    }
+    const setData = vi.spyOn(source, 'setData');
+
+    rerender(<RouteLineLayer lines={[{ ...routed }, { ...estimate }]} />);
+
+    expect(setData).not.toHaveBeenCalled();
+  });
+
+  it('replaces_the_source_data_when_the_lines_change', () => {
+    const { map, rerender } = renderInMap(<RouteLineLayer lines={[routed]} />);
+
+    rerender(<RouteLineLayer lines={[routed, estimate]} />);
+
+    expect(routeData(map).features).toHaveLength(2);
+  });
+
   it('draws_casing_then_routed_then_estimated_lines', () => {
     const { map } = renderInMap(<RouteLineLayer lines={[routed, estimate]} />);
 
