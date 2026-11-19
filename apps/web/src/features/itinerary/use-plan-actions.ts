@@ -118,6 +118,49 @@ function restoreInput(tripPlace: TripPlaceOwner): PlaceInput {
 }
 
 /**
+ * The requests of one add: the trip place (with its first stop), then any extra
+ * stops. A place already in the trip is scheduled instead of added twice.
+ */
+async function saveAddedPlace(
+  tripId: string,
+  { place, note, dayId, index, extraStops = [] }: AddPlaceRequest,
+): Promise<AddResult> {
+  const schedule = dayId === null ? null : { dayId, index };
+  let response: AddTripPlaceResponse;
+  try {
+    response = await apiFetch(apiRoutes.addTripPlace, {
+      params: { tripId },
+      body: { place, note: note ?? null, schedule },
+    });
+  } catch (error) {
+    const existing = hasCode(error, 'place_already_in_trip') ? error.tripPlaceId : undefined;
+    if (existing === undefined) {
+      throw error;
+    }
+    if (schedule === null) {
+      return { kind: 'existing', tripPlaceId: existing, stopId: null };
+    }
+    const added = await apiFetch(apiRoutes.addStop, {
+      params: { tripId, dayId: schedule.dayId },
+      body: { tripPlaceId: existing, index: schedule.index },
+    });
+    return { kind: 'existing', tripPlaceId: existing, stopId: added.stop.id };
+  }
+  const failedStops: ExtraStop[] = [];
+  for (const stop of extraStops) {
+    try {
+      await apiFetch(apiRoutes.addStop, {
+        params: { tripId, dayId: stop.dayId },
+        body: { tripPlaceId: response.tripPlace.id, index: stop.index },
+      });
+    } catch {
+      failedStops.push(stop);
+    }
+  }
+  return { kind: 'created', tripPlaceId: response.tripPlace.id, response, failedStops };
+}
+
+/**
  * Every plan edit the planner offers (§I.web.mutations), each one an
  * optimistic, serial, rolled-back-on-failure mutation; deletes come with Undo.
  * `onAdded` receives the trip place an add ended on, to select it.
@@ -127,6 +170,15 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
   const tActions = useTranslations('common.actions');
 
   const queryClient = useQueryClient();
+
+  function showUndoToast(message: string, onUndo: () => void) {
+    showToast({ message, action: { label: tActions('undo'), onAction: onUndo } });
+  }
+
+  /** Same day full or not: a stop that could not land, by move or by add. */
+  function stopFailureMessage({ name, target }: TargetedStop | TargetedMove, error: unknown) {
+    return hasCode(error, 'day_full') ? t('dayFull', { target }) : t('moveFailed', { name });
+  }
 
   /** The day number (or `ideas`) read before the edit: toasts keep it even if days renumber. */
   function targetName(dayId: string | null): string {
@@ -138,41 +190,7 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
   const addPlace = usePlanMutation<AddVariables, AddResult>({
     tripId,
     changesCounts: true,
-    mutationFn: async ({ place, note, dayId, index, extraStops = [] }) => {
-      const schedule = dayId === null ? null : { dayId, index };
-      let response: AddTripPlaceResponse;
-      try {
-        response = await apiFetch(apiRoutes.addTripPlace, {
-          params: { tripId },
-          body: { place, note: note ?? null, schedule },
-        });
-      } catch (error) {
-        const existing = hasCode(error, 'place_already_in_trip') ? error.tripPlaceId : undefined;
-        if (existing === undefined) {
-          throw error;
-        }
-        if (schedule === null) {
-          return { kind: 'existing', tripPlaceId: existing, stopId: null };
-        }
-        const added = await apiFetch(apiRoutes.addStop, {
-          params: { tripId, dayId: schedule.dayId },
-          body: { tripPlaceId: existing, index: schedule.index },
-        });
-        return { kind: 'existing', tripPlaceId: existing, stopId: added.stop.id };
-      }
-      const failedStops: ExtraStop[] = [];
-      for (const stop of extraStops) {
-        try {
-          await apiFetch(apiRoutes.addStop, {
-            params: { tripId, dayId: stop.dayId },
-            body: { tripPlaceId: response.tripPlace.id, index: stop.index },
-          });
-        } catch {
-          failedStops.push(stop);
-        }
-      }
-      return { kind: 'created', tripPlaceId: response.tripPlace.id, response, failedStops };
-    },
+    mutationFn: (variables) => saveAddedPlace(tripId, variables),
     optimistic: (plan, { pendingId, pendingStopId, preview, rating, note, dayId, index }) =>
       applyAddTripPlace(
         plan,
@@ -233,29 +251,23 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
         });
         return;
       }
-      showToast({
-        message: t('added', { name: preview.name, target }),
-        action: {
-          label: tActions('undo'),
-          onAction: () => {
-            if (result.kind === 'created') {
-              const plan = readOwnerPlan(client, tripId);
-              const tripPlace = plan && findPlace(plan, result.tripPlaceId);
-              if (tripPlace) {
-                deletePlace.mutate({ tripPlace, stops: [] });
-              }
-            } else if (result.stopId !== null && dayId !== null) {
-              removeStop.mutate({
-                stopId: result.stopId,
-                name: preview.name,
-                dayId,
-                index: 0,
-                tripPlaceId: result.tripPlaceId,
-                target,
-              });
-            }
-          },
-        },
+      showUndoToast(t('added', { name: preview.name, target }), () => {
+        if (result.kind === 'created') {
+          const plan = readOwnerPlan(client, tripId);
+          const tripPlace = plan && findPlace(plan, result.tripPlaceId);
+          if (tripPlace) {
+            deletePlace.mutate({ tripPlace, stops: [] });
+          }
+        } else if (result.stopId !== null && dayId !== null) {
+          removeStop.mutate({
+            stopId: result.stopId,
+            name: preview.name,
+            dayId,
+            index: 0,
+            tripPlaceId: result.tripPlaceId,
+            target,
+          });
+        }
       });
     },
   });
@@ -273,8 +285,7 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
       const position = stops.findIndex((stop) => stop.id === stopId) + 1;
       return t('moved', { name, position, total: stops.length, target });
     },
-    failureMessage: ({ name, target }, error) =>
-      hasCode(error, 'day_full') ? t('dayFull', { target }) : t('moveFailed', { name }),
+    failureMessage: stopFailureMessage,
   });
 
   const addStop = usePlanMutation<TargetedStop, unknown>({
@@ -283,8 +294,7 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
       apiFetch(apiRoutes.addStop, { params: { tripId, dayId }, body: { tripPlaceId, index } }),
     optimistic: (plan, { dayId, tripPlaceId, index, stopId }) =>
       applyAddStop(plan, dayId, { id: stopId, tripPlaceId, modeToNext: null }, index),
-    failureMessage: ({ name, target }, error) =>
-      hasCode(error, 'day_full') ? t('dayFull', { target }) : t('moveFailed', { name }),
+    failureMessage: stopFailureMessage,
   });
 
   const removeStop = usePlanMutation<TargetedStop, unknown>({
@@ -293,13 +303,9 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
     optimistic: (plan, { stopId }) => applyRemoveStop(plan, stopId),
     failureMessage: ({ name }) => t('removeFailed', { name }),
     onSuccess: (_data, variables) => {
-      showToast({
-        message: t('removed', { name: variables.name, target: variables.target }),
-        action: {
-          label: tActions('undo'),
-          onAction: () => addStop.mutate({ ...variables, stopId: newPendingId() }),
-        },
-      });
+      showUndoToast(t('removed', { name: variables.name, target: variables.target }), () =>
+        addStop.mutate({ ...variables, stopId: newPendingId() }),
+      );
     },
   });
 
@@ -312,22 +318,17 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
     failureMessage: ({ tripPlace }) => t('deleteFailed', { name: tripPlace.place.name }),
     onSuccess: (_data, { tripPlace, stops }) => {
       const [first, ...others] = stops;
-      showToast({
-        message: t('deleted', { name: tripPlace.place.name }),
-        action: {
-          label: tActions('undo'),
-          onAction: () =>
-            add({
-              place: restoreInput(tripPlace),
-              preview: tripPlace.place,
-              rating: tripPlace.rating,
-              note: tripPlace.note,
-              dayId: first?.dayId ?? null,
-              index: first?.index,
-              extraStops: others,
-            }),
-        },
-      });
+      showUndoToast(t('deleted', { name: tripPlace.place.name }), () =>
+        add({
+          place: restoreInput(tripPlace),
+          preview: tripPlace.place,
+          rating: tripPlace.rating,
+          note: tripPlace.note,
+          dayId: first?.dayId ?? null,
+          index: first?.index,
+          extraStops: others,
+        }),
+      );
     },
   });
 
@@ -404,21 +405,21 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
         announce(t('orderRestored'));
         return;
       }
-      showToast({
-        message: t('ordered'),
-        action: {
-          label: tActions('undo'),
-          onAction: () =>
-            order.mutate({
-              dayId: variables.dayId,
-              stopIds: variables.previous,
-              previous: variables.stopIds,
-              undo: true,
-            }),
-        },
-      });
+      showUndoToast(t('ordered'), () =>
+        order.mutate({
+          dayId: variables.dayId,
+          stopIds: variables.previous,
+          previous: variables.stopIds,
+          undo: true,
+        }),
+      );
     },
   });
+
+  /** Appends a day for a move or schedule onto it; `null` when that failed (already a toast). */
+  function appendDay(): Promise<DayOwner | null> {
+    return createDay.mutateAsync({ pendingId: newPendingId() }).catch(() => null);
+  }
 
   function add(request: AddPlaceRequest) {
     addPlace.mutate({
@@ -458,13 +459,13 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
       createDay.mutate({ pendingId: newPendingId() });
     },
     moveToNewDay: async ({ stopId, name }: { stopId: string; name: string }) => {
-      const day = await createDay.mutateAsync({ pendingId: newPendingId() }).catch(() => null);
+      const day = await appendDay();
       if (day) {
         moveStop.mutate({ stopId, name, dayId: day.id, index: 0, target: targetName(day.id) });
       }
     },
     scheduleOnNewDay: async ({ tripPlaceId, name }: { tripPlaceId: string; name: string }) => {
-      const day = await createDay.mutateAsync({ pendingId: newPendingId() }).catch(() => null);
+      const day = await appendDay();
       if (day) {
         addStop.mutate({
           tripPlaceId,
