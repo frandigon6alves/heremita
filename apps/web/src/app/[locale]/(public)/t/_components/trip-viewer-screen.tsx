@@ -119,14 +119,14 @@ function TripViewerScreen({ source, plan, signedIn, path }: TripViewerScreenProp
   const locale = useLocale();
   const params = usePlannerParams();
   const [copy, setCopy] = useQueryState('copy', copyParam);
-  const selection = resolveDaySelection(plan, params.day);
+  // Without `?day=` the first render's day stays selected when a refetch changes the plan.
+  const [openingDay] = useState(() => defaultDaySelection(plan));
+  const selection = resolveDaySelection(plan, params.day ?? openingDay);
   const selectedPlace = params.place === null ? undefined : findPlace(plan, params.place);
   const wide = useMediaQuery(PANEL_QUERY);
   const route = useSelectionRoute({ source, plan, selection, mode: params.mode });
 
-  const [snap, setSnap] = useState<Snap>(() =>
-    defaultDaySelection(plan) === IDEAS ? 'peek' : 'half',
-  );
+  const [snap, setSnap] = useState<Snap>(openingDay === IDEAS ? 'peek' : 'half');
   const [sheetHeight, setSheetHeight] = useState(0);
   const [focusCard, setFocusCard] = useState(false);
   const [reporting, setReporting] = useState(false);

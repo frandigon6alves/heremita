@@ -105,14 +105,14 @@ export function PlannerScreen({ tripId, initialPlan, initialUpdatedAt }: Planner
   });
   const plan = data.viewerRole === 'owner' ? data : initialPlan;
   const params = usePlannerParams();
-  const selection = resolveDaySelection(plan, params.day);
+  // Without `?day=` the first render's day stays selected while the plan is edited.
+  const [openingDay] = useState(() => defaultDaySelection(initialPlan));
+  const selection = resolveDaySelection(plan, params.day ?? openingDay);
   const selectedPlace = params.place === null ? undefined : findPlace(plan, params.place);
   const online = useOnline();
   const wide = useMediaQuery(PANEL_QUERY);
 
-  const [snap, setSnap] = useState<Snap>(() =>
-    defaultDaySelection(initialPlan) === IDEAS ? 'peek' : 'half',
-  );
+  const [snap, setSnap] = useState<Snap>(openingDay === IDEAS ? 'peek' : 'half');
   const [sheetHeight, setSheetHeight] = useState(0);
   const [centre, setCentre] = useState<MapCentre | null>(null);
   const [candidate, setCandidate] = useState<Candidate | null>(null);

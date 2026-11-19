@@ -179,6 +179,18 @@ describe('PlannerScreen read path', () => {
     expect(screen.getByRole('button', { name: 'Day: Day 2' })).toBeInTheDocument();
   });
 
+  it('stays_on_the_opening_day_when_its_last_stop_is_removed', async () => {
+    const plan = applyRemoveStop(applyRemoveStop(buildPlan(), stopId(2)), stopId(3));
+    record(endpoints.deleteStop, () => okResponse(endpoints.deleteStop, { planVersion: 8 }));
+    const { user } = renderPlanner(plan);
+    await screen.findByRole('button', { name: 'Actions for Castelo de São Jorge' });
+
+    await user.click(rowItem('Castelo de São Jorge', 'Remove from day'));
+
+    expect(screen.getByRole('button', { name: 'Day 1', pressed: true })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'No places on this day yet' })).toBeInTheDocument();
+  });
+
   it('explains_an_empty_day', async () => {
     const plan = buildPlan();
     const { user } = renderPlanner(applyRemoveStop(plan, stopId(4)));
