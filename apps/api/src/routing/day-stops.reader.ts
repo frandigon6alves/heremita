@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { LngLat, TravelMode } from '@heremita/shared';
-import { ApiProblem } from '../core/http/api-problem.js';
+import { dayNotFound } from '../core/http/problems.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { PlannedLeg } from './leg-router.js';
 
@@ -42,7 +42,7 @@ export class DayStopsReader {
       },
     });
     if (!day) {
-      throw new ApiProblem('not_found', 'No such day in this trip.');
+      throw dayNotFound();
     }
     return {
       dayId,

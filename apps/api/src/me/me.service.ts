@@ -5,6 +5,7 @@ import { SessionService, type IssuedSession } from '../auth/session.service.js';
 import { CLOCK, type Clock } from '../core/clock/clock.js';
 import { ApiProblem } from '../core/http/api-problem.js';
 import type { SessionUser } from '../core/http/api-request.js';
+import { invalidFields, unauthenticated } from '../core/http/problems.js';
 import {
   assertUncommonPassword,
   hashPassword,
@@ -18,10 +19,6 @@ type DeleteAccountBody = EndpointInput<typeof endpoints.deleteAccount>['body'];
 
 const NEW_PASSWORD_POINTER = '/body/newPassword';
 
-function unauthenticated(): ApiProblem {
-  return new ApiProblem('unauthenticated', 'Sign in to continue.');
-}
-
 function wrongPassword(pointer: string): ApiProblem {
   return new ApiProblem('wrong_password', 'The password is wrong.', {
     errors: [{ pointer, detail: 'The password is wrong.' }],
@@ -33,11 +30,9 @@ function assertNotEmailDerived(password: string, email: string): void {
   const candidate = password.toLowerCase();
   const localPart = email.slice(0, email.lastIndexOf('@'));
   if (candidate === email || candidate === localPart) {
-    throw new ApiProblem('validation_failed', 'The request has invalid fields.', {
-      errors: [
-        { pointer: NEW_PASSWORD_POINTER, detail: 'Password must not be the e-mail address' },
-      ],
-    });
+    throw invalidFields([
+      { pointer: NEW_PASSWORD_POINTER, detail: 'Password must not be the e-mail address' },
+    ]);
   }
 }
 

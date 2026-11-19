@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { LIMITS, type DayRoute, type OrderSuggestion, type TravelMode } from '@heremita/shared';
 import { ApiProblem } from '../core/http/api-problem.js';
 import type { SessionUser } from '../core/http/api-request.js';
+import { tripNotFound } from '../core/http/problems.js';
 import { TripAccessService } from '../core/trip-access.service.js';
 import type { TripRef } from '../core/trip-access.js';
 import { OSM_ATTRIBUTION } from '../providers/core/contract.js';
@@ -58,7 +59,7 @@ export class RoutingService {
   ): Promise<OrderSuggestion> {
     const { role } = await this.access.require({ tripId }, owner);
     if (role !== 'owner') {
-      throw new ApiProblem('trip_not_found', 'No such trip.');
+      throw tripNotFound();
     }
     const day = await this.days.read(tripId, dayId);
     if (day.stops.length < LIMITS.OPTIMISE_MIN_STOPS) {

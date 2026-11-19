@@ -1,11 +1,8 @@
 import { LIMITS, type TravelMode } from '@heremita/shared';
 import { ApiProblem } from '../core/http/api-problem.js';
+import { dayNotFound } from '../core/http/problems.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { insertAt, writeDayOrder } from './day-order.js';
-
-export function dayNotFound(): ApiProblem {
-  return new ApiProblem('not_found', 'No such day in this trip.');
-}
 
 export function stopNotFound(): ApiProblem {
   return new ApiProblem('not_found', 'No such stop in this trip.');

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { ApiProblem } from './http/api-problem.js';
+import { tripNotFound } from './http/problems.js';
 import { decideTripAccess, type TripRef, type TripRole } from './trip-access.js';
 
 export interface TripAccess {
@@ -37,7 +37,7 @@ export class TripAccessService {
   async require(ref: TripRef, viewer: { id: string } | null): Promise<TripAccess> {
     const access = await this.resolve(ref, viewer);
     if (!access) {
-      throw new ApiProblem('trip_not_found', 'No such trip.');
+      throw tripNotFound();
     }
     return access;
   }

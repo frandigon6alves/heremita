@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { TripPlan } from '@heremita/shared';
 import type { SessionUser } from '../core/http/api-request.js';
+import { tripNotFound } from '../core/http/problems.js';
 import { TripAccessService } from '../core/trip-access.service.js';
 import type { TripRef } from '../core/trip-access.js';
 import { RatingSummaryReader } from '../core/rating-summary.reader.js';
@@ -16,7 +17,6 @@ import {
   ratingOf,
   TRIP_PLACE_SELECT,
 } from './plan.mapper.js';
-import { tripNotFound } from './plan-lock.js';
 import { plannedLegs, summariseDayRoute, type RouteStop } from './route-summaries.js';
 
 /**

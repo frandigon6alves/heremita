@@ -9,6 +9,7 @@ import {
 } from '@heremita/shared';
 import { andAuthorNotBlockedBy } from '../core/block-filter.js';
 import { ApiProblem } from '../core/http/api-problem.js';
+import { placeNotFound } from '../core/http/problems.js';
 import { summariseRatings, RatingSummaryReader } from '../core/rating-summary.reader.js';
 import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -110,7 +111,7 @@ export class PlacesService {
       },
     });
     if (!place) {
-      throw new ApiProblem('place_not_found', 'No such place.');
+      throw placeNotFound();
     }
     const [ratings, inMyTrips, myReview] = await Promise.all([
       this.ratings.read([place.id], viewerId),

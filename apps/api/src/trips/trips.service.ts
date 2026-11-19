@@ -12,6 +12,7 @@ import {
 import { CLOCK, type Clock } from '../core/clock/clock.js';
 import { CURSOR_TUPLES, decodeCursor, toPage } from '../core/cursor.js';
 import { ApiProblem } from '../core/http/api-problem.js';
+import { tripNotFound } from '../core/http/problems.js';
 import type { SessionUser } from '../core/http/api-request.js';
 import { TripAccessService } from '../core/trip-access.service.js';
 import type { TripRef } from '../core/trip-access.js';
@@ -44,10 +45,6 @@ const MY_TRIP_CARD_SELECT = {
   updatedAt: true,
   _count: { select: { days: true, tripPlaces: true } },
 } as const satisfies Prisma.TripSelect;
-
-function tripNotFound(): ApiProblem {
-  return new ApiProblem('trip_not_found', 'No such trip.');
-}
 
 function destinationColumns(destination: DestinationBody) {
   return {

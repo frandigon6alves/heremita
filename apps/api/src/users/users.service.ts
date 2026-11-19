@@ -10,7 +10,7 @@ import {
 import { fromDbLocale } from '../auth/me.mapper.js';
 import { userNotBlockedBy } from '../core/block-filter.js';
 import { CURSOR_TUPLES, decodeCursor, toPage } from '../core/cursor.js';
-import { ApiProblem } from '../core/http/api-problem.js';
+import { userNotFound } from '../core/http/problems.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { PublicTripsReader } from '../discovery/public-trips.reader.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -18,10 +18,6 @@ import { PrismaService } from '../prisma/prisma.service.js';
 type PageQuery = EndpointInput<typeof endpoints.listUserTrips>['query'];
 
 const USER_CARD_SELECT = { id: true, displayName: true, isDemo: true } as const;
-
-function userNotFound(): ApiProblem {
-  return new ApiProblem('user_not_found', 'No such user.');
-}
 
 /** `YYYY-MM` of a UTC instant or calendar date. */
 function yearMonth(date: Date): string {

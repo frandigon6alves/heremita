@@ -1,6 +1,7 @@
 import type { EndpointDef, ErrorCode, ProblemFieldError } from '@heremita/shared';
 import type { z } from 'zod';
 import { ApiProblem } from './api-problem.js';
+import { invalidFields } from './problems.js';
 import type { ContractInput } from './api-request.js';
 
 type InputPart = 'query' | 'body';
@@ -69,7 +70,7 @@ export function parseInput(def: EndpointDef, raw: ContractInput): ContractInput 
     }
   }
   if (errors.length > 0) {
-    throw new ApiProblem('validation_failed', 'The request has invalid fields.', { errors });
+    throw invalidFields(errors);
   }
   return parsed;
 }

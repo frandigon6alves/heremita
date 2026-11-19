@@ -8,10 +8,11 @@ import {
 } from '@heremita/shared';
 import { CLOCK, type Clock } from '../core/clock/clock.js';
 import { ApiProblem } from '../core/http/api-problem.js';
+import { dayNotFound } from '../core/http/problems.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { insertAt, writeTripDayOrder } from './day-order.js';
 import { lockPlan } from './plan-lock.js';
-import { dayIdsOf, dayNotFound, dayOfTrip } from './plan-queries.js';
+import { dayIdsOf, dayOfTrip } from './plan-queries.js';
 import { toDayOwner } from './plan.mapper.js';
 
 type CreateDayBody = EndpointInput<typeof endpoints.createDay>['body'];

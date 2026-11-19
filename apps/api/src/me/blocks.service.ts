@@ -3,6 +3,7 @@ import type { EndpointInput, endpoints, Page, UserCard } from '@heremita/shared'
 import { CLOCK, type Clock } from '../core/clock/clock.js';
 import { CURSOR_TUPLES, decodeCursor, toPage } from '../core/cursor.js';
 import { ApiProblem } from '../core/http/api-problem.js';
+import { userNotFound } from '../core/http/problems.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 type ListBlocksQuery = EndpointInput<typeof endpoints.listBlocks>['query'];
@@ -52,7 +53,7 @@ export class BlocksService {
       select: { id: true },
     });
     if (!target) {
-      throw new ApiProblem('user_not_found', 'No such user.');
+      throw userNotFound();
     }
     await this.prisma.userBlock.createMany({
       data: [{ blockerId, blockedId, createdAt: this.clock.now() }],

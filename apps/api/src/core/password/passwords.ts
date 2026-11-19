@@ -1,6 +1,5 @@
 import { hash, verify } from '@node-rs/argon2';
-import type { ProblemFieldError } from '@heremita/shared';
-import { ApiProblem } from '../http/api-problem.js';
+import { invalidFields } from '../http/problems.js';
 import { COMMON_PASSWORDS } from './common-passwords.js';
 
 /**
@@ -49,9 +48,6 @@ export function isCommonPassword(password: string): boolean {
 /** 422 `validation_failed` at `pointer` (`/body/password`, `/body/newPassword`) for a common password. */
 export function assertUncommonPassword(password: string, pointer: string): void {
   if (isCommonPassword(password)) {
-    const errors: ProblemFieldError[] = [
-      { pointer, detail: 'This password is too common. Choose another one.' },
-    ];
-    throw new ApiProblem('validation_failed', 'The request has invalid fields.', { errors });
+    throw invalidFields([{ pointer, detail: 'This password is too common. Choose another one.' }]);
   }
 }

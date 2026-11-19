@@ -1,5 +1,5 @@
 import type { TravelMode } from '@heremita/shared';
-import { ApiProblem } from '../core/http/api-problem.js';
+import { tripNotFound } from '../core/http/problems.js';
 import type { Prisma } from '../generated/prisma/client.js';
 
 /** What a structural write needs from its trip once the lock is held. */
@@ -14,10 +14,6 @@ interface LockedRow {
   plan_version: number;
   default_mode: TravelMode;
   start_date: Date | null;
-}
-
-export function tripNotFound(): ApiProblem {
-  return new ApiProblem('trip_not_found', 'No such trip.');
 }
 
 /**

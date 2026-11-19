@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { EndpointInput, endpoints, Me } from '@heremita/shared';
 import { ApiProblem } from '../core/http/api-problem.js';
+import { unauthenticated } from '../core/http/problems.js';
 import {
   assertUncommonPassword,
   hashPassword,
@@ -84,7 +85,7 @@ export class AuthService {
   async me(userId: string): Promise<Me> {
     const user = await this.prisma.user.findUnique({ where: { id: userId }, select: ME_SELECT });
     if (!user) {
-      throw new ApiProblem('unauthenticated', 'Sign in to continue.');
+      throw unauthenticated();
     }
     return toMe(user);
   }

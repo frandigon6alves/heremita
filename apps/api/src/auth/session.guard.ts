@@ -2,6 +2,7 @@ import { Injectable, type CanActivate, type ExecutionContext } from '@nestjs/com
 import { Reflector } from '@nestjs/core';
 import { ApiProblem } from '../core/http/api-problem.js';
 import type { ApiRequest } from '../core/http/api-request.js';
+import { unauthenticated } from '../core/http/problems.js';
 import { endpointOf } from '../core/http/endpoint.decorator.js';
 import { SessionCookies } from './session-cookies.js';
 import { SessionService } from './session.service.js';
@@ -35,7 +36,7 @@ export class SessionGuard implements CanActivate {
       return true;
     }
     if (!user) {
-      throw new ApiProblem('unauthenticated', 'Sign in to continue.');
+      throw unauthenticated();
     }
     if (def.auth === 'moderator' && user.role !== 'moderator') {
       throw new ApiProblem('forbidden', 'Only moderators may do this.');

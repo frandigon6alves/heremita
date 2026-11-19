@@ -3,7 +3,7 @@ import type { EndpointInput, endpoints, Page, Review } from '@heremita/shared';
 import { userNotBlockedBy } from '../core/block-filter.js';
 import { CLOCK, type Clock } from '../core/clock/clock.js';
 import { CURSOR_TUPLES, decodeCursor, toPage } from '../core/cursor.js';
-import { ApiProblem } from '../core/http/api-problem.js';
+import { invalidFields, placeNotFound } from '../core/http/problems.js';
 import type { SessionUser } from '../core/http/api-request.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -99,9 +99,9 @@ export class ReviewsService {
   async putMine(user: SessionUser, placeId: string, body: PutBody): Promise<PutReviewResult> {
     const now = this.clock.now();
     if (body.visitedMonth > toVisitedMonth(now)) {
-      throw new ApiProblem('validation_failed', 'The request has invalid fields.', {
-        errors: [{ pointer: '/body/visitedMonth', detail: 'The visit month is in the future.' }],
-      });
+      throw invalidFields([
+        { pointer: '/body/visitedMonth', detail: 'The visit month is in the future.' },
+      ]);
     }
     await this.assertReviewable(placeId);
     const [written] = await this.prisma.$queryRaw<{ id: string; created: boolean }[]>`
@@ -138,7 +138,7 @@ export class ReviewsService {
       select: { id: true },
     });
     if (!place) {
-      throw new ApiProblem('place_not_found', 'No such place.');
+      throw placeNotFound();
     }
   }
 }
