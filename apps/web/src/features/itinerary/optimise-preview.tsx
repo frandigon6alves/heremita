@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
-import { ApiProblemError, HttpError } from '@/lib/api/problem';
+import { hasCode } from '@/lib/api/failure';
 import { orderSuggestionQuery } from '@/lib/api/query-keys';
 import { formatDuration } from '@/lib/format/duration';
 import { Button } from '@/shared/components/button/button';
@@ -22,16 +22,6 @@ interface OptimisePreviewProps {
   /** Applies the suggested order; `previous` is the order shown when it was suggested (Undo). */
   onApply: (stopIds: readonly string[], previous: readonly string[]) => void;
   disabled?: boolean;
-}
-
-function failureOf(error: unknown) {
-  if (error instanceof ApiProblemError) {
-    return { code: error.code, requestId: error.requestId ?? undefined };
-  }
-  if (error instanceof HttpError) {
-    return { code: undefined, requestId: error.requestId ?? undefined };
-  }
-  return { code: undefined, requestId: undefined };
 }
 
 /**
@@ -72,15 +62,14 @@ export function OptimisePreview({
       );
     }
     if (suggestion.isError) {
-      const failure = failureOf(suggestion.error);
+      const tooFew = hasCode(suggestion.error, 'too_few_stops');
       return (
         <ErrorState
           headingLevel={3}
           title={t('failed')}
-          message={failure.code === 'too_few_stops' ? t('tooFew') : undefined}
-          onRetry={failure.code === 'too_few_stops' ? undefined : () => void suggestion.refetch()}
-          code={failure.code}
-          requestId={failure.requestId}
+          message={tooFew ? t('tooFew') : undefined}
+          onRetry={tooFew ? undefined : () => void suggestion.refetch()}
+          error={suggestion.error}
         />
       );
     }

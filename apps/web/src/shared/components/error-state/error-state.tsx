@@ -15,10 +15,6 @@ export interface ErrorStateProps {
   onRetry?: () => void;
   /** What the failed request threw: its API code and request id are quoted to report it. */
   error?: unknown;
-  /** Overrides the code read from `error` (a failure classified elsewhere). */
-  code?: string;
-  /** Overrides the request id read from `error`. */
-  requestId?: string;
   headingLevel?: 2 | 3;
 }
 
@@ -26,16 +22,10 @@ export interface ErrorStateProps {
  * Error state scoped to the region that failed (the rest of the screen keeps
  * working): message, Retry, and the code + request id to report it.
  */
-export function ErrorState({
-  title,
-  message,
-  onRetry,
-  error,
-  code = problemCodeOf(error) ?? undefined,
-  requestId = requestIdOf(error) ?? undefined,
-  headingLevel = 2,
-}: ErrorStateProps) {
+export function ErrorState({ title, message, onRetry, error, headingLevel = 2 }: ErrorStateProps) {
   const t = useTranslations('common');
+  const code = problemCodeOf(error);
+  const requestId = requestIdOf(error);
   const Heading = headingLevel === 2 ? 'h2' : 'h3';
 
   return (

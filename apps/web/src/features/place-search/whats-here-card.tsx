@@ -183,15 +183,13 @@ export function WhatsHereCard({
       );
     }
     if (nearby.isError) {
-      const failure = geocodingFailure(nearby.error);
       return (
         <ErrorState
           headingLevel={3}
           title={t('failed')}
-          message={failureMessage(failure.kind)}
+          message={failureMessage(geocodingFailure(nearby.error).kind)}
           onRetry={() => void nearby.refetch()}
-          code={failure.kind === 'unexpected' ? failure.code : undefined}
-          requestId={failure.kind === 'unexpected' ? failure.requestId : undefined}
+          error={nearby.error}
         />
       );
     }

@@ -4,6 +4,21 @@ import { ApiProblemError, HttpError } from '@/lib/api/problem';
 import { renderWithIntl } from '@/test-utils/render';
 import { ErrorState } from './error-state';
 
+/** A problem document answer with `code`, as `errorFromResponse` builds it. */
+function problem(code: string, requestId: string | null = null): ApiProblemError {
+  return new ApiProblemError(
+    {
+      type: 'about:blank',
+      title: 'Failed',
+      status: 503,
+      detail: 'It failed',
+      instance: '/api/v1/trips',
+      code,
+    },
+    requestId,
+  );
+}
+
 describe('ErrorState', () => {
   it('shows_the_message_retry_code_and_request_id', async () => {
     const retry = vi.fn();
@@ -11,14 +26,13 @@ describe('ErrorState', () => {
       <ErrorState
         message="Your places are still saved."
         onRetry={retry}
-        code="provider_unavailable"
-        requestId="0193a000-aaaa"
+        error={problem('geocoding_unavailable', '0193a000-aaaa')}
       />,
     );
 
     expect(screen.getByRole('heading', { level: 2, name: 'Something went wrong' })).toBeVisible();
     expect(screen.getByText('Your places are still saved.')).toBeVisible();
-    expect(screen.getByText('Code: provider_unavailable')).toBeVisible();
+    expect(screen.getByText('Code: geocoding_unavailable')).toBeVisible();
     expect(screen.getByText('Request ID: 0193a000-aaaa')).toBeVisible();
 
     await user.click(screen.getByRole('button', { name: 'Try again' }));
@@ -58,7 +72,9 @@ describe('ErrorState', () => {
   });
 
   it('speaks_portuguese', () => {
-    renderWithIntl(<ErrorState onRetry={vi.fn()} code="internal_error" />, { locale: 'pt-BR' });
+    renderWithIntl(<ErrorState onRetry={vi.fn()} error={problem('internal_error')} />, {
+      locale: 'pt-BR',
+    });
 
     expect(screen.getByRole('heading', { name: 'Algo deu errado' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeVisible();
