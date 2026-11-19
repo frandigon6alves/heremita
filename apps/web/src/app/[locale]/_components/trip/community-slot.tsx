@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { RatingSummary } from '@/features/reviews/rating-summary';
 import { routes } from '@/lib/routes';
-import styles from './planner-screen.module.css';
+import styles from './community-slot.module.css';
 
 /** What other travellers say about a map place; custom pins have no public page. */
 export function CommunitySlot({

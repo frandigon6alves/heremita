@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
-import { useEffect, useEffectEvent, useState, type CSSProperties } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { DayChips } from '@/features/itinerary/day-chips';
 import { DaySummary } from '@/features/itinerary/day-summary';
 import {
@@ -30,21 +30,17 @@ import { useCopyTrip } from '@/features/trips/use-copy-trip';
 import { planQuery, sharedPlanQuery } from '@/lib/api/query-keys';
 import { routes } from '@/lib/routes';
 import { AppBar } from '@/shared/components/app-bar/app-bar';
-import { BottomSheet, PANEL_QUERY, type Snap } from '@/shared/components/bottom-sheet/bottom-sheet';
+import type { Snap } from '@/shared/components/bottom-sheet/bottom-sheet';
 import { buttonClassName } from '@/shared/components/button/button-class';
 import { DemoBadge } from '@/shared/components/demo-badge/demo-badge';
-import { useMediaQuery } from '@/shared/hooks/use-media-query';
 import { Copy, Flag } from '@/shared/icons/icons';
 import { PinsLayer } from '@/shared/map/pins-layer';
 import { RouteLineLayer } from '@/shared/map/route-line-layer';
-import { TripMap } from '@/shared/map/trip-map';
-import { useMapPadding } from '@/shared/map/use-map-padding';
-import { CommunitySlot } from '../../../(app)/trips/[tripId]/_components/community-slot';
-import { initialMapView } from '../../../(app)/trips/[tripId]/_components/initial-map-view';
+import { CommunitySlot } from '../../../_components/trip/community-slot';
+import { initialMapView } from '../../../_components/trip/initial-map-view';
+import { TripScreenShell, TripScreenTitle } from '../../../_components/trip/trip-screen-shell';
 import { rememberCopyIntent, takeCopyIntent } from './copy-intent';
 import styles from './trip-viewer-screen.module.css';
-
-const SNAP_ORDER: readonly Snap[] = ['peek', 'half', 'full'];
 
 interface ViewerPageProps {
   initialPlan: TripPlanViewer;
@@ -94,11 +90,6 @@ export function SharedTripViewer({
   return <TripViewerScreen source={{ shareToken }} plan={data} {...props} />;
 }
 
-function MapPadding({ bottom }: { bottom: number }) {
-  useMapPadding({ bottom });
-  return null;
-}
-
 /** `?copy=1`: the viewer chose "Copy" while signed out and comes back from login. */
 const copyParam = parseAsStringLiteral(['1']);
 
@@ -124,11 +115,9 @@ function TripViewerScreen({ source, plan, signedIn, path }: TripViewerScreenProp
   const [openingDay] = useState(() => defaultDaySelection(plan));
   const selection = resolveDaySelection(plan, params.day ?? openingDay);
   const selectedPlace = params.place === null ? undefined : findPlace(plan, params.place);
-  const wide = useMediaQuery(PANEL_QUERY);
   const route = useSelectionRoute({ source, plan, selection, mode: params.mode });
 
   const [snap, setSnap] = useState<Snap>(openingDay === IDEAS ? 'peek' : 'half');
-  const [sheetHeight, setSheetHeight] = useState(0);
   const [focusCard, setFocusCard] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [mapView] = useState(() => initialMapView(plan));
@@ -162,131 +151,113 @@ function TripViewerScreen({ source, plan, signedIn, path }: TripViewerScreenProp
     }
   }
 
-  const handleLabel = (current: Snap, next: Snap) =>
-    t('sheet.handle', {
-      state: t(`sheet.snap.${current}`),
-      action:
-        SNAP_ORDER.indexOf(next) > SNAP_ORDER.indexOf(current)
-          ? t('sheet.expand')
-          : t('sheet.collapse'),
-    });
-
   const { author } = plan.trip;
 
   return (
-    <div
-      className={styles.screen}
-      style={{ '--sheet-height': `${sheetHeight}px` } as CSSProperties}
-    >
-      <AppBar
-        end={
-          signedIn ? (
-            <CopyTripButton copy={copyTrip} label={t('readOnly.copy')} />
-          ) : (
-            <Link
-              href={routes.login(locale, { next: withCopy(path) })}
-              className={buttonClassName({ variant: 'primary' })}
-              onClick={() => rememberCopyIntent(source)}
-            >
-              <Copy size={20} />
-              {t('readOnly.copy')}
-            </Link>
-          )
+    <>
+      <TripScreenShell
+        id="trip"
+        appBar={
+          <AppBar
+            end={
+              signedIn ? (
+                <CopyTripButton copy={copyTrip} label={t('readOnly.copy')} />
+              ) : (
+                <Link
+                  href={routes.login(locale, { next: withCopy(path) })}
+                  className={buttonClassName({ variant: 'primary' })}
+                  onClick={() => rememberCopyIntent(source)}
+                >
+                  <Copy size={20} />
+                  {t('readOnly.copy')}
+                </Link>
+              )
+            }
+          >
+            <TripScreenTitle>{plan.trip.title}</TripScreenTitle>
+          </AppBar>
+        }
+        panelHeading={t('readOnly.panelHeading')}
+        snap={snap}
+        onSnapChange={setSnap}
+        header={
+          <>
+            <DayChips
+              plan={plan}
+              selected={selection}
+              onSelect={(next: DaySelection) => void params.selectDay(next)}
+            />
+            <DaySummary
+              plan={plan}
+              selection={selection}
+              totals={
+                route.day?.view.totals
+                  ? { ...route.day.view.totals, estimated: route.day.view.estimated }
+                  : null
+              }
+            />
+          </>
+        }
+        mapView={mapView}
+        mapLabel={t('screen.mapLabel', { title: plan.trip.title })}
+        mapLayers={
+          <>
+            <RouteLineLayer lines={route.lines} dimmed={route.dimmed} />
+            <PinsLayer
+              pins={planPins(plan, selection)}
+              selectedId={selectedPlace?.id ?? null}
+              onSelect={handlePinSelect}
+              cluster={selection === ALL_DAYS}
+            />
+            <PlannerCamera
+              fitKey={selection}
+              points={selectionPoints(plan, selection)}
+              focus={selectedPlace?.place.location ?? null}
+            />
+          </>
         }
       >
-        <h1 className={styles.title}>{plan.trip.title}</h1>
-      </AppBar>
-      <div className={styles.panelArea}>
-        <a className={styles.skipLink} href="#trip-map">
-          {t('screen.skipToMap')}
-        </a>
-        <BottomSheet
-          snap={snap}
-          onSnapChange={setSnap}
-          onSnapSettled={setSheetHeight}
-          labelledBy="trip-panel-heading"
-          handleLabel={handleLabel}
-          header={
-            <>
-              <h2 id="trip-panel-heading" className={styles.visuallyHidden}>
-                {t('readOnly.panelHeading')}
-              </h2>
-              <DayChips
-                plan={plan}
-                selected={selection}
-                onSelect={(next: DaySelection) => void params.selectDay(next)}
-              />
-              <DaySummary
-                plan={plan}
-                selection={selection}
-                totals={
-                  route.day?.view.totals
-                    ? { ...route.day.view.totals, estimated: route.day.view.estimated }
-                    : null
-                }
-              />
-            </>
-          }
-        >
-          <div className={styles.body}>
-            <p className={styles.byline}>
-              <Link className={styles.author} href={routes.profile(locale, author.id)}>
-                {t('readOnly.by', { name: author.displayName })}
-              </Link>
-              {author.isDemo ? <DemoBadge /> : null}
-              <span>· {tDays('days', { count: plan.trip.dayCount })}</span>
-            </p>
-            {plan.places.length === 0 ? (
-              <p className={styles.empty}>{t('readOnly.emptyTrip')}</p>
+        <div className={styles.body}>
+          <p className={styles.byline}>
+            <Link className={styles.author} href={routes.profile(locale, author.id)}>
+              {t('readOnly.by', { name: author.displayName })}
+            </Link>
+            {author.isDemo ? <DemoBadge /> : null}
+            <span>· {tDays('days', { count: plan.trip.dayCount })}</span>
+          </p>
+          {plan.places.length === 0 ? (
+            <p className={styles.empty}>{t('readOnly.emptyTrip')}</p>
+          ) : (
+            <ReadOnlyItinerary
+              plan={plan}
+              selection={selection}
+              selectedPlaceId={selectedPlace?.id ?? null}
+              route={route.day}
+              onOpen={openPlace}
+              onBack={() => void params.selectPlace(null)}
+              onModeChange={(mode) => void params.selectMode(mode)}
+              focusCard={focusCard}
+              communitySlot={(tripPlaceId) => {
+                const entry = findPlace(plan, tripPlaceId);
+                return entry ? <CommunitySlot place={entry} locale={locale} /> : null;
+              }}
+            />
+          )}
+          <footer className={styles.footer}>
+            {signedIn ? (
+              <button type="button" className={styles.report} onClick={() => setReporting(true)}>
+                <Flag size={20} />
+                {t('readOnly.report')}
+              </button>
             ) : (
-              <ReadOnlyItinerary
-                plan={plan}
-                selection={selection}
-                selectedPlaceId={selectedPlace?.id ?? null}
-                route={route.day}
-                onOpen={openPlace}
-                onBack={() => void params.selectPlace(null)}
-                onModeChange={(mode) => void params.selectMode(mode)}
-                focusCard={focusCard}
-                communitySlot={(tripPlaceId) => {
-                  const entry = findPlace(plan, tripPlaceId);
-                  return entry ? <CommunitySlot place={entry} locale={locale} /> : null;
-                }}
-              />
+              <Link className={styles.report} href={routes.login(locale, { next: path })}>
+                <Flag size={20} />
+                {t('readOnly.report')}
+              </Link>
             )}
-            <footer className={styles.footer}>
-              {signedIn ? (
-                <button type="button" className={styles.report} onClick={() => setReporting(true)}>
-                  <Flag size={20} />
-                  {t('readOnly.report')}
-                </button>
-              ) : (
-                <Link className={styles.report} href={routes.login(locale, { next: path })}>
-                  <Flag size={20} />
-                  {t('readOnly.report')}
-                </Link>
-              )}
-            </footer>
-          </div>
-        </BottomSheet>
-      </div>
-      <div id="trip-map" tabIndex={-1} className={styles.mapRegion}>
-        <TripMap initialView={mapView} label={t('screen.mapLabel', { title: plan.trip.title })}>
-          <RouteLineLayer lines={route.lines} dimmed={route.dimmed} />
-          <PinsLayer
-            pins={planPins(plan, selection)}
-            selectedId={selectedPlace?.id ?? null}
-            onSelect={handlePinSelect}
-            cluster={selection === ALL_DAYS}
-          />
-          <PlannerCamera
-            fitKey={selection}
-            points={selectionPoints(plan, selection)}
-            focus={selectedPlace?.place.location ?? null}
-          />
-          <MapPadding bottom={wide ? 0 : sheetHeight} />
-        </TripMap>
-      </div>
+          </footer>
+        </div>
+      </TripScreenShell>
       {signedIn ? (
         <ReportDialog
           open={reporting}
@@ -294,6 +265,6 @@ function TripViewerScreen({ source, plan, signedIn, path }: TripViewerScreenProp
           target={{ type: 'trip', id: plan.trip.id }}
         />
       ) : null}
-    </div>
+    </>
   );
 }

@@ -36,7 +36,7 @@
 }
 
 /* The search pill floats over the map's top-left edge on phones: the attribution starts below it. */
-.mapRegion :global(.maplibregl-ctrl-top-left) {
+.withSearch .mapRegion :global(.maplibregl-ctrl-top-left) {
   top: calc(var(--space-2) + var(--target-min));
 }
 
@@ -86,19 +86,6 @@
   white-space: nowrap;
 }
 
-.community {
-  display: grid;
-  gap: var(--space-2);
-}
-
-.textLink {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--target-min);
-  color: var(--color-primary);
-  font-weight: 600;
-}
-
 @media (min-width: 768px) {
   .screen {
     --panel-width: 360px;
@@ -137,7 +124,7 @@
     grid-area: map;
   }
 
-  .mapRegion :global(.maplibregl-ctrl-top-left) {
+  .withSearch .mapRegion :global(.maplibregl-ctrl-top-left) {
     top: 0;
   }
 
@@ -157,8 +144,4 @@
   .screen {
     --panel-width: 440px;
   }
-}
-
-.optimise {
-  margin-block-start: var(--space-4);
 }
