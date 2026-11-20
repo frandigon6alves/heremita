@@ -30,7 +30,7 @@ interface PinsLayerProps {
   cluster?: boolean;
 }
 
-export const PINS_SOURCE = 'h-places';
+const PINS_SOURCE = 'h-places';
 /** The lowest pin layer: route layers go below it, and taps are tested against it. */
 export const PINS_HIT_LAYER = 'h-places-hit';
 const HALO_LAYER = 'h-places-halo';

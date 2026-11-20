@@ -4,7 +4,7 @@
  * `env.ts` / `public-env.ts` can run them at runtime.
  */
 
-export const SESSION_COOKIE_NAMES = ['hm_session', '__Host-hm_session'] as const;
+const SESSION_COOKIE_NAMES = ['hm_session', '__Host-hm_session'] as const;
 export type SessionCookieName = (typeof SESSION_COOKIE_NAMES)[number];
 
 export const ENV_DEFAULTS = {
@@ -36,7 +36,7 @@ export interface ServerEnv extends PublicEnv {
 }
 
 /** Shortest accepted `SERVER_FETCH_SECRET` (the API applies the same rule). */
-export const SERVER_FETCH_SECRET_MIN_LENGTH = 32;
+const SERVER_FETCH_SECRET_MIN_LENGTH = 32;
 
 /** Thrown with every invalid variable listed, so one boot shows all problems. */
 export class InvalidEnvError extends Error {

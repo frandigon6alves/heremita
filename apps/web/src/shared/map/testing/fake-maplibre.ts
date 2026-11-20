@@ -355,7 +355,7 @@ export class Marker extends Evented {
 
 /** Every map and marker constructed since the last `resetFakeMaps()`, in order. */
 export const createdMaps: Map[] = [];
-export const createdMarkers: Marker[] = [];
+const createdMarkers: Marker[] = [];
 let constructorFailure: Error | null = null;
 
 /** The next `new Map()` throws `error` (e.g. a `GPUInitializationError`). */

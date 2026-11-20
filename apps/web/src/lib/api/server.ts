@@ -12,7 +12,7 @@ import { endpointPath, type RequestArgs, type UntypedOptions } from './request';
 import { REQUEST_ID_HEADER, requestIdOrNew } from './request-id';
 
 /** A server render must not hang on the API: past this the page shows its error state. */
-export const SERVER_FETCH_TIMEOUT_MS = 5000;
+const SERVER_FETCH_TIMEOUT_MS = 5000;
 
 /**
  * One request id per page render, shared by every API call of that render:
@@ -28,11 +28,11 @@ const renderRequestId = cache(async (): Promise<string> =>
  * its anonymous rate limits on the visitor instead of on this server's egress
  * address. Same names and format as `apps/api/src/core/http/client-address.ts`.
  */
-export const CLIENT_IP_HEADER = 'X-Heremita-Client-Ip';
-export const CLIENT_IP_SIGNATURE_HEADER = 'X-Heremita-Client-Ip-Signature';
+const CLIENT_IP_HEADER = 'X-Heremita-Client-Ip';
+const CLIENT_IP_SIGNATURE_HEADER = 'X-Heremita-Client-Ip-Signature';
 
 /** `<unix ms>.<hex HMAC-SHA256>` over the address and the time, as the API checks it. */
-export function signClientIp(secret: string, ip: string, timestampMs: number): string {
+function signClientIp(secret: string, ip: string, timestampMs: number): string {
   const mac = createHmac('sha256', secret)
     .update(`heremita-client-ip:v1\n${ip}\n${timestampMs}`)
     .digest('hex');

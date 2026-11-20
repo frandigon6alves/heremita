@@ -10,7 +10,7 @@ type StyleSpecification = Parameters<TransformStyleFunction>[1];
 type LayerSpecification = StyleSpecification['layers'][number];
 
 /** Prefix of every source and layer id Heremita adds to a basemap. */
-export const OWN_ID_PREFIX = 'h-';
+const OWN_ID_PREFIX = 'h-';
 
 const STYLE_URLS: Record<Basemap, Record<MapTheme, string>> = {
   primary: {

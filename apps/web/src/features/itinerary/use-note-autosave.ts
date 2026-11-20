@@ -8,7 +8,7 @@ import { applyNote } from './apply-plan-ops';
 import { usePlanMutation } from './use-plan-mutation';
 
 /** Typing pause after which the note saves itself. */
-export const NOTE_AUTOSAVE_MS = 800;
+const NOTE_AUTOSAVE_MS = 800;
 
 function draftKey(tripPlaceId: string): string {
   return `note:${tripPlaceId}`;

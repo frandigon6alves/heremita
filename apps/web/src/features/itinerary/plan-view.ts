@@ -79,7 +79,7 @@ export function stopsOfPlace(
 }
 
 /** Trip places a selection shows: that day's stops in order, the ideas, or every place. */
-export function placeIdsOf(plan: PlanLike, selection: DaySelection): string[] {
+function placeIdsOf(plan: PlanLike, selection: DaySelection): string[] {
   if (selection === IDEAS) {
     return ideaIds(plan);
   }

@@ -6,7 +6,7 @@ import { StatusLine } from '@/shared/components/status-line/status-line';
 import { planMutationKey } from './use-plan-mutation';
 
 /** Quick saves never flash the indicator. */
-export const SAVING_DELAY_MS = 400;
+const SAVING_DELAY_MS = 400;
 
 /** The app bar's single "Salvando…" for every queued edit of the trip. */
 export function SavingIndicator({ tripId }: { tripId: string }) {
