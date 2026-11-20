@@ -1,12 +1,12 @@
 import { getTranslations } from 'next-intl/server';
 import { AppBar } from '@/shared/components/app-bar/app-bar';
 import { Skeleton, SkeletonBlock } from '@/shared/components/skeleton/skeleton';
-import styles from './trip-viewer-loading.module.css';
+import styles from './trip-screen-loading.module.css';
 
 const ROWS = 4;
 
-/** Read-only trip skeleton: the bar, day chips and a few rows, in the panel's place. */
-export async function TripViewerLoading() {
+/** Trip screen skeleton (planner and read-only viewer): the bar, day chips and a few rows, in the panel's place. */
+export async function TripScreenLoading() {
   const t = await getTranslations('itinerary.screen');
 
   return (

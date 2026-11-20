@@ -1,3 +1,3 @@
-import { TripViewerLoading } from '../../t/_components/trip-viewer-loading';
+import { TripScreenLoading } from '@/features/itinerary/trip-screen-loading';
 
-export default TripViewerLoading;
+export default TripScreenLoading;
