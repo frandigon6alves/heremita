@@ -148,7 +148,10 @@ describe('SignupForm', () => {
 
     await user.click(submitButton());
 
-    expect(screen.getByRole('button', { name: 'Creating…' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: 'Creating…' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
     expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong. Try again.');
     expect(screen.getByRole('button', { name: 'Create account' })).toBeEnabled();
   });

@@ -54,7 +54,10 @@ describe('ProfileForm', () => {
     await user.type(field, '  Ana Lima  ');
     await user.keyboard('{Enter}');
 
-    expect(screen.getByRole('button', { name: 'Saving…' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: 'Saving…' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
     expect(bodies).toEqual([{ displayName: 'Ana Lima' }]);
     expect(queryClient.getQueryData(queryKeys.viewer)).toMatchObject({ displayName: 'Ana Lima' });
