@@ -104,7 +104,7 @@ describe('ConfirmDialog', () => {
     );
 
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Delete account' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Delete account' })).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByRole('button', { name: 'Delete account' })).toHaveAttribute(
       'aria-busy',
       'true',

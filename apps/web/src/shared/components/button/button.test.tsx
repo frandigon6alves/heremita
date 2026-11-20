@@ -30,7 +30,8 @@ describe('Button', () => {
 
     await user.click(button);
 
-    expect(button).toBeDisabled();
+    expect(button).toBeEnabled();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
     expect(button).toHaveAttribute('aria-busy', 'true');
     expect(onClick).not.toHaveBeenCalled();
   });

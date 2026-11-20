@@ -117,7 +117,7 @@ describe('AccountActions', () => {
     await user.type(within(dialog).getByLabelText('Password'), PASSWORD);
     await user.click(within(dialog).getByRole('button', { name: 'Delete account' }));
 
-    expect(await within(dialog).findByRole('button', { name: 'Deleting…' })).toBeDisabled();
+    expect(await within(dialog).findByRole('button', { name: 'Deleting…' })).toHaveAttribute('aria-disabled', 'true');
     expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled();
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/en'));
     expect(readDraft('note:1')).toBeNull();

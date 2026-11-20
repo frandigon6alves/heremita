@@ -136,7 +136,7 @@ describe('SignupForm', () => {
     await vi.waitFor(() => expect(router.replace).toHaveBeenCalledWith('/en/t/trip-1?copy=1'));
   });
 
-  it('disables_the_submit_button_while_submitting', async () => {
+  it('marks_the_submit_button_busy_while_submitting', async () => {
     server.use(
       http.post('*/api/v1/users', async () => {
         await delay(50);
@@ -148,7 +148,7 @@ describe('SignupForm', () => {
 
     await user.click(submitButton());
 
-    expect(screen.getByRole('button', { name: 'Creating…' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Creating…' })).toHaveAttribute('aria-disabled', 'true');
     expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong. Try again.');
     expect(screen.getByRole('button', { name: 'Create account' })).toBeEnabled();
   });

@@ -76,7 +76,7 @@ describe('LoginForm', () => {
     expect(body).toEqual({ email: 'ana@example.com', password: 'any password' });
     expect(router.refresh).toHaveBeenCalled();
     expect(queryClient.getQueryData(queryKeys.viewer)).toEqual(ME);
-    expect(screen.getByRole('button', { name: 'Logging in…' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Logging in…' })).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('forgets_what_was_cached_for_the_signed_out_visitor', async () => {
