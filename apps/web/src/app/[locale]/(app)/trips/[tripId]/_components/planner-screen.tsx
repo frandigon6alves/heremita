@@ -390,6 +390,8 @@ export function PlannerScreen({ tripId, initialPlan, initialUpdatedAt }: Planner
           editor={editor}
           onOpen={openPlace}
           onDayModeChange={changeDayMode}
+          onAddSuggestion={addResult}
+          onShowSuggestion={(result) => showResult(result, false)}
         />
       )}
     </TripScreenShell>
