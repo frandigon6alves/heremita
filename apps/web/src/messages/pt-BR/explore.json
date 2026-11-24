@@ -1,10 +1,12 @@
 {
   "landing": {
     "metaDescription": "Planeje a sua viagem: marque lugares no mapa com notas privadas, organize-os em dias e veja a rota de cada dia.",
-    "title": "Sua viagem, do seu jeito.",
+    "eyebrow": "Planeje · organize · vá",
+    "title": "Sua viagem, <em>do seu jeito</em>.",
     "lead": "Marque lugares no mapa, monte os dias e veja a rota entre eles, a pé, de bicicleta ou de carro.",
     "cta": "Começar a planejar",
     "ctaSignedIn": "Ir para minhas viagens",
+    "exploreLink": "Ver viagens públicas",
     "stepsTitle": "Como funciona",
     "steps": {
       "mark": {

@@ -2,6 +2,8 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { routes } from '@/lib/routes';
+import { Button } from '@/shared/components/button/button';
+import { buttonClassName } from '@/shared/components/button/button-class';
 import { StatusPage } from './_components/status-page';
 import styles from './_components/status-page.module.css';
 
@@ -26,10 +28,14 @@ export default function ErrorPage({ error, retry }: { error: unknown; retry: () 
     <StatusPage title={t('error.title')}>
       <p className={styles.body}>{t('error.body')}</p>
       <div className={styles.actions}>
-        <button type="button" className={styles.primaryAction} onClick={() => retry()}>
+        <Button variant="primary" size="large" onClick={() => retry()}>
           {t('actions.retry')}
-        </button>
-        <a className={styles.secondaryAction} href={routes.landing(locale)}>
+        </Button>
+        {/* A plain anchor: the client router may be what failed. */}
+        <a
+          className={buttonClassName({ variant: 'ghost', size: 'large' })}
+          href={routes.landing(locale)}
+        >
           {t('notFound.home')}
         </a>
       </div>

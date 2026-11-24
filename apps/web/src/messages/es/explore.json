@@ -1,10 +1,12 @@
 {
   "landing": {
     "metaDescription": "Planifica tu propio viaje: marca lugares en un mapa con notas privadas, organízalos por días y mira la ruta de cada día.",
-    "title": "Tu viaje, a tu manera.",
+    "eyebrow": "Planifica · organiza · sal",
+    "title": "Tu viaje, <em>a tu manera</em>.",
     "lead": "Marca lugares en el mapa, organiza los días y mira la ruta entre ellos, a pie, en bicicleta o en auto.",
     "cta": "Empezar a planificar",
     "ctaSignedIn": "Ir a mis viajes",
+    "exploreLink": "Ver viajes públicos",
     "stepsTitle": "Cómo funciona",
     "steps": {
       "mark": {

@@ -3,7 +3,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { routes } from '@/lib/routes';
 import { LinkButton } from '@/shared/components/link-button/link-button';
-import { ListOrdered, MapPin, Route } from '@/shared/icons/icons';
+import { ArrowRight, ListOrdered, MapPin, Route, Sparkles, Users } from '@/shared/icons/icons';
 import { LandingIllustration } from './landing-illustration';
 import { PublicTripCard } from './public-trip-card';
 import styles from './landing.module.css';
@@ -15,10 +15,17 @@ export interface LandingProps {
   communityTrips: readonly PublicTripCardData[];
 }
 
+const STEPS = [
+  { key: 'mark', Icon: MapPin },
+  { key: 'organise', Icon: ListOrdered },
+  { key: 'follow', Icon: Route },
+] as const;
+
 /**
- * The start page: headline, three steps, a static illustration (the text is
- * the largest paint, not a map), the community strip, and the call to
- * action (in the hero from tablet width, a sticky bar at the bottom on phones).
+ * The start page: headline, three numbered steps in the day colours, a
+ * static illustration (the text is the largest paint, not a map), the
+ * community strip, and the call to action (in the hero from tablet width, a
+ * sticky bar at the bottom on phones).
  */
 export function Landing({ signedIn, communityTrips }: LandingProps) {
   const t = useTranslations('explore.landing');
@@ -31,15 +38,29 @@ export function Landing({ signedIn, communityTrips }: LandingProps) {
     <main id="main" className={styles.main}>
       <section className={styles.hero} aria-labelledby="landing-title">
         <div className={styles.heroText}>
+          <p className={styles.eyebrow}>
+            <Sparkles size={20} />
+            {t('eyebrow')}
+          </p>
           <h1 id="landing-title" className={styles.title}>
-            {t('title')}
+            {t.rich('title', {
+              em: (chunks) => <em className={styles.highlight}>{chunks}</em>,
+            })}
           </h1>
           <p className={styles.lead}>{t('lead')}</p>
-          <LinkButton className={styles.heroCta} variant="primary" size="large" href={cta.href}>
-            {cta.label}
-          </LinkButton>
+          <div className={styles.heroActions}>
+            <LinkButton className={styles.heroCta} variant="primary" size="large" href={cta.href}>
+              {cta.label}
+              <ArrowRight size={20} />
+            </LinkButton>
+            <Link className={styles.heroSecondary} href={routes.explore(locale)}>
+              {t('exploreLink')}
+            </Link>
+          </div>
         </div>
-        <LandingIllustration className={styles.illustration} />
+        <div className={styles.illustrationFrame}>
+          <LandingIllustration className={styles.illustration} />
+        </div>
       </section>
 
       <section aria-labelledby="steps-title" className={styles.section}>
@@ -47,27 +68,18 @@ export function Landing({ signedIn, communityTrips }: LandingProps) {
           {t('stepsTitle')}
         </h2>
         <ol className={styles.steps} role="list">
-          <li className={styles.step}>
-            <span className={styles.stepIcon}>
-              <MapPin />
-            </span>
-            <h3 className={styles.stepTitle}>{t('steps.mark.title')}</h3>
-            <p>{t('steps.mark.body')}</p>
-          </li>
-          <li className={styles.step}>
-            <span className={styles.stepIcon}>
-              <ListOrdered />
-            </span>
-            <h3 className={styles.stepTitle}>{t('steps.organise.title')}</h3>
-            <p>{t('steps.organise.body')}</p>
-          </li>
-          <li className={styles.step}>
-            <span className={styles.stepIcon}>
-              <Route />
-            </span>
-            <h3 className={styles.stepTitle}>{t('steps.follow.title')}</h3>
-            <p>{t('steps.follow.body')}</p>
-          </li>
+          {STEPS.map(({ key, Icon }, index) => (
+            <li key={key} className={styles.step} data-step={index + 1}>
+              <span className={styles.stepNumber} aria-hidden="true">
+                {index + 1}
+              </span>
+              <span className={styles.stepIcon}>
+                <Icon />
+              </span>
+              <h3 className={styles.stepTitle}>{t(`steps.${key}.title`)}</h3>
+              <p className={styles.stepBody}>{t(`steps.${key}.body`)}</p>
+            </li>
+          ))}
         </ol>
       </section>
 
@@ -75,10 +87,12 @@ export function Landing({ signedIn, communityTrips }: LandingProps) {
         <section aria-labelledby="community-title" className={styles.section}>
           <div className={styles.sectionHeader}>
             <h2 id="community-title" className={styles.sectionTitle}>
+              <Users className={styles.sectionIcon} />
               {t('communityTitle')}
             </h2>
             <Link className={styles.more} href={routes.explore(locale)}>
               {t('communityMore')}
+              <ArrowRight size={20} />
             </Link>
           </div>
           <ul className={styles.strip} role="list">
@@ -94,6 +108,7 @@ export function Landing({ signedIn, communityTrips }: LandingProps) {
       <div className={styles.stickyCta}>
         <LinkButton variant="primary" size="large" block href={cta.href}>
           {cta.label}
+          <ArrowRight size={20} />
         </LinkButton>
       </div>
     </main>

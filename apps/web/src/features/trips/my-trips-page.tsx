@@ -2,7 +2,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { routes } from '@/lib/routes';
 import { LinkButton } from '@/shared/components/link-button/link-button';
-import { Plus } from '@/shared/icons/icons';
+import { Map, Plus } from '@/shared/icons/icons';
 import styles from './my-trips-page.module.css';
 
 /**
@@ -16,7 +16,12 @@ export function MyTripsPage({ children }: { children: ReactNode }) {
   return (
     <main id="main" className={styles.main}>
       <header className={styles.header}>
-        <h1 className={styles.title}>{t('title')}</h1>
+        <h1 className={styles.title}>
+          <span className={styles.titleIcon}>
+            <Map />
+          </span>
+          {t('title')}
+        </h1>
         <LinkButton className={styles.newTrip} variant="primary" href={routes.newTrip(locale)}>
           <Plus size={20} />
           {t('newTrip')}
