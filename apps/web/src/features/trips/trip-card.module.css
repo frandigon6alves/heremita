@@ -31,9 +31,11 @@
   }
 }
 
+/* Last in the DOM (the name starts with the title), first on screen. */
 .media {
   position: relative;
   display: grid;
+  order: -1;
 }
 
 /* The map fills the card's top edge; the card clips its corners. */

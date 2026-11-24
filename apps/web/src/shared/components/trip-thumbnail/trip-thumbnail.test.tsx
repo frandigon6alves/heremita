@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { setPageTheme } from '@/shared/map/testing/render-map';
 import { renderWithIntl } from '@/test-utils/render';
@@ -29,7 +29,10 @@ describe('TripThumbnail', () => {
 
     await waitFor(() => expect(picture(container)).toHaveAttribute('src', 'blob:map-1'));
     expect(picture(container)).toHaveAttribute('alt', '');
-    expect(screen.getByText('Map © OpenStreetMap contributors')).toBeInTheDocument();
+    expect(container.querySelector('[data-credit]')).toHaveAttribute(
+      'data-credit',
+      'Map © OpenStreetMap contributors',
+    );
     expect(container.querySelector('polyline')).not.toBeNull();
     expect(renderStaticMap).toHaveBeenCalledWith({
       points: [

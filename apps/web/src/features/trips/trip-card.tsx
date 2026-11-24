@@ -31,14 +31,8 @@ export function TripCard({ trip }: { trip: MyTripCard }) {
   const VisibilityIcon = VISIBILITY_ICONS[trip.visibility];
 
   return (
+    // The text comes first in the DOM, so the link's name starts with the title; CSS puts the map on top.
     <Link className={styles.card} href={routes.planner(locale, trip.id)}>
-      <div className={styles.media}>
-        <TripThumbnail points={trip.previewPoints} />
-        <span className={styles.badge} data-visibility={trip.visibility}>
-          <VisibilityIcon size={20} />
-          {t(`visibility.${trip.visibility}`)}
-        </span>
-      </div>
       <div className={styles.body}>
         <h2 className={styles.title}>{trip.title}</h2>
         {trip.destinationName === null ? null : (
@@ -53,6 +47,13 @@ export function TripCard({ trip }: { trip: MyTripCard }) {
             {when} · {tCounts('places', { count: trip.placeCount })}
           </span>
         </p>
+      </div>
+      <div className={styles.media}>
+        <TripThumbnail points={trip.previewPoints} />
+        <span className={styles.badge} data-visibility={trip.visibility}>
+          <VisibilityIcon size={20} />
+          {t(`visibility.${trip.visibility}`)}
+        </span>
       </div>
     </Link>
   );

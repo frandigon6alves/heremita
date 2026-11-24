@@ -84,9 +84,8 @@ export function TripThumbnail({ points }: { points: readonly LngLat[] }) {
             height={STATIC_MAP_SIZE.height}
             decoding="async"
           />
-          <span className={styles.credit} aria-hidden="true">
-            {t('mapCredit')}
-          </span>
+          {/* CSS content, not text: a card that is one link keeps its title as its name. */}
+          <span className={styles.credit} data-credit={t('mapCredit')} aria-hidden="true" />
         </>
       ) : null}
     </div>

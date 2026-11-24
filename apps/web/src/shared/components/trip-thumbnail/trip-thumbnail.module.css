@@ -19,6 +19,10 @@
   animation: map-in var(--duration-slow) var(--ease-out);
 }
 
+.credit::after {
+  content: attr(data-credit);
+}
+
 .credit {
   align-self: end;
   justify-self: end;
