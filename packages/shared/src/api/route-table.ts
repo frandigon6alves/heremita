@@ -88,6 +88,7 @@ export const apiRoutes = {
     method: 'GET',
     path: '/trips/{tripId}/days/{dayId}/order-suggestion',
   },
+  suggestPlaces: { name: 'suggestPlaces', method: 'POST', path: '/trips/{tripId}/suggestions' },
   searchPlaces: { name: 'searchPlaces', method: 'GET', path: '/places/search' },
   reversePlaces: { name: 'reversePlaces', method: 'GET', path: '/places/reverse' },
   getPlace: { name: 'getPlace', method: 'GET', path: '/places/{placeId}' },

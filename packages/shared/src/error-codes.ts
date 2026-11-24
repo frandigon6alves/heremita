@@ -27,12 +27,15 @@ export const ERROR_STATUS = {
   cannot_block_self: 422,
   cannot_report_own: 422,
   wrong_password: 422,
+  destination_required: 422,
   rate_limited: 429,
   too_many_attempts: 429,
+  ai_quota_exhausted: 429,
   internal_error: 500,
   database_unavailable: 503,
   geocoding_unavailable: 503,
   geocoding_busy: 503,
+  ai_unavailable: 503,
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_STATUS;
@@ -66,10 +69,13 @@ export const ERROR_TITLES: Record<ErrorCode, string> = {
   cannot_block_self: 'Cannot block yourself',
   cannot_report_own: 'Cannot report your own content',
   wrong_password: 'Wrong password',
+  destination_required: 'Trip has no destination',
   rate_limited: 'Too many requests',
   too_many_attempts: 'Too many attempts',
+  ai_quota_exhausted: 'AI suggestions used up for today',
   internal_error: 'Internal error',
   database_unavailable: 'Database unavailable',
   geocoding_unavailable: 'Place search unavailable',
   geocoding_busy: 'Place search busy',
+  ai_unavailable: 'AI suggestions unavailable',
 };

@@ -142,6 +142,10 @@ var|type / default|note
 `LOG_LEVEL`|`fatal\|error\|warn\|info\|debug`, default `info`|
 `GEOCODING_PROVIDER`|`photon\|fake`|
 `ROUTING_PROVIDER`|`osrm\|fake`|
+`AI_PROVIDER`|`claude\|fake\|off`, default `off`|E52 idea generator; `off` → 503 `ai_unavailable`; `fake` refused in prod unless `ALLOW_FAKE_PROVIDERS` (e2e)
+`ANTHROPIC_API_KEY`|string, ! when `AI_PROVIDER=claude`|secret; ⊥ logged
+`AI_MODEL`|string, default `claude-opus-5-5`|Claude model id
+`AI_DAILY_LIMIT`|int ≥ 0, default 200|E52 calls per UTC day, whole API (cost cap); 0 = none allowed
 `ALLOW_FAKE_PROVIDERS`|bool, default false|fake + `NODE_ENV=production` refused unless true (e2e prod build)
 `PHOTON_URL`|URL, ! when photon (`.env.example`: `https://photon.komoot.io`)|⊥ hard-coded default in code (FOSSGIS/OSMF ask switchable URLs)
 `NOMINATIM_ENABLED`|bool, default false|
@@ -204,6 +208,7 @@ file|exports
 `reviews.ts`|`reviewSortSchema=z.enum(['recent','lowest'])`; `putReviewBodySchema {rating: int 1–5, body: textSchema(10,2000), visitedMonth: yearMonth}` (⊥ future: server checks vs injected clock → 422 pointer `/body/visitedMonth`; client checks too); `reviewSchema` Review `{id, place:{id,name,category}, rating, body, visitedMonth, language: locale, author:UserCard, status:'published'\|'hidden', createdAt, updatedAt, isMine}`
 `reports.ts`|`reportReasonSchema=z.enum(['spam','offensive','misleading','personal_data','other'])`; `createReportBodySchema {target:{type:'review'\|'trip', id}, reason, details?: textSchema(0,1000)}`; `createdIdSchema {id}`; `reportItemSchema` ReportItem `{id, target:{type, id, excerpt (≤200 chars of review body or trip title)}, contentStatus:'visible'\|'hidden', reason, details\|null, status:'open'\|'actioned'\|'dismissed', reporter:UserCard\|null, createdAt, resolvedAt\|null}`; `moderationDecisionBodySchema {decision:'hide_content'\|'restore_content'\|'dismiss'}`; `reportStatusQuerySchema {status ='open', limit, cursor}`
 `discovery.ts`|`publicTripsQuerySchema {q?: trim 1–80, countryCode?: 2 letters, limit: limitQuery(30,12), cursor?}`
+`suggestions.ts`|`suggestPlacesBodySchema {prompt: textSchema(3, SUGGEST_PROMPT_MAX), locale, count: int 1–`SUGGEST_COUNT.max`, default `SUGGEST_COUNT.default`}`; `placeSuggestionSchema` PlaceSuggestion `{place: PlaceResult, reason: string}`; `placeSuggestionsSchema` PlaceSuggestions `{items: PlaceSuggestion[], dropped: int ≥ 0}`
 `api/endpoints.ts`|`EndpointDef {method, path:'/x/{param}' (OpenAPI style, relative to /api/v1), auth:'none'\|'optional'\|'required'\|'moderator', params?, query?, body?, status:200\|201\|204, response?, throttle?: ThrottleName, errors: readonly ErrorCode[]}`; `endpoint()` helper; `endpoints` = one entry per E1–E51 (names = §I.api `name` col); `EndpointInput<E>`, `EndpointOutput<E>` types
 `openapi/document.ts` (subpath export `@heremita/shared/openapi`, ⊥ imported by web)|`buildOpenApiDocument(): OpenAPI 3.1` via `zod-openapi` 6.0.2 `createDocument` (fallback if spike T9 fails: `z.toJSONSchema` draft-2020-12 + hand-assembled paths); every `def.errors` → `application/problem+json` response w/ `ProblemDetails`
 `index.ts`|re-export everything except openapi
@@ -211,7 +216,7 @@ file|exports
 Generated file: `packages/shared/openapi.json` (committed, generated; drift test fails on diff; served by E3).
 
 ### I.limits — `LIMITS` (`packages/shared/src/limits.ts`; used by schemas + services)
-`STOPS_PER_DAY 25` · `DAYS_PER_TRIP 60` · `PLACES_PER_TRIP 300` · `TRIPS_PER_USER 100` · `TRIP_TITLE_MAX 120` · `TRIP_DESCRIPTION_MAX 2000` · `DESTINATION_NAME_MAX 120` · `NOTE_MAX 4000` · `PLACE_NAME_MAX 200` · `DISPLAY_NAME_MAX 50` · `EMAIL_MAX 254` · `PASSWORD_MIN 12` · `PASSWORD_MAX 128` · `REVIEW_BODY_MIN 10` · `REVIEW_BODY_MAX 2000` · `REPORT_DETAILS_MAX 1000` · `RATING_AVERAGE_MIN_COUNT 6` (average + distribution shown iff count ≥ 6) · `SEARCH_Q_MIN 3` · `SEARCH_Q_MAX 120` · `SEARCH_LIMIT {default 6, max 20}` · `REVERSE_LIMIT 5` · `REVERSE_RADIUS_KM 0.15` · `PUBLIC_TRIPS_Q_MAX 80` · `OPTIMISE_MIN_STOPS 3` · `BODY_MAX_BYTES 65536` · page sizes `{trips: 20/50, publicTrips: 12/30, userLists: 12/30, reviews: 10/50, blocks: 20/50, moderation: 20/50}` (default/max) · `PREVIEW_POINTS_MAX 20`.
+`STOPS_PER_DAY 25` · `DAYS_PER_TRIP 60` · `PLACES_PER_TRIP 300` · `TRIPS_PER_USER 100` · `TRIP_TITLE_MAX 120` · `TRIP_DESCRIPTION_MAX 2000` · `DESTINATION_NAME_MAX 120` · `NOTE_MAX 4000` · `PLACE_NAME_MAX 200` · `DISPLAY_NAME_MAX 50` · `EMAIL_MAX 254` · `PASSWORD_MIN 12` · `PASSWORD_MAX 128` · `REVIEW_BODY_MIN 10` · `REVIEW_BODY_MAX 2000` · `REPORT_DETAILS_MAX 1000` · `RATING_AVERAGE_MIN_COUNT 6` (average + distribution shown iff count ≥ 6) · `SEARCH_Q_MIN 3` · `SEARCH_Q_MAX 120` · `SEARCH_LIMIT {default 6, max 20}` · `REVERSE_LIMIT 5` · `REVERSE_RADIUS_KM 0.15` · `PUBLIC_TRIPS_Q_MAX 80` · `OPTIMISE_MIN_STOPS 3` · `BODY_MAX_BYTES 65536` · page sizes `{trips: 20/50, publicTrips: 12/30, userLists: 12/30, reviews: 10/50, blocks: 20/50, moderation: 20/50}` (default/max) · `PREVIEW_POINTS_MAX 20` · `SUGGEST_PROMPT_MAX 300` · `SUGGEST_COUNT {default 6, max 8}` · `SUGGEST_RADIUS_KM 25` (grounded place ≤ 25 km from the trip's centre).
 
 ### I.api — REST endpoints under `/api/v1`
 Auth: `none` · `opt` (session read if cookie present) · `req` (no session → 401 `unauthenticated`) · `owner` = `req` + caller owns trip (else 404 `trip_not_found`) · `mod` = `req` + `role=moderator` (else 403 `forbidden`).
@@ -271,6 +276,7 @@ E48|listPublicTrips|GET `/public-trips`|opt|-|`publicTripsQuerySchema`|200 page 
 E49|createReport|POST `/reports`|req|ugc|`createReportBodySchema`|201 `{id}`; `Location: /api/v1/moderation/reports/{id}`|404 `not_found` (target invisible to caller), 409 `already_reported`, 422 `cannot_report_own`
 E50|listReports|GET `/moderation/reports`|mod|-|`reportStatusQuerySchema` (limit ≤50,20)|200 page of ReportItem, order `(created_at ASC, id ASC)`|403 `forbidden`
 E51|decideReport|PATCH `/moderation/reports/{reportId}`|mod|-|`moderationDecisionBodySchema`|200 ReportItem. `hide_content`: review → `status=hidden, hidden_at=now`; trip → `moderation_hidden_at=now`; report → `actioned`. `restore_content`: inverse, report → `actioned`. `dismiss`: report → `dismissed`. Other open reports on same target resolved identically|403 `forbidden`, 404 `not_found`
+E52|suggestPlaces|POST `/trips/{tripId}/suggestions`|owner|ai|`suggestPlacesBodySchema`|200 PlaceSuggestions; writes nothing (owner adds a pick via E29 `{type:'osm', key}`); every item grounded (V77); `Cache-Control: no-store`|404 `trip_not_found`, 422 `destination_required` (⊥ destination centre ∧ ⊥ places), 429 `ai_quota_exhausted` + `Retry-After` (daily budget), 503 `ai_unavailable` (AI off, model error, refusal, unusable output) \| `geocoding_unavailable` (⊥ idea grounded and geocoder failed) \| `geocoding_busy`
 
 Removed on purpose (⊥ implement): `GET /shared/{token}` → tripId, `?shareToken=` query anywhere (tokens only in path), `PUT /trips/{id}/day-order`, day `title`, report target `user`, review sort `highest`, `sort=copied`, `GET /me/export`, `POST /client-errors`, `Idempotency-Key`, route `ETag`.
 
@@ -307,10 +313,10 @@ status|codes
 409|`email_taken`, `plan_changed` (+`currentPlanVersion`), `place_already_in_trip` (+`tripPlaceId`), `already_reported`, `trip_is_private`, `limit_reached`, `day_full`
 413|`payload_too_large`
 415|`unsupported_media_type`
-422|`validation_failed` (+`errors[]`), `invalid_cursor`, `too_few_stops`, `not_a_custom_place`, `cannot_block_self`, `cannot_report_own`, `wrong_password` (+`errors[]` w/ pointer)
-429|`rate_limited`, `too_many_attempts` (both + `Retry-After` seconds)
+422|`validation_failed` (+`errors[]`), `invalid_cursor`, `too_few_stops`, `destination_required`, `not_a_custom_place`, `cannot_block_self`, `cannot_report_own`, `wrong_password` (+`errors[]` w/ pointer)
+429|`rate_limited`, `too_many_attempts`, `ai_quota_exhausted` (all + `Retry-After` seconds)
 500|`internal_error`
-503|`database_unavailable`, `geocoding_unavailable`, `geocoding_busy` (+`Retry-After`)
+503|`database_unavailable`, `geocoding_unavailable`, `geocoding_busy` (+`Retry-After`), `ai_unavailable`
 Pointers: JSON Pointer rooted at request part: `/body/stopIds/3`, `/query/limit`.
 
 ### I.throttle — client limits (`@nestjs/throttler` 6.8.0, single `default` throttler, per-endpoint limit via `@Throttle({default})`, keyed tracker + handler)
@@ -323,6 +329,7 @@ default|120 / 60 s|user id ?? IP
 `reverse`|3 / 3 s|user
 `route`|5 / 2.5 s (E27, E40, E41)|user ?? IP
 `ugc`|10 / 3600 s (E46, E49)|user
+`ai`|10 / 3600 s (E52)|user
 Over limit → 429 + `Retry-After` (seconds). IP = `req.ip` under `TRUST_PROXY`, except RSC call w/ valid signed client IP: `serverFetch` sends `X-Heremita-Client-Ip` (last `X-Forwarded-For` entry) + `X-Heremita-Client-Ip-Signature: <unix ms>.<hex HMAC-SHA256(SERVER_FETCH_SECRET, "heremita-client-ip:v1\n<ip>\n<ms>")>`; API trusts iff secret set ∧ valid IP ∧ |now − ms| ≤ 60 s ∧ `timingSafeEqual`; else `req.ip`. IPv6 → /64 (throttler `normalizeIp`).
 
 ### I.authz — authorisation matrix (test: `apps/api/test/authz-matrix.test.ts`)
@@ -931,6 +938,13 @@ V67: Theme: signed-in `data-theme` from `Me.theme` in server HTML; anonymous ove
 V68: Route query key includes `planVersion` + `mode`; any route-affecting edit changes `planVersion` ∴ new fetch; unchanged legs served from cache [RTL + integration].
 V69: Delete-type actions (remove from day, delete from trip, review delete) offer Undo or confirm; delete trip + delete account + delete day w/ stops use `<dialog>` confirm [RTL].
 
+### AI suggestions (E52)
+V76: AI ideas ⊥ persisted ∧ ⊥ applied by the server: E52 writes nothing; a pick reaches the plan only through the owner's own E29 [integration: row counts unchanged after E52].
+V77: ∀ E52 item → a geocoder hit for the idea's name, biased to the trip centre, ≤ `SUGGEST_RADIUS_KM` away, `kind` ≠ `area`, hit name holds > ½ of the idea's words (≥ 3 letters, folded), key ∉ trip ∧ unique in the answer; idea w/o such hit → dropped + counted in `dropped` (model text never becomes a place) [unit `grounding.test.ts` + integration].
+V78: Prompt text, model output and `ANTHROPIC_API_KEY` ⊥ logged; log line = trip id, provider, model, ideas, grounded, tokens, ms [review + `suggestions.service.test.ts` spy].
+V79: Model call: structured output (zod → JSON schema, `parsed_output` null → 503), `stop_reason: refusal` → 503, timeout 30 s, ⊥ retries beyond SDK default 2, server-side refusal fallback (`fallbacks: 'default'`); user prompt sent as data inside the user turn, ⊥ system prompt [unit w/ stub client].
+V80: Daily budget counted before the model call, per UTC day (injected clock); over → 429 `ai_quota_exhausted` w/ `Retry-After` = s until next UTC midnight [unit `daily-budget.test.ts`].
+
 ### Data, seed, tooling
 V70: Seed idempotent (run twice → identical row set), deterministic, ⊥ network, refuses `NODE_ENV=production`; demo users `is_demo` → "Exemplo"/"Example" badge wherever author shown [integration + e2e].
 V71: `new Date()` w/o args ⊥ in `apps/api/src/**` except `system-clock.ts`; ⊥ `console.log` anywhere (lint) [lint].
@@ -1014,6 +1028,7 @@ T78|x|[integration] LAST, after T70–T77 all x: delete temporary planning mater
 T79|x|[core] CI/CD: `.github/workflows/ci.yml` (`checks` + `e2e`), `.github/dependabot.yml`, `render.yaml` `autoDeployTrigger: checksPass`, Vercel Deployment Checks documented; README "CI/CD" + badge|§C CI/CD,I.cmd
 T81|x|[ws:web] UI refresh 2026-11-24: real map thumbnails on trip cards (`TripThumbnail` + `static-map.ts`, sketch fallback), header brand mark + nav icons + `PreferencesMenu` (language + theme), account menu icons, footer brand/tagline, landing (eyebrow, highlighted h1, numbered step cards, glows), Explore/My trips icon tiles, app icons + manifest, 20 Lucide icons added, `--color-surface-glass`/glows/`--shadow-lift`/`--radius-xl`; tests `static-map.test.ts`, `trip-thumbnail.test.tsx`, `static-imports.test.ts` (card's static import graph ⊥ `maplibre-gl`; `labelLanguage` moved to `shared/map/label-language.ts`), `preferences-menu.test.tsx`; `bundle-budget.ts` skips `/route` entries (icons, manifest); budget 2026-11-24 in README (+2–6 KB/page: header menu + icons + card); B15, B16, B17, B18|I.web.screens,I.tokens,I.web.dirs,I.web.budget,V59,V64
 T80|x|[integration] audit 2026-11-19 (correctness, architecture, perf, a11y/security) fixes: batches A + B, then perf (zod/schemas off non-form routes via `/plain` + `/api-routes` + lazy problem schema; trip list skeleton server-safe; nuqs adapter per page; lazy place-search combobox + report dialog; per-route client messages; latin font preload + Atkinson metric fallback; Intl formatter cache), ErrorState `error` only, `hasCode`, fab hover, ModeSwitch apply on Enter/Space/click, planner flaky test (lazy sortable swap); skipped: next-intl precompile, CSS chunk split, Fraunces `opsz` drop, RHF on auth forms, layout viewer fetch|I.web.budget,I.web.mutations,I.web.screens,V52
+T82|x|[ws:api+web] AI place suggestions: E52 (`apps/api/src/suggestions/**`: Claude + fake idea generators, grounding via geocoder, daily budget), planner Ideas panel `AiSuggestions` (prompt → grounded picks → add via E29 / preview card), evals `apps/api/evals/` (golden set, deterministic scorers + LLM judge, `eval:suggestions`, manual CI workflow)|I.api E52,V76–V80
 
 ## §B bugs
 id|date|cause|fix

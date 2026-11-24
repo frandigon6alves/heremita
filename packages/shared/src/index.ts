@@ -18,6 +18,7 @@ export * from './problem.js';
 export * from './reports.js';
 export * from './reviews.js';
 export * from './routes.js';
+export * from './suggestions.js';
 export * from './text.js';
 export * from './trips.js';
 export * from './users.js';

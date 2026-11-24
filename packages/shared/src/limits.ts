@@ -39,4 +39,8 @@ export const LIMITS = {
   PREVIEW_POINTS_MAX: 20,
   CURSOR_MAX: 200,
   ZOOM_MAX: 22,
+  SUGGEST_PROMPT_MAX: 300,
+  SUGGEST_COUNT: { default: 6, max: 8 },
+  /** A suggested place is kept only this close to the trip's centre. */
+  SUGGEST_RADIUS_KM: 25,
 } as const;
