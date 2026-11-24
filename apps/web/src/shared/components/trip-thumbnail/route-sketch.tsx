@@ -1,15 +1,17 @@
 import type { LngLat } from '@heremita/shared';
 import { MapPin } from '@/shared/icons/icons';
 import { projectToFrame } from './thumbnail-geometry';
-import styles from './route-thumbnail.module.css';
+import styles from './route-sketch.module.css';
 
 const FRAME = { width: 120, height: 72, padding: 10 };
 
 /**
  * Decorative sketch of a trip: its preview points in visit order joined by a
- * line (no map tiles, no request). A trip without places shows a pin.
+ * line (no map tiles, no request). The placeholder under `TripThumbnail`'s
+ * real map, and what stays when the map cannot be drawn. A trip without
+ * places shows a pin.
  */
-export function RouteThumbnail({ points }: { points: readonly LngLat[] }) {
+export function RouteSketch({ points }: { points: readonly LngLat[] }) {
   const projected = projectToFrame(points, FRAME);
 
   if (projected.length === 0) {

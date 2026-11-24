@@ -1,8 +1,10 @@
 import { screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '../../../test/render';
 import { PublicTripCard } from './public-trip-card';
 import { buildPublicTripCard } from './test-support';
+
+vi.mock('@/shared/map/static-map', () => ({ renderStaticMap: () => new Promise(() => undefined) }));
 
 describe('PublicTripCard', () => {
   it('links_the_title_to_the_trip_and_the_author_to_the_profile', () => {
@@ -24,8 +26,9 @@ describe('PublicTripCard', () => {
     renderWithProviders(<PublicTripCard trip={buildPublicTripCard()} />);
     const card = screen.getByRole('article');
 
-    expect(card).toHaveTextContent('Lisboa · On foot · 4 days');
-    expect(card).toHaveTextContent('by Ana Example · 18 places');
+    expect(card).toHaveTextContent('On foot');
+    expect(card).toHaveTextContent('Lisboa · 4 days · 18 places');
+    expect(card).toHaveTextContent('by Ana Example');
     expect(card).toHaveTextContent('Copied 12 times');
   });
 
@@ -40,12 +43,13 @@ describe('PublicTripCard', () => {
     const card = screen.getByRole('article');
 
     expect(screen.getByRole('heading', { level: 3 })).toBeVisible();
-    expect(card).toHaveTextContent(/^Lisboa a péBy bike · 4 days/);
+    expect(card).toHaveTextContent('By bike');
+    expect(card).toHaveTextContent(/Lisboa a pé4 days · 18 placesby Bia$/);
     expect(card).not.toHaveTextContent('Example');
     expect(card).not.toHaveTextContent(/copied/i);
   });
 
-  it('draws_one_dot_per_preview_point_and_a_pin_without_points', () => {
+  it('sketches_the_preview_points_while_the_map_is_drawn_and_a_pin_without_points', () => {
     const { container, rerender } = renderWithProviders(
       <PublicTripCard trip={buildPublicTripCard()} />,
     );
@@ -64,8 +68,9 @@ describe('PublicTripCard', () => {
     });
     const card = screen.getByRole('article');
 
-    expect(card).toHaveTextContent('Lisboa · A pé · 4 dias');
-    expect(card).toHaveTextContent('por Ana Exemplo · 18 lugares');
+    expect(card).toHaveTextContent('A pé');
+    expect(card).toHaveTextContent('Lisboa · 4 dias · 18 lugares');
+    expect(card).toHaveTextContent('por Ana Exemplo');
     expect(card).toHaveTextContent('Copiada 1 vez');
   });
 });

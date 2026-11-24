@@ -1,21 +1,51 @@
 .card {
   display: grid;
-  align-content: start;
-  gap: var(--space-2);
+  grid-template-rows: auto 1fr;
   min-height: 100%;
-  padding: var(--space-4);
+  overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   box-shadow: var(--shadow-1);
   color: var(--color-text);
   text-decoration: none;
-  transition: transform var(--duration-fast) var(--ease-out);
+  transition:
+    transform var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
 }
 
 .card:active {
   background: var(--color-primary-soft);
   transform: scale(var(--pressed-scale));
+}
+
+.card:focus-visible {
+  outline-offset: calc(-1 * var(--focus-ring-width));
+}
+
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+  }
+}
+
+.media {
+  position: relative;
+  display: grid;
+}
+
+/* The map fills the card's top edge; the card clips its corners. */
+.media > :first-child {
+  border-radius: 0;
+}
+
+.body {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4) var(--space-4);
 }
 
 .title {
@@ -27,25 +57,39 @@
   overflow-wrap: anywhere;
 }
 
-.destination {
-  color: var(--color-text-muted);
-  overflow-wrap: anywhere;
-}
-
 .meta {
+  display: flex;
+  align-items: start;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
   font-size: var(--text-sm);
   line-height: var(--leading-sm);
   font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.metaIcon {
+  flex: none;
+  color: var(--color-primary);
 }
 
 .badge {
-  justify-self: start;
-  padding: 0 var(--space-2);
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
   border: 1px solid var(--color-border-control);
   border-radius: var(--radius-full);
+  background: var(--color-surface-glass);
+  color: var(--color-text);
   font-size: var(--text-xs);
   font-weight: 700;
   line-height: var(--leading-xs);
+  box-shadow: var(--shadow-1);
+  backdrop-filter: blur(6px);
 }
 
 .badge[data-visibility='public'] {

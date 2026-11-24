@@ -10,7 +10,7 @@ import {
   type PopoverMenuSection,
 } from '@/shared/components/popover-menu/popover-menu';
 import type { LegView } from './day-route';
-import { ModeIcon } from './mode-icon';
+import { ModeIcon } from '@/shared/components/mode-icon/mode-icon';
 import { appleMapsLegUrl, googleMapsLegUrl } from './nav-links';
 import styles from './leg-row.module.css';
 

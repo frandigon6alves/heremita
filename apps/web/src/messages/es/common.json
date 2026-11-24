@@ -58,7 +58,14 @@
     "light": "Claro",
     "dark": "Oscuro"
   },
+  "preferences": {
+    "menu": "Idioma y tema",
+    "language": "Idioma",
+    "theme": "Tema",
+    "themeFailed": "El tema no se guardó en tu cuenta. Vuelve a intentarlo."
+  },
   "demoBadge": "Ejemplo",
+  "mapCredit": "Mapa © colaboradores de OpenStreetMap",
   "counts": {
     "places": "{count, plural, =0 {Sin lugares} one {# lugar} many {# lugares} other {# lugares}}",
     "days": "{count, plural, =0 {Sin días} one {# día} many {# días} other {# días}}"

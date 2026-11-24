@@ -117,6 +117,9 @@ function paintedPairs(): Array<[string, string, string, string]> {
   );
 }
 
+/** Translucent tokens, checked as the opaque colour they tint (what shows through is unknown). */
+const TINTS: Readonly<Record<string, string>> = { '--color-surface-glass': '--color-surface' };
+
 const themes = {
   light: block(":root,\n[data-theme='light']"),
   dark: block("[data-theme='dark']"),
@@ -140,7 +143,8 @@ describe('colour tokens', () => {
       const unreadable = paintedPairs().filter(([, selector, foreground, background]) => {
         // An icon (or a swatch) needs 3:1, text 4.5:1 (V59).
         const minimum = /icon|swatch/i.test(selector) ? NON_TEXT : TEXT;
-        return contrast(hex(tokens, foreground), hex(tokens, background)) < minimum;
+        const opaque = TINTS[background] ?? background;
+        return contrast(hex(tokens, foreground), hex(tokens, opaque)) < minimum;
       });
       expect(unreadable).toEqual([]);
     });

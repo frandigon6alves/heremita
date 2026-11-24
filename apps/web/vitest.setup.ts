@@ -30,3 +30,19 @@ if (typeof HTMLDialogElement.prototype.showModal !== 'function') {
     queueMicrotask(() => this.dispatchEvent(new Event('close')));
   };
 }
+
+// jsdom has no `matchMedia`: every query reads as "no match" (the phone-first
+// default) unless a test installs `installFakeMatchMedia()` to flip one.
+if (typeof window.matchMedia !== 'function') {
+  window.matchMedia = (query: string): MediaQueryList =>
+    ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      dispatchEvent: () => false,
+    }) as MediaQueryList;
+}
