@@ -185,6 +185,7 @@ cmd|effect|status
 `pnpm --filter @heremita/api cli reset-password <email>`|set random temporary password (printed once), delete all user sessions|T32
 `pnpm shortcuts`|`node scripts/shortcuts.mjs`: list `SHORTCUT(` markers ∀ git-listed non-`.md` file (tracked + untracked, `.gitignore` honoured); exit 1 if marker ⊥ `//`\|`#` line comment w/ owner + ceiling + upgrade|exists
 `pnpm --filter @heremita/api test:live`|manual, one real call per provider w/ real UA; ⊥ CI|T40
+`pnpm --filter @heremita/api eval:suggestions [--generator=claude\|fake\|null] [--reps=N] [--cases=id,…] [--no-judge]`|E52 eval (`apps/api/evals/`): golden set → production generator + grounding → scores + LLM judge → `evals/reports/<run>/`; exit 1 under the bar; spends money w/ claude; manual + `.github/workflows/evals.yml` (dispatch)|T82
 
 ### I.shared — `packages/shared/src` files (all schemas here; types = `z.infer` outputs, `z.input` request bodies)
 Every request body/params/query schema = `z.strictObject` (unknown key → 422). Output schemas = `z.object` (strip = output allowlist). Component schemas carry `.meta({ id: '<Name>' })`. Every user free-text field goes through `cleanText` (text.ts) before length checks.
