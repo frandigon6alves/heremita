@@ -1,0 +1,67 @@
+# Eval of the AI place suggestions (apps/api/evals): the real model, the real
+# Photon geocoder, the golden set and the LLM judge. Manual only, because every
+# run spends money; run it before merging a change to the prompt, the model or
+# the grounding, and compare the report with the last one.
+# Needs the repository secret ANTHROPIC_API_KEY.
+name: Evals
+
+on:
+  workflow_dispatch:
+    inputs:
+      reps:
+        description: Attempts per case
+        default: '1'
+        required: true
+      cases:
+        description: Comma-separated case ids (empty = the whole golden set)
+        default: ''
+        required: false
+
+concurrency:
+  group: evals
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  suggestions:
+    name: suggestions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build:shared
+
+      - name: Run the eval
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Identifies us to Photon in User-Agent and Referer (its usage policy).
+          PUBLIC_SITE_URL: https://heremita.vercel.app
+          REPS: ${{ inputs.reps }}
+          CASES: ${{ inputs.cases }}
+        run: |
+          args=(--reps="$REPS")
+          if [ -n "$CASES" ]; then args+=(--cases="$CASES"); fi
+          pnpm --filter @heremita/api eval:suggestions "${args[@]}"
+
+      - name: Publish the report
+        if: always()
+        run: cat apps/api/evals/reports/*/report.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: eval-report
+          path: apps/api/evals/reports/
+          retention-days: 90

@@ -41,3 +41,6 @@ generated/
 next-env.d.ts
 .neon
 .vercel
+
+# AI eval runs (apps/api/evals/reports/<run>/)
+apps/api/evals/reports/
