@@ -1,0 +1,19 @@
+.mark {
+  flex: none;
+}
+
+.tile {
+  fill: var(--color-primary);
+}
+
+.shell {
+  fill: none;
+  stroke: var(--color-on-primary);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dot {
+  fill: var(--color-accent);
+}
