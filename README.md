@@ -1,10 +1,71 @@
 # Heremita
 
 [![CI](https://github.com/frandigon6alves/heremita/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/frandigon6alves/heremita/actions/workflows/ci.yml)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs)
+![NestJS](https://img.shields.io/badge/NestJS-12-E0234E?logo=nestjs)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql&logoColor=white)
+![Playwright](https://img.shields.io/badge/e2e-Playwright-2EAD33?logo=playwright&logoColor=white)
 
 Plan your own trip: places on a map with your private notes, a day-by-day itinerary you can reorder by touch, a route per day (walk, bike or drive) with distance and time, and reviews and public trips from other travellers. Mobile first, works on desktop. UI in English (the official language) with Spanish and Brazilian Portuguese translations, light and dark themes. Every URL carries its locale (`/en`, `/es`, `/pt-BR`); `/` goes to the visitor's last used locale, else the best `Accept-Language` match, else English.
 
-**Live demo:** https://heremita.vercel.app (web on Vercel, API on Render's free plan, PostgreSQL on Neon). The API sleeps when idle, so the first request after a while can take about a minute.
+**[Live demo](https://heremita.vercel.app/en)** · [A public trip](https://heremita.vercel.app/en/t/0193a000-0000-7000-8000-000300000009) · [OpenAPI document](https://heremita.vercel.app/api/v1/openapi.json) · [Spec](SPEC.md)
+
+The demo runs the web app on Vercel, the API on Render's free plan and PostgreSQL on Neon. The API sleeps when idle, so the first request after a while can take about a minute.
+
+<table>
+  <tr>
+    <td width="68%"><img src="docs/screenshots/planner-desktop.png" alt="Trip planner on desktop: the day's places in order on the left, the walking route between them on a map of Lisbon on the right"></td>
+    <td width="32%"><img src="docs/screenshots/planner-mobile.png" alt="Trip planner on a phone: the map on top, the day's places in a bottom sheet"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/planner-desktop-dark.png" alt="Trip planner in the dark theme"></td>
+    <td><img src="docs/screenshots/explore-mobile.png" alt="Explore page in Brazilian Portuguese on a phone, with a map of each public trip"></td>
+  </tr>
+</table>
+
+## Engineering highlights
+
+A solo, production-shaped project: every point below links to the code or test that backs it.
+
+- **Contract first.** Every request and response is a zod schema in [`packages/shared`](packages/shared/src). The API validates with it, the web client is typed by it, and the [OpenAPI 3.1 document](packages/shared/openapi.json) is generated from it; a test fails when the document drifts.
+- **Authorisation as a tested matrix.** [`authz-matrix.test.ts`](apps/api/test/authz-matrix.test.ts) has a row for every endpoint (anonymous, non-owner, owner, moderator, crossed ids) and fails when one is missing; [`route-table.test.ts`](apps/api/test/route-table.test.ts) fails when a handler and the contract disagree.
+- **Security by default.** Argon2id passwords, opaque sessions stored hashed in an HttpOnly `__Host-` cookie, an origin check against CSRF, a per-request nonce [Content Security Policy](apps/web/src/csp.ts), per-endpoint rate limits, failed sign-ins counted per address block, and an [HMAC-signed client address](#signed-client-address) so server renders do not share one rate-limit bucket.
+- **Resilient third-party calls.** Place search (Photon) and routing (OSRM) sit behind adapters with a cache, a [token bucket](apps/api/src/providers/core/token-bucket.ts), retries and a [circuit breaker](apps/api/src/providers/core/circuit-breaker.ts), plus fakes for offline development and tests. When routing is down, the day falls back to labelled estimates.
+- **Performance budget.** One hidden MapLibre map renders the thumbnail of every trip card ([`static-map.ts`](apps/web/src/shared/map/static-map.ts)), so a page of cards costs one WebGL context; MapLibre and zod stay off the pages that do not need them; [first-load JavaScript is measured per route](#performance-budget).
+- **Testing at every level.** About 1,600 tests in 212 files: Vitest unit tests, API integration tests on real PostgreSQL (each file works on its own clone of a template database), React Testing Library with MSW, and Playwright journeys on mobile and desktop with axe and CSP checks. Retries are off: a flaky test is a bug.
+- **Gated delivery.** CI runs typecheck, lint, format, build, tests and e2e on every pull request; Render and Vercel deploy `main` only after CI passes; migrations must work with the previous release ([CI/CD](#cicd)).
+- **Spec-driven.** [`SPEC.md`](SPEC.md) holds the interfaces, 75 invariants (each with the test that guards it), every decision and deviation, and a bug log with root causes. Deliberate shortcuts are [marked in the code and listed by CI](#deliberate-shortcuts).
+
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph Browser
+    UI["Next.js client<br/>React 19 · TanStack Query · MapLibre"]
+  end
+  subgraph Vercel
+    WEB["Next.js 16 server<br/>Server Components · CSP proxy<br/>rewrites /api/*"]
+  end
+  subgraph Render
+    API["NestJS 12 API<br/>/api/v1 · zod validation<br/>sessions · rate limits"]
+  end
+  DB[("PostgreSQL 18<br/>Neon")]
+  SHARED[["@heremita/shared<br/>zod schemas → OpenAPI"]]
+  TILES["OpenFreeMap tiles"]
+  PHOTON["Photon<br/>place search"]
+  OSRM["OSRM<br/>routes"]
+
+  UI -- "same-origin /api/*" --> WEB
+  WEB -- "server-to-server GET<br/>signed client address" --> API
+  WEB -- "rewrite" --> API
+  API -- "Prisma 7" --> DB
+  API -- "cache · throttle · breaker" --> PHOTON
+  API -- "cache · throttle · breaker" --> OSRM
+  UI -- "vector tiles" --> TILES
+  SHARED -. "types + schemas" .- WEB
+  SHARED -. "types + schemas" .- API
+```
 
 | Workspace         | What it is                                                                          | Dev port |
 | ----------------- | ----------------------------------------------------------------------------------- | -------- |
