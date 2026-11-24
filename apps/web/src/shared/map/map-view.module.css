@@ -30,8 +30,42 @@
   background-position: center;
 }
 
+/* MapLibre draws the "i" as a 24 px background that repeats by default: grown to the
+   touch target size it tiled into a ring of broken icons. */
+.map :global(.maplibregl-ctrl-attrib-button) {
+  background-repeat: no-repeat;
+  border-radius: calc(var(--target-min) / 2);
+}
+
 .map :global(.maplibregl-ctrl-attrib) {
   font-size: var(--text-xs);
+}
+
+/* The compact control keeps MapLibre's 24 px geometry (28 px of padding for the button):
+   make room for the grown button so the credits never run under it. */
+.map :global(.maplibregl-ctrl-attrib.maplibregl-compact) {
+  min-height: var(--target-min);
+  padding-block: 0;
+  padding-inline-end: var(--target-min);
+  border-radius: calc(var(--target-min) / 2);
+}
+
+.map :global(.maplibregl-ctrl-attrib.maplibregl-compact-show) {
+  padding-inline: var(--space-3) calc(var(--target-min) + var(--space-1));
+}
+
+.map :global(.maplibregl-ctrl-top-left > .maplibregl-ctrl-attrib.maplibregl-compact),
+.map :global(.maplibregl-ctrl-bottom-left > .maplibregl-ctrl-attrib.maplibregl-compact) {
+  padding-inline: var(--target-min) 0;
+}
+
+.map :global(.maplibregl-ctrl-top-left > .maplibregl-ctrl-attrib.maplibregl-compact-show),
+.map :global(.maplibregl-ctrl-bottom-left > .maplibregl-ctrl-attrib.maplibregl-compact-show) {
+  padding-inline: calc(var(--target-min) + var(--space-1)) var(--space-3);
+}
+
+.map :global(.maplibregl-compact .maplibregl-ctrl-attrib-inner) {
+  padding-block: calc((var(--target-min) - 1lh) / 2);
 }
 
 /* The canvas fills the map, so its ring sits inside, on a surface-coloured band. */
