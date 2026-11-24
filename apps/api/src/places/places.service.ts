@@ -38,6 +38,20 @@ interface EnrichmentRow {
   count: number;
 }
 
+/** The 503 a geocoder failure answers: busy (with `Retry-After`) or unavailable. */
+export function geocodingProblem(error: ProviderError, logger: Pick<Logger, 'warn'>): ApiProblem {
+  if (error.kind === 'rate_limited') {
+    return new ApiProblem(
+      'geocoding_busy',
+      'Place search is busy; try again shortly.',
+      {},
+      error.retryAfterSeconds ?? BUSY_RETRY_AFTER_SECONDS,
+    );
+  }
+  logger.warn(`Geocoder ${error.provider} failed (${error.kind})`);
+  return new ApiProblem('geocoding_unavailable', 'Place search is unavailable right now.');
+}
+
 /**
  * Place search (E42), reverse geocoding (E43) and the place page (E44).
  * Every place served by search or reverse is remembered (`place:v1:`), so
@@ -124,21 +138,12 @@ export class PlacesService {
       if (!(error instanceof ProviderError)) {
         throw error;
       }
-      if (error.kind === 'rate_limited') {
-        throw new ApiProblem(
-          'geocoding_busy',
-          'Place search is busy; try again shortly.',
-          {},
-          error.retryAfterSeconds ?? BUSY_RETRY_AFTER_SECONDS,
-        );
-      }
-      this.logger.warn(`Geocoder ${error.provider} failed (${error.kind})`);
-      throw new ApiProblem('geocoding_unavailable', 'Place search is unavailable right now.');
+      throw geocodingProblem(error, this.logger);
     }
   }
 
   /** Remembers what is served and adds `placeId` + `rating` for places that already have a row. */
-  private async serve(places: readonly PlaceResult[], viewerId: string): Promise<PlaceResults> {
+  async serve(places: readonly PlaceResult[], viewerId: string): Promise<PlaceResults> {
     const [known] = await Promise.all([
       this.knownPlaces(places, viewerId),
       this.resolver.remember(places),

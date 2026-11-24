@@ -43,6 +43,16 @@ export const envSchema = z
     NOMINATIM_ENABLED: booleanFlag.default(false),
     NOMINATIM_URL: httpUrl.optional(),
     OSRM_URL: httpUrl.optional(),
+    /** Generator of E52's place ideas: Claude, a deterministic fake (e2e, offline dev), or off. */
+    AI_PROVIDER: z.enum(['claude', 'fake', 'off']).default('off'),
+    /** Secret; required when AI_PROVIDER=claude. Blank counts as unset. */
+    ANTHROPIC_API_KEY: z.preprocess(
+      (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+      z.string().optional(),
+    ),
+    AI_MODEL: z.string().trim().min(1).default('claude-opus-5-5'),
+    /** E52 calls per UTC day for the whole API: a cost cap. */
+    AI_DAILY_LIMIT: z.coerce.number().int().min(0).default(200),
     /** Password of the demo accounts the seed writes. */
     DEMO_PASSWORD: z.string().min(12).default('heremita-demo-2026'),
     /**
@@ -77,8 +87,9 @@ export const envSchema = z
     );
     requireWhen(env.NOMINATIM_ENABLED, 'NOMINATIM_URL', 'when NOMINATIM_ENABLED=true');
     requireWhen(env.ROUTING_PROVIDER === 'osrm', 'OSRM_URL', 'when ROUTING_PROVIDER=osrm');
+    requireWhen(env.AI_PROVIDER === 'claude', 'ANTHROPIC_API_KEY', 'when AI_PROVIDER=claude');
     if (env.NODE_ENV === 'production' && !env.ALLOW_FAKE_PROVIDERS) {
-      for (const key of ['GEOCODING_PROVIDER', 'ROUTING_PROVIDER'] as const) {
+      for (const key of ['GEOCODING_PROVIDER', 'ROUTING_PROVIDER', 'AI_PROVIDER'] as const) {
         if (env[key] === 'fake') {
           ctx.addIssue({
             code: 'custom',
@@ -89,12 +100,15 @@ export const envSchema = z
       }
     }
   })
-  .transform(({ COOKIE_SECURE, PUBLIC_SITE_URL, SERVER_FETCH_SECRET, ...env }) => ({
-    ...env,
-    COOKIE_SECURE: COOKIE_SECURE ?? env.NODE_ENV === 'production',
-    PUBLIC_SITE_URL: PUBLIC_SITE_URL ?? DEV_PUBLIC_SITE_URL,
-    SERVER_FETCH_SECRET: SERVER_FETCH_SECRET ?? null,
-  }));
+  .transform(
+    ({ COOKIE_SECURE, PUBLIC_SITE_URL, SERVER_FETCH_SECRET, ANTHROPIC_API_KEY, ...env }) => ({
+      ...env,
+      ANTHROPIC_API_KEY: ANTHROPIC_API_KEY ?? null,
+      COOKIE_SECURE: COOKIE_SECURE ?? env.NODE_ENV === 'production',
+      PUBLIC_SITE_URL: PUBLIC_SITE_URL ?? DEV_PUBLIC_SITE_URL,
+      SERVER_FETCH_SECRET: SERVER_FETCH_SECRET ?? null,
+    }),
+  );
 
 export type Env = z.output<typeof envSchema>;
 

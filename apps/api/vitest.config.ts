@@ -11,7 +11,12 @@ if (existsSync(envFile)) {
 export default defineConfig({
   test: {
     // Tests never reach a real map provider, whatever apps/api/.env says.
-    env: { GEOCODING_PROVIDER: 'fake', ROUTING_PROVIDER: 'fake', NOMINATIM_ENABLED: 'false' },
+    env: {
+      GEOCODING_PROVIDER: 'fake',
+      ROUTING_PROVIDER: 'fake',
+      NOMINATIM_ENABLED: 'false',
+      AI_PROVIDER: 'fake',
+    },
     // ...and no request leaves the machine, whatever the code under test does.
     setupFiles: ['test/support/network-lockdown.ts'],
     // Every integration file boots the app against its own database on the one
@@ -23,7 +28,7 @@ export default defineConfig({
     projects: [
       {
         extends: true,
-        test: { name: 'unit', include: ['src/**/*.test.ts'] },
+        test: { name: 'unit', include: ['src/**/*.test.ts', 'evals/**/*.test.ts'] },
       },
       {
         // Needs PostgreSQL (`pnpm db:up`). Each file gets its own database.

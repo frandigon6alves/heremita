@@ -15,6 +15,7 @@ import {
   type RoutingProvider,
 } from '../../src/providers/core/contract.js';
 import { PrismaService } from '../../src/prisma/prisma.service.js';
+import { IDEA_GENERATOR, type IdeaGenerator } from '../../src/suggestions/idea-generator.js';
 import { createTestDatabase } from './test-database.js';
 
 /** The web origin every test client claims; unsafe requests from anywhere else get 403 `csrf_rejected`. */
@@ -40,6 +41,10 @@ export interface TestAppOptions {
   routing?: RoutingProvider;
   /** Probe controllers mounted next to the real ones. */
   controllers?: Type[];
+  /** Replaces the env-selected idea generator (the fake one); `null` = AI off. */
+  ideaGenerator?: IdeaGenerator | null;
+  /** Variables set on top of the process environment for this app. */
+  env?: Record<string, string>;
 }
 
 export interface TestApp {
@@ -69,6 +74,7 @@ export async function buildTestApp(options: TestAppOptions = {}): Promise<TestAp
     WEB_ORIGIN,
     COOKIE_SECURE: 'false',
     SERVER_FETCH_SECRET: TEST_SERVER_FETCH_SECRET,
+    ...options.env,
   });
 
   let builder = Test.createTestingModule({
@@ -84,6 +90,9 @@ export async function buildTestApp(options: TestAppOptions = {}): Promise<TestAp
   }
   if (options.routing) {
     builder = builder.overrideProvider(ROUTING_PROVIDER).useValue(options.routing);
+  }
+  if (options.ideaGenerator !== undefined) {
+    builder = builder.overrideProvider(IDEA_GENERATOR).useValue(options.ideaGenerator);
   }
 
   const moduleRef = await builder.compile();
