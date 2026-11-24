@@ -3,7 +3,7 @@
 import type { LngLat } from '@heremita/shared';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
-import { labelLanguage } from '@/shared/map/basemap';
+import { labelLanguage } from '@/shared/map/label-language';
 import { STATIC_MAP_SIZE } from '@/shared/map/static-map-size';
 import { useResolvedTheme } from '@/shared/map/use-resolved-theme';
 import { RouteSketch } from './route-sketch';
