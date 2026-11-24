@@ -35,9 +35,8 @@ export function AccountMenu({
         popoverTarget={popoverId}
         aria-label={t('menu', { name: displayName })}
       >
-        <span className={styles.avatar} aria-hidden="true">
-          {initialOf(displayName)}
-        </span>
+        {/* The initial is CSS content, not text: the button's visible text stays its name (WCAG 2.5.3). */}
+        <span className={styles.avatar} data-initial={initialOf(displayName)} aria-hidden="true" />
         <span className={styles.name}>{displayName}</span>
         <ChevronDown size={20} className={styles.chevron} />
       </button>

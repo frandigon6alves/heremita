@@ -41,6 +41,10 @@
   font-weight: 700;
 }
 
+.avatar::before {
+  content: attr(data-initial);
+}
+
 /* 360 px phones: brand, "My trips" and this button share the bar, so the name
    is cut short; the popover shows it in full. */
 .name {
