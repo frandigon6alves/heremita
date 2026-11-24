@@ -11,8 +11,11 @@ import styles from './trip-screen-shell.module.css';
 
 const SNAP_ORDER: readonly Snap[] = ['peek', 'half', 'full'];
 
-function MapPadding({ bottom }: { bottom: number }) {
-  useMapPadding({ bottom });
+/** Phones: the search pill floats over the map's top edge (8 px gap + 48 px pill + 8 px). */
+const SEARCH_PILL_PADDING_PX = 64;
+
+function MapPadding({ top, bottom }: { top: number; bottom: number }) {
+  useMapPadding({ top, bottom });
   return null;
 }
 
@@ -111,8 +114,12 @@ export function TripScreenShell({
       </div>
       <div id={mapId} tabIndex={-1} className={styles.mapRegion}>
         <TripMap initialView={mapView} label={mapLabel} geolocate={geolocate}>
+          {/* First: its effect sets the padding before the camera in `mapLayers` frames the day. */}
+          <MapPadding
+            top={!wide && search ? SEARCH_PILL_PADDING_PX : 0}
+            bottom={wide ? 0 : sheetHeight}
+          />
           {mapLayers}
-          <MapPadding bottom={wide ? 0 : sheetHeight} />
         </TripMap>
       </div>
       {floating ? <div className={styles.floating}>{floating}</div> : null}
