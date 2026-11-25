@@ -44,6 +44,26 @@ describe('LogoutButton', () => {
     expect(queryClient.getQueryData(queryKeys.viewer)).toBeUndefined();
   });
 
+  it('closes_the_menu_it_sits_in_since_the_layout_stays_mounted', async () => {
+    server.use(
+      http.delete('*/api/v1/sessions/current', () => new HttpResponse(null, { status: 204 })),
+    );
+    const { user } = renderWithProviders(
+      <div popover="auto" data-testid="menu">
+        <LogoutButton />
+      </div>,
+    );
+    const menu = screen.getByTestId('menu');
+    // jsdom has no popover API.
+    const hidePopover = vi.fn();
+    menu.hidePopover = hidePopover;
+
+    await user.click(screen.getByRole('button', { name: 'Log out', hidden: true }));
+
+    await vi.waitFor(() => expect(router.replace).toHaveBeenCalled());
+    expect(hidePopover).toHaveBeenCalledOnce();
+  });
+
   it('treats_an_already_ended_session_as_logged_out', async () => {
     server.use(http.delete('*/api/v1/sessions/current', () => problemResponse('unauthenticated')));
     const { user } = renderWithProviders(<LogoutButton />);

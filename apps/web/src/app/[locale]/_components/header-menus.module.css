@@ -1,0 +1,171 @@
+.trigger {
+  display: inline-grid;
+  place-items: center;
+  width: var(--target-min);
+  height: var(--target-min);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.trigger:active {
+  background: var(--color-primary-soft);
+  transform: scale(var(--pressed-scale));
+}
+
+@media (hover: hover) {
+  .trigger:hover {
+    background: var(--color-primary-soft);
+  }
+}
+
+/* Only the chosen theme's icon shows, from <html data-theme>: right from the first paint. */
+.themeIcon {
+  display: none;
+}
+
+:root:not([data-theme='light'], [data-theme='dark']) .themeIcon[data-theme-icon='system'],
+:root[data-theme='light'] .themeIcon[data-theme-icon='light'],
+:root[data-theme='dark'] .themeIcon[data-theme-icon='dark'] {
+  display: inline-grid;
+}
+
+/* The triggers sit at the end of the app bar, so the popover opens under them.
+   No `display` here: it would override the browser's `display: none` of a closed popover. */
+.popover {
+  position: fixed;
+  inset: auto;
+  top: calc(var(--app-bar-height) + env(safe-area-inset-top));
+  right: calc(var(--space-4) + env(safe-area-inset-right));
+  gap: var(--space-3);
+  width: min(20rem, calc(100vw - 2 * var(--space-4)));
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  box-shadow: var(--shadow-2);
+}
+
+.popover:popover-open {
+  display: grid;
+  animation: menu-in var(--duration-base) var(--ease-out);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.section + .section {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.heading {
+  padding: 0 var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: var(--leading-sm);
+}
+
+.items {
+  display: grid;
+  gap: var(--space-1);
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--target-min);
+  padding: 0 var(--space-3) 0 var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.item[aria-current='true'] {
+  background: var(--color-primary-soft);
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.item:active {
+  background: var(--color-primary-soft);
+  transform: scale(var(--pressed-scale));
+}
+
+@media (hover: hover) {
+  .item:hover {
+    background: var(--color-primary-soft);
+  }
+}
+
+.check {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+
+/* Everything in one menu on phones: it scrolls rather than run off the screen. */
+.mobilePopover {
+  max-height: calc(100dvh - var(--app-bar-height) - env(safe-area-inset-top) - var(--space-4));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* A button inside an item list (Log out) looks like the links around it. */
+button.item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.signedInAs {
+  padding: 0 var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+}
+
+.fullName {
+  display: block;
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: var(--text-md);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.authActions {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-1) 0;
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--space-1)));
+  }
+}

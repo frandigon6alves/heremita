@@ -25,7 +25,7 @@ export function LogoutButton({ className, icon }: LogoutButtonProps) {
   const signedOut = useSignedOut();
   const [pending, setPending] = useState(false);
 
-  const logOut = async () => {
+  const logOut = async (menu: HTMLElement | null) => {
     setPending(true);
     try {
       await apiFetch(apiRoutes.logOut);
@@ -36,11 +36,18 @@ export function LogoutButton({ className, icon }: LogoutButtonProps) {
         return;
       }
     }
+    // The layout (and a menu holding this button) stays mounted across the navigation.
+    menu?.hidePopover();
     signedOut();
   };
 
   return (
-    <Button className={className} variant="ghost" busy={pending} onClick={() => void logOut()}>
+    <Button
+      className={className}
+      variant="ghost"
+      busy={pending}
+      onClick={(event) => void logOut(event.currentTarget.closest<HTMLElement>('[popover]'))}
+    >
       {pending ? null : icon}
       {pending ? t('loggingOut') : t('logOut')}
     </Button>
