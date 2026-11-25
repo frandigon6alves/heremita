@@ -86,7 +86,11 @@ export function PlannerScreen({ tripId, initialPlan, initialUpdatedAt }: Planner
   // A day chip tapped before the server confirmed the new day left its pending id in the URL.
   const dayParam = params.day === null ? null : withConfirmedIds(queryClient, params.day);
   const selection = resolveDaySelection(plan, dayParam ?? openingDay);
-  const selectedPlace = params.place === null ? undefined : findPlace(plan, params.place);
+  // Same for a place card opened on a row the server had not confirmed yet.
+  const selectedPlace =
+    params.place === null
+      ? undefined
+      : findPlace(plan, withConfirmedIds(queryClient, params.place));
   const online = useOnline();
 
   const [snap, setSnap] = useState<Snap>(openingDay === IDEAS ? 'peek' : 'half');

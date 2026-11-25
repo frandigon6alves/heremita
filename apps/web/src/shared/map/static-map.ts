@@ -282,7 +282,11 @@ let disposeTimer: ReturnType<typeof setTimeout> | undefined;
 /** WebGL refused once: every later request fails at once, without a second try. */
 let unavailable = false;
 const pending = new Map<string, Promise<string>>();
-/** Finished pictures by request, in order of last use, so the least recently used goes first. */
+/**
+ * Finished pictures by request, in order of last request, so the least recently
+ * requested goes first. A card requests once, on mount: past `CACHE_MAX` other
+ * pictures, one still on screen can lose its URL (a known limit, rare in practice).
+ */
 const cache = new Map<string, string>();
 
 function remember(key: string, url: string): void {
@@ -327,7 +331,7 @@ export function renderStaticMap(request: StaticMapRequest): Promise<string> {
   const key = cacheKey(request);
   const known = cache.get(key);
   if (known !== undefined) {
-    // Least recently used goes first: a card still on screen keeps its picture.
+    // Least recently requested goes first.
     cache.delete(key);
     cache.set(key, known);
     return Promise.resolve(known);
