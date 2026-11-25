@@ -139,8 +139,9 @@ describe('AiSuggestions', () => {
     await ask(user, '   ab  ');
 
     const field = screen.getByRole('textbox', { name: 'What are you looking for?' });
+    // jest-dom 8 types the expected description as string | RegExp (no asymmetric matchers).
     expect(field).toHaveAccessibleDescription(
-      expect.stringContaining('Describe what you are looking for in at least 3 characters.'),
+      /Describe what you are looking for in at least 3 characters\./,
     );
     expect(field).toHaveAttribute('aria-invalid', 'true');
     expect(calls).toBe(0);
