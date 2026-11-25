@@ -19,6 +19,10 @@ import styles from './ai-suggestions.module.css';
 
 const PROMPT_MIN = 3;
 
+function isSuggestions(data: unknown): data is PlaceSuggestions {
+  return typeof data === 'object' && data !== null && 'items' in data && 'dropped' in data;
+}
+
 /**
  * Not under `planMutationKey(tripId)`: the "Saving…" indicator matches that
  * prefix, and asking the AI saves nothing.
@@ -132,13 +136,17 @@ export function AiSuggestionsDialog({
   const mutationKey = suggestMutationKey(tripId);
   // The planner unmounts this panel while a place card is open ("Show on map"):
   // the last answer, kept in the mutation cache, is shown again when it comes back.
-  const [previous] = useMutationState({
+  const [previous] = useMutationState<{ prompt: string; data: PlaceSuggestions } | null>({
     filters: { mutationKey, status: 'success' },
-    select: (mutation) => ({
-      prompt: mutation.state.variables as string,
-      data: mutation.state.data as PlaceSuggestions,
-    }),
-  }).slice(-1);
+    select: ({ state }) => {
+      const { variables, data } = state;
+      return typeof variables === 'string' && isSuggestions(data)
+        ? { prompt: variables, data }
+        : null;
+    },
+  })
+    .filter((entry) => entry !== null)
+    .slice(-1);
   const [prompt, setPrompt] = useState(previous?.prompt ?? '');
   const [promptError, setPromptError] = useState(false);
   const suggest = useMutation({

@@ -69,7 +69,9 @@ export function UserReviewList({ userId, initialPage }: UserReviewListProps) {
                 {t('visited', { month: formatYearMonth(review.visitedMonth, locale) })}
               </p>
               {review.status === 'hidden' ? <p className={styles.hidden}>{t('hidden')}</p> : null}
-              <p className={styles.body}>{review.body}</p>
+              <p className={styles.body} lang={review.language}>
+                {review.body}
+              </p>
             </article>
           </li>
         ))}

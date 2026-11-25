@@ -15,7 +15,6 @@ describe('icons', () => {
         'Check',
         'ChevronDown',
         'ChevronLeft',
-        'CircleUser',
         'Compass',
         'Copy',
         'Ellipsis',

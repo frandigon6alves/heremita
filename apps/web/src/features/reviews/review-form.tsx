@@ -27,7 +27,6 @@ import styles from './review-form.module.css';
 
 const FIELDS = ['rating', 'visitedMonth', 'body'] as const;
 
-/** The API refused a field that passed the shared schema here. */
 /** Screen readers hear the character count at most this often while typing. */
 const COUNTER_ANNOUNCE_MS = 1000;
 

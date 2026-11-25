@@ -10,7 +10,7 @@ export async function TripScreenLoading() {
   const t = await getTranslations('itinerary.screen');
 
   return (
-    <main id="main" className={styles.main}>
+    <main id="main" className={styles.main} data-trip-screen="">
       <AppBar>
         <SkeletonBlock shape="text" width="12rem" />
       </AppBar>

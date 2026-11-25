@@ -23,7 +23,6 @@ type SignUpField = (typeof FIELDS)[number];
 
 /** Marks the e-mail error that comes with a "Log in instead" link. */
 const EMAIL_TAKEN = 'email_taken';
-/** A field the API refused although it passed the shared schema here. */
 
 interface SignupFormProps {
   /** Validated `?next=`; without it a new account starts a trip. */

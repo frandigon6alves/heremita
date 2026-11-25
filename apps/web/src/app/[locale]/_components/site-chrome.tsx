@@ -1,7 +1,5 @@
-'use client';
-
-import { useParams, useSelectedLayoutSegments } from 'next/navigation';
 import type { ReactNode } from 'react';
+import styles from './site-chrome.module.css';
 
 interface SiteChromeProps {
   header: ReactNode;
@@ -10,20 +8,19 @@ interface SiteChromeProps {
 }
 
 /**
- * The site header and footer around every page except a trip screen (the
- * planner, a public trip, a shared trip), which has its own app bar. The
- * locale layout renders it once, so the header's client code ships in the
- * layout's chunk instead of a copy in each page's and in the not-found chunk.
+ * The site header and footer around every page. A trip screen (the planner,
+ * a public trip, a shared trip, and their loading states) has its own app bar
+ * and marks itself with `data-trip-screen`; CSS then hides the chrome. Deciding
+ * from what rendered, not from the URL, keeps the chrome on the 404 or error
+ * page of a trip URL (a revoked share link). The locale layout renders it once,
+ * so the header's client code ships in the layout's chunk only (B13).
  */
 export function SiteChrome({ header, footer, children }: SiteChromeProps) {
-  const params = useParams<{ tripId?: string; shareToken?: string }>();
-  const page = useSelectedLayoutSegments().at(-1);
-  const tripScreen = page !== undefined && (page === params.tripId || page === params.shareToken);
   return (
     <>
-      {tripScreen ? null : header}
+      <div className={styles.chrome}>{header}</div>
       {children}
-      {tripScreen ? null : footer}
+      <div className={styles.chrome}>{footer}</div>
     </>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { hasCode } from '@/lib/api/failure';
 import { orderSuggestionQuery } from '@/lib/api/query-keys';
 import { formatDuration } from '@/lib/format/duration';
@@ -10,6 +10,7 @@ import { Button } from '@/shared/components/button/button';
 import { Dialog, DialogActions, initialFocus } from '@/shared/components/dialog/dialog';
 import { ErrorState } from '@/shared/components/error-state/error-state';
 import { Skeleton, SkeletonBlock } from '@/shared/components/skeleton/skeleton';
+import { announce } from '@/shared/components/toast/toast-store';
 import { findDay, findPlace, type PlanLike } from './plan-view';
 import styles from './optimise-preview.module.css';
 
@@ -49,6 +50,34 @@ export function OptimisePreview({
   });
   const day = findDay(plan, dayId);
   const current = day?.stops.map((stop) => stop.id) ?? [];
+  const unchanged = suggestion.data?.stopIds.every((id, i) => id === current[i]) ?? false;
+
+  /** The outcome in one sentence: shown, and read out once (not the whole new order). */
+  function verdictText(): string | null {
+    if (suggestion.isError) {
+      return t('failed');
+    }
+    if (!suggestion.data) {
+      return null;
+    }
+    if (unchanged) {
+      return t('alreadyShortest');
+    }
+    const { before, after, estimated } = suggestion.data;
+    const comparison = t('comparison', {
+      before: formatDuration(before.durationSeconds, locale),
+      after: formatDuration(after.durationSeconds, locale),
+    });
+    return estimated ? `${comparison} ${t('estimated')}` : comparison;
+  }
+  const verdict = verdictText();
+
+  // Syncs with the app's single live region (V61), an external store.
+  useEffect(() => {
+    if (open && verdict !== null) {
+      announce(verdict);
+    }
+  }, [open, verdict]);
 
   function body() {
     if (suggestion.isPending) {
@@ -73,20 +102,13 @@ export function OptimisePreview({
         />
       );
     }
-    const { before, after, stopIds, estimated } = suggestion.data;
-    const unchanged = stopIds.every((id, i) => id === current[i]);
+    const { stopIds } = suggestion.data;
     if (unchanged) {
-      return <p className={styles.verdict}>{t('alreadyShortest')}</p>;
+      return <p className={styles.verdict}>{verdict}</p>;
     }
     return (
       <>
-        <p className={styles.verdict}>
-          {t('comparison', {
-            before: formatDuration(before.durationSeconds, locale),
-            after: formatDuration(after.durationSeconds, locale),
-          })}
-          {estimated ? ` ${t('estimated')}` : null}
-        </p>
+        <p className={styles.verdict}>{verdict}</p>
         <ol className={styles.order} aria-label={t('newOrder')}>
           {stopIds.map((stopId, index) => {
             const stop = day?.stops.find((candidate) => candidate.id === stopId);
@@ -124,9 +146,7 @@ export function OptimisePreview({
         />
         <span>{t('keepLast')}</span>
       </label>
-      <div className={styles.result} aria-live="polite">
-        {body()}
-      </div>
+      <div className={styles.result}>{body()}</div>
       <DialogActions>
         <Button onClick={onClose} {...initialFocus}>
           {t('cancel')}

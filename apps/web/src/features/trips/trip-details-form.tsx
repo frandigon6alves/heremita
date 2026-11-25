@@ -3,7 +3,7 @@
 import type { TravelMode, TripOwner, UpdateTripBody } from '@heremita/shared';
 import { LIMITS } from '@heremita/shared/plain';
 import { useTranslations } from 'next-intl';
-import { useState, type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { useForm, useWatch, type FieldErrors, type Resolver } from 'react-hook-form';
 import { bodyPathsOf, SERVER_ERROR, showFieldErrors } from '@/lib/api/failure';
 import { Button } from '@/shared/components/button/button';
@@ -142,6 +142,7 @@ export function TripDetailsForm({ trip, renderDestination }: TripDetailsFormProp
     }
   };
   const destinationError = message('destination');
+  const destinationErrorId = useId();
   const modeError = message('defaultMode');
 
   return (
@@ -159,9 +160,12 @@ export function TripDetailsForm({ trip, renderDestination }: TripDetailsFormProp
         {...register('description')}
       />
       <div className={styles.group}>
-        {renderDestination(picker)}
+        {renderDestination({
+          ...picker,
+          errorId: destinationError === undefined ? undefined : destinationErrorId,
+        })}
         {destinationError === undefined ? null : (
-          <p className={styles.fieldError} role="alert">
+          <p id={destinationErrorId} className={styles.fieldError} role="alert">
             {destinationError}
           </p>
         )}

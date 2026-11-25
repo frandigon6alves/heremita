@@ -35,11 +35,14 @@ export function ModerationQueue({ initialOpenPage }: ModerationQueueProps) {
   const t = useTranslations('reviews.moderation');
   const [status, setStatus] = useState<ReportStatus>('open');
   const serverRendered = status === 'open' && initialOpenPage !== undefined;
+  const [renderedAt] = useState(() => Date.now());
   const reports = useInfiniteQuery({
     ...moderationReportsQuery(status),
     initialData: serverRendered ? firstPageData(initialOpenPage) : undefined,
+    initialDataUpdatedAt: renderedAt,
     // The server page was fetched for this very render: no second request on mount.
-    refetchOnMount: !serverRendered,
+    // A cache older than it (an earlier visit) refetches: another moderator may have decided.
+    refetchOnMount: (query) => !serverRendered || query.state.dataUpdatedAt < renderedAt,
   });
   const items = reports.data?.pages.flatMap((page) => page.items) ?? [];
 
@@ -132,7 +135,8 @@ function ReportCard({ report }: { report: ReportItem }) {
         </span>
       </header>
       <blockquote className={styles.excerpt}>{report.target.excerpt}</blockquote>
-      {report.target.type === 'trip' ? (
+      {/* A hidden trip is 404 on its public page, even for moderators. */}
+      {report.target.type === 'trip' && !hidden ? (
         <Link className={styles.link} href={routes.publicTrip(locale, report.target.id)}>
           {t('openTrip')}
         </Link>

@@ -13,6 +13,8 @@ export interface DestinationPicker {
   onText: (text: string) => void;
   /** Text the field starts with: the saved destination's name. */
   defaultValue: string;
+  /** Id of the destination's error message, while there is one. */
+  errorId?: string;
 }
 
 /** A geocoder suggestion as a trip destination. */

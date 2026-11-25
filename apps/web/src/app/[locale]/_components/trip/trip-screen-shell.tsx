@@ -85,6 +85,8 @@ export function TripScreenShell({
 
   return (
     <div
+      // SiteChrome hides the site header and footer while a trip screen is on the page.
+      data-trip-screen=""
       className={search ? `${styles.screen} ${styles.withSearch}` : styles.screen}
       style={{ '--sheet-height': `${sheetHeight}px` } as CSSProperties}
     >

@@ -56,7 +56,7 @@ export class HttpError extends Error {
 }
 
 /** Either kind of HTTP failure. Network failures stay `TypeError` (see `shouldRetryQuery`). */
-export type ResponseError = ApiProblemError | HttpError;
+type ResponseError = ApiProblemError | HttpError;
 
 /** The session is missing or expired (⊥ `invalid_credentials`, a wrong password on login). */
 export function isUnauthenticated(error: unknown): boolean {

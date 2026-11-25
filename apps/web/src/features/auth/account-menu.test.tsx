@@ -31,6 +31,22 @@ describe('AccountMenu', () => {
     expect(menu.getByRole('button', { name: 'Sair', hidden: true })).toBeInTheDocument();
   });
 
+  it('closes_the_menu_when_a_link_navigates_since_the_layout_stays_mounted', async () => {
+    const { user } = renderWithProviders(<AccountMenu displayName="Ana" />);
+    const trigger = screen.getByRole('button', { name: 'Account: Ana' });
+    const popover = document.getElementById(trigger.getAttribute('popovertarget') ?? '');
+    if (popover === null) {
+      throw new Error('popover missing');
+    }
+    // jsdom has no popover API.
+    const hidePopover = vi.fn();
+    popover.hidePopover = hidePopover;
+
+    await user.click(within(popover).getByRole('link', { name: 'Settings', hidden: true }));
+
+    expect(hidePopover).toHaveBeenCalledOnce();
+  });
+
   it('links_moderators_to_the_moderation_queue', () => {
     renderWithProviders(<AccountMenu displayName="Ana" moderator />);
 
