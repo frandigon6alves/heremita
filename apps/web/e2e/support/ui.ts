@@ -22,9 +22,13 @@ function gearMenu(page: Page): Locator {
  * across the app bar.
  */
 export async function siteNav(page: Page): Promise<Locator> {
+  const open = page.locator('[popover]:popover-open');
   if (await gearMenu(page).isVisible()) {
-    await gearMenu(page).click();
-    return page.locator('[popover]:popover-open');
+    // A second click would close a menu a previous call left open.
+    if ((await open.count()) === 0) {
+      await gearMenu(page).click();
+    }
+    return open;
   }
   return page.getByRole('banner').getByRole('navigation').filter({ visible: true });
 }
@@ -34,6 +38,10 @@ export async function siteNav(page: Page): Promise<Locator> {
  * menu on phones, the account menu (avatar button) from 768 px. Opens it.
  */
 export async function accountActions(page: Page): Promise<Locator> {
+  const open = page.locator('[popover]:popover-open');
+  if ((await open.count()) > 0) {
+    return open;
+  }
   if (await gearMenu(page).isVisible()) {
     await gearMenu(page).click();
   } else {
@@ -43,5 +51,5 @@ export async function accountActions(page: Page): Promise<Locator> {
       .filter({ has: page.locator('[data-initial]') })
       .click();
   }
-  return page.locator('[popover]:popover-open');
+  return open;
 }
