@@ -6,7 +6,7 @@ import { loadSharedPlan } from '@/features/itinerary/load-plan';
 import { planQueryFrom, preconnectBasemap } from '@/features/itinerary/page-setup';
 import { getViewer } from '@/lib/api/server';
 import { routes } from '@/lib/routes';
-import { SharedTripViewer } from '../../t/_components/trip-viewer-screen';
+import { SharedTripViewer } from '../../_components/trip-viewer/trip-viewer-screen';
 
 export async function generateMetadata({
   params,

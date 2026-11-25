@@ -47,7 +47,7 @@ interface ViewerPageProps {
   /** When the server render fetched `initialPlan` (ms). */
   initialUpdatedAt: number;
   signedIn: boolean;
-  /** This page's path and query: where login sends the viewer back to. */
+  /** This page's path and query as first rendered (the server's), before the URL changes. */
   path: string;
 }
 
@@ -93,6 +93,27 @@ export function SharedTripViewer({
 /** `?copy=1`: the viewer chose "Copy" while signed out and comes back from login. */
 const copyParam = parseAsStringLiteral(['1']);
 
+/**
+ * Where login sends the viewer back to: this page with the day, place and mode
+ * they are looking at now (the URL changes as they browse; `initial` is the
+ * server's first render), never `?copy=1`.
+ */
+function returnPath(
+  initial: string,
+  current: { day: string | null; place: string | null; mode: string | null },
+): string {
+  const url = new URL(initial, 'http://localhost');
+  for (const [key, value] of Object.entries(current)) {
+    if (value === null) {
+      url.searchParams.delete(key);
+    } else {
+      url.searchParams.set(key, value);
+    }
+  }
+  url.searchParams.delete('copy');
+  return `${url.pathname}${url.search}`;
+}
+
 function withCopy(path: string): string {
   const url = new URL(path, 'http://localhost');
   url.searchParams.set('copy', '1');
@@ -105,11 +126,12 @@ function withCopy(path: string): string {
  * "Copy" copies it into my trips (signed out: after login, resumed by
  * `?copy=1`); the panel ends with a report link.
  */
-function TripViewerScreen({ source, plan, signedIn, path }: TripViewerScreenProps) {
+function TripViewerScreen({ source, plan, signedIn, path: initialPath }: TripViewerScreenProps) {
   const t = useTranslations('itinerary');
   const tDays = useTranslations('common.counts');
   const locale = useLocale();
   const params = usePlannerParams();
+  const path = returnPath(initialPath, { day: params.day, place: params.place, mode: params.mode });
   const [copy, setCopy] = useQueryState('copy', copyParam);
   // Without `?day=` the first render's day stays selected when a refetch changes the plan.
   const [openingDay] = useState(() => defaultDaySelection(plan));

@@ -194,6 +194,17 @@ describe('TripViewerScreen', () => {
     );
   });
 
+  it('sends_login_back_to_the_day_the_visitor_is_looking_at_now', async () => {
+    const { user } = renderViewer({ query: `?day=${dayId(1)}&copy=1` });
+
+    await user.click(screen.getByRole('button', { name: /^Day 2/ }));
+
+    expect(screen.getByRole('link', { name: 'Report this trip' })).toHaveAttribute(
+      'href',
+      `/en/login?next=${encodeURIComponent(`/en/t/${TRIP_ID}?day=${dayId(2)}`)}`,
+    );
+  });
+
   it('signed_out_copy_remembers_that_this_tab_asked_for_it', async () => {
     const { user } = renderViewer({ shared: true });
 

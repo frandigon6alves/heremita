@@ -7,7 +7,7 @@ import { loadPlan } from '@/features/itinerary/load-plan';
 import { planQueryFrom, preconnectBasemap } from '@/features/itinerary/page-setup';
 import { getViewer } from '@/lib/api/server';
 import { localeAlternates, routes } from '@/lib/routes';
-import { PublicTripViewer } from '../_components/trip-viewer-screen';
+import { PublicTripViewer } from '../../_components/trip-viewer/trip-viewer-screen';
 
 export async function generateMetadata({
   params,
