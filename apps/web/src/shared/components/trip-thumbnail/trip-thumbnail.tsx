@@ -66,8 +66,7 @@ export function TripThumbnail({ points }: { points: readonly LngLat[] }) {
     return () => {
       cancelled = true;
     };
-    // `key` stands for `points`: callers build the array on every render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `key` stands for `points`: callers build the array on every render
   }, [near, key, theme, language]);
 
   return (
