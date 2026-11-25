@@ -1,7 +1,7 @@
 'use client';
 
 import type { LngLat, PlaceResult, TravelMode, TripPlanOwner } from '@heremita/shared';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
@@ -26,6 +26,7 @@ import { SavingIndicator } from '@/features/itinerary/saving-indicator';
 import type { OpenSource } from '@/features/itinerary/stop-row';
 import { planPins } from '@/features/itinerary/trip-to-geojson';
 import { usePlanActions } from '@/features/itinerary/use-plan-actions';
+import { withConfirmedIds } from '@/features/itinerary/use-plan-mutation';
 import { usePlannerParams } from '@/features/itinerary/use-planner-params';
 import { useSelectionRoute } from '@/features/itinerary/use-selection-route';
 import { PlaceSearch } from '@/features/place-search';
@@ -81,7 +82,10 @@ export function PlannerScreen({ tripId, initialPlan, initialUpdatedAt }: Planner
   const params = usePlannerParams({ modePerDay: true });
   // Without `?day=` the first render's day stays selected while the plan is edited.
   const [openingDay] = useState(() => defaultDaySelection(initialPlan));
-  const selection = resolveDaySelection(plan, params.day ?? openingDay);
+  const queryClient = useQueryClient();
+  // A day chip tapped before the server confirmed the new day left its pending id in the URL.
+  const dayParam = params.day === null ? null : withConfirmedIds(queryClient, params.day);
+  const selection = resolveDaySelection(plan, dayParam ?? openingDay);
   const selectedPlace = params.place === null ? undefined : findPlace(plan, params.place);
   const online = useOnline();
 

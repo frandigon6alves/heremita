@@ -1,4 +1,5 @@
 import type {
+  AddStopResponse,
   AddTripPlaceBody,
   AddTripPlaceResponse,
   DayOwner,
@@ -29,7 +30,7 @@ import {
   applyReorder,
 } from './apply-plan-ops';
 import { findDay, findPlace, newPendingId, stopsOfPlace } from './plan-view';
-import { usePlanMutation } from './use-plan-mutation';
+import { confirmPendingId, usePlanMutation, withConfirmedIds } from './use-plan-mutation';
 
 type PlaceInput = AddTripPlaceBody['place'];
 
@@ -214,6 +215,11 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
     },
     onSuccess: (result, variables, client) => {
       const { pendingId, pendingStopId, dayId, preview, target } = variables;
+      confirmPendingId(client, pendingId, result.tripPlaceId);
+      const stopId = result.kind === 'created' ? result.response.stopId : result.stopId;
+      if (pendingStopId !== null && stopId !== null) {
+        confirmPendingId(client, pendingStopId, stopId);
+      }
       client.setQueryData<TripPlan>(queryKeys.trips.plan(tripId), (plan) => {
         if (plan?.viewerRole !== 'owner') {
           return plan;
@@ -288,13 +294,20 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
     failureMessage: stopFailureMessage,
   });
 
-  const addStop = usePlanMutation<TargetedStop, unknown>({
+  const addStop = usePlanMutation<TargetedStop, AddStopResponse>({
     tripId,
     mutationFn: ({ dayId, tripPlaceId, index }) =>
       apiFetch(apiRoutes.addStop, { params: { tripId, dayId }, body: { tripPlaceId, index } }),
     optimistic: (plan, { dayId, tripPlaceId, index, stopId }) =>
       applyAddStop(plan, dayId, { id: stopId, tripPlaceId, modeToNext: null }, index),
     failureMessage: stopFailureMessage,
+    onSuccess: (added, { stopId }, client) => {
+      confirmPendingId(client, stopId, added.stop.id);
+      client.setQueryData<TripPlan>(
+        queryKeys.trips.plan(tripId),
+        (plan) => plan && withConfirmedIds(client, plan),
+      );
+    },
   });
 
   const removeStop = usePlanMutation<TargetedStop, unknown>({
@@ -352,6 +365,7 @@ export function usePlanActions(tripId: string, onAdded: (tripPlaceId: string) =>
     },
     failureMessage: () => t('createDayFailed'),
     onSuccess: (day, { pendingId }, client) => {
+      confirmPendingId(client, pendingId, day.id);
       client.setQueryData<TripPlan>(queryKeys.trips.plan(tripId), (plan) =>
         plan?.viewerRole === 'owner'
           ? {

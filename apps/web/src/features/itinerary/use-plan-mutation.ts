@@ -1,8 +1,56 @@
 import type { TripPlan, TripPlanOwner } from '@heremita/shared';
-import { useMutation, type QueryClient, type QueryKey } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+  type QueryClient,
+  type QueryKey,
+} from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { queryKeys } from '@/lib/api/query-keys';
 import { announce as announceText, showToast } from '@/shared/components/toast/toast-store';
+import { isPendingId } from './plan-view';
+
+/**
+ * Real ids the server gave rows first shown with a `pending-` id, per query
+ * client. Edits are serial: one queued behind an add or a new day was built
+ * with the pending id, and is sent with the real one (a pending id must never
+ * reach the API). Rollbacks map their snapshots the same way.
+ */
+const confirmedIds = new WeakMap<QueryClient, Map<string, string>>();
+
+/** Records that the row shown as `pendingId` is `realId` on the server. */
+export function confirmPendingId(client: QueryClient, pendingId: string, realId: string): void {
+  if (!isPendingId(pendingId) || pendingId === realId) {
+    return;
+  }
+  let ids = confirmedIds.get(client);
+  if (!ids) {
+    ids = new Map();
+    confirmedIds.set(client, ids);
+  }
+  ids.set(pendingId, realId);
+}
+
+/** `value` with every confirmed pending id replaced by its real id (plain JSON-like data). */
+export function withConfirmedIds<T>(client: QueryClient, value: T): T {
+  const ids = confirmedIds.get(client);
+  if (!ids || ids.size === 0) {
+    return value;
+  }
+  const map = (current: unknown): unknown => {
+    if (typeof current === 'string') {
+      return ids.get(current) ?? current;
+    }
+    if (Array.isArray(current)) {
+      return current.map(map);
+    }
+    if (current !== null && typeof current === 'object') {
+      return Object.fromEntries(Object.entries(current).map(([key, entry]) => [key, map(entry)]));
+    }
+    return current;
+  };
+  return map(value) as T;
+}
 
 export interface PlanMutationConfig<TVariables, TData> {
   tripId: string;
@@ -80,6 +128,7 @@ export function usePlanMutation<TVariables, TData>({
   canRetry = () => true,
 }: PlanMutationConfig<TVariables, TData>) {
   const t = useTranslations('common.actions');
+  const queryClient = useQueryClient();
   const planKey = queryKeys.trips.plan(tripId);
   const mutationKey = planMutationKey(tripId);
 
@@ -87,7 +136,7 @@ export function usePlanMutation<TVariables, TData>({
     mutationKey,
     scope: { id: `plan:${tripId}` },
     retry: false,
-    mutationFn,
+    mutationFn: (variables) => mutationFn(withConfirmedIds(queryClient, variables)),
     onMutate: async (variables, { client }) => {
       await client.cancelQueries({ queryKey: planKey, exact: true });
       const plan = client.getQueryData<TripPlan>(planKey);
@@ -105,7 +154,8 @@ export function usePlanMutation<TVariables, TData>({
     onError: (error, variables, snapshot, { client }) => {
       const plan = snapshot && rollBack(client, mutationKey, snapshot);
       if (plan) {
-        client.setQueryData<TripPlan>(planKey, plan);
+        // A snapshot taken before an earlier add was confirmed still holds its pending ids.
+        client.setQueryData<TripPlan>(planKey, withConfirmedIds(client, plan));
       }
       showToast({
         message: failureMessage(variables, error),
