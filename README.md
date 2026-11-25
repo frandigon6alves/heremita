@@ -29,6 +29,7 @@ The demo runs the web app on Vercel, the API on Render's free plan and PostgreSQ
 A solo, production-shaped project: every point below links to the code or test that backs it.
 
 - **AI that cannot invent places.** Claude suggests places for a prompt ("street food and viewpoints, little walking"); the API keeps a suggestion only when the geocoder finds a real place with that name near the trip, so model text never becomes a pin. Structured output, a refusal fallback, a daily cost cap, and an [eval suite](#ai-place-suggestions) with a golden set, deterministic scores and an LLM judge.
+- **MCP server.** [`apps/mcp`](apps/mcp) lets Claude Desktop, Claude Code or any MCP client search public trips and plan your own (create a trip, search or AI-suggest places, add them to days) through the same typed contract, tested end to end over an in-memory MCP transport.
 - **Contract first.** Every request and response is a zod schema in [`packages/shared`](packages/shared/src). The API validates with it, the web client is typed by it, and the [OpenAPI 3.1 document](packages/shared/openapi.json) is generated from it; a test fails when the document drifts.
 - **Authorisation as a tested matrix.** [`authz-matrix.test.ts`](apps/api/test/authz-matrix.test.ts) has a row for every endpoint (anonymous, non-owner, owner, moderator, crossed ids) and fails when one is missing; [`route-table.test.ts`](apps/api/test/route-table.test.ts) fails when a handler and the contract disagree.
 - **Security by default.** Argon2id passwords, opaque sessions stored hashed in an HttpOnly `__Host-` cookie, an origin check against CSRF, a per-request nonce [Content Security Policy](apps/web/src/csp.ts), per-endpoint rate limits, failed sign-ins counted per address block, and an [HMAC-signed client address](#signed-client-address) so server renders do not share one rate-limit bucket.
@@ -70,11 +71,12 @@ flowchart LR
   SHARED -. "types + schemas" .- API
 ```
 
-| Workspace         | What it is                                                                          | Dev port |
-| ----------------- | ----------------------------------------------------------------------------------- | -------- |
-| `apps/web`        | Next.js 16 (App Router, React 19), MapLibre GL JS, TanStack Query, next-intl, nuqs  | 3100     |
-| `apps/api`        | NestJS 12 REST API under `/api/v1`, Prisma 7, PostgreSQL 18                         | 3101     |
-| `packages/shared` | `@heremita/shared`: zod 4 schemas, the endpoint table and the generated OpenAPI doc | -        |
+| Workspace         | What it is                                                                                             | Dev port |
+| ----------------- | ------------------------------------------------------------------------------------------------------ | -------- |
+| `apps/web`        | Next.js 16 (App Router, React 19), MapLibre GL JS, TanStack Query, next-intl, nuqs                     | 3100     |
+| `apps/api`        | NestJS 12 REST API under `/api/v1`, Prisma 7, PostgreSQL 18                                            | 3101     |
+| `packages/shared` | `@heremita/shared`: zod 4 schemas, the endpoint table and the generated OpenAPI doc                    | -        |
+| `apps/mcp`        | MCP server: an AI assistant reads trips and plans yours through the API ([README](apps/mcp/README.md)) | stdio    |
 
 `SPEC.md` is the source of truth for behaviour, contracts and decisions (see [Project documents](#project-documents)). This README covers running, testing and operating the project.
 
