@@ -50,6 +50,30 @@ describe('Toaster', () => {
     expect(liveRegion()).toHaveTextContent('Added to Day 2');
   });
 
+  it('keeps_a_focused_toast_when_newer_ones_push_the_oldest_out', () => {
+    renderToaster();
+    act(() => {
+      showToast({ message: 'Place deleted', action: { label: 'Undo', onAction: vi.fn() } });
+    });
+    const undo = screen.getByRole('button', { name: 'Undo' });
+    // A keyboard user tabs to the Undo.
+    act(() => undo.focus());
+
+    act(() => {
+      for (const message of ['Saved', 'Moved', 'Renamed']) {
+        showToast({ message });
+      }
+    });
+
+    const region = screen.getByRole('region', { name: 'Notifications' });
+    expect(
+      within(region)
+        .getAllByRole('listitem')
+        .map((item) => item.firstChild?.textContent),
+    ).toEqual(['Place deleted', 'Moved', 'Renamed']);
+    expect(undo).toHaveFocus();
+  });
+
   it('announces_without_a_toast', () => {
     renderToaster();
 

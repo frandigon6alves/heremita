@@ -36,6 +36,8 @@ const MAX_VISIBLE = 3;
 
 let state: ToastState = { toasts: [], announcement: null };
 let nextId = 1;
+/** Toasts under the pointer or holding focus: never the ones trimmed to make room. */
+const heldIds = new Set<number>();
 const listeners = new Set<() => void>();
 
 function setState(next: ToastState): void {
@@ -77,13 +79,36 @@ export function showToast({
   const id = nextId++;
   const toast: Toast = { id, message, action, durationMs };
   setState({
-    toasts: [...state.toasts, toast].slice(-MAX_VISIBLE),
+    toasts: trim([...state.toasts, toast]),
     announcement: { id, text: message, action: action?.label },
   });
   return id;
 }
 
+/**
+ * Keeps `MAX_VISIBLE` toasts, dropping the oldest ones nobody holds: a keyboard
+ * user on an Undo keeps it (and its focus) when more toasts arrive.
+ */
+function trim(toasts: readonly Toast[]): readonly Toast[] {
+  const kept = [...toasts];
+  while (kept.length > MAX_VISIBLE) {
+    const oldestFree = kept.findIndex((toast) => !heldIds.has(toast.id));
+    kept.splice(oldestFree === -1 ? 0 : oldestFree, 1);
+  }
+  return kept;
+}
+
+/** The toaster reports hover and focus, so trimming spares a toast in use. */
+export function holdToast(id: number, held: boolean): void {
+  if (held) {
+    heldIds.add(id);
+  } else {
+    heldIds.delete(id);
+  }
+}
+
 export function dismissToast(id: number): void {
+  heldIds.delete(id);
   if (state.toasts.some((toast) => toast.id === id)) {
     setState({ ...state, toasts: state.toasts.filter((toast) => toast.id !== id) });
   }
@@ -91,5 +116,6 @@ export function dismissToast(id: number): void {
 
 /** Test helper: forget every toast and announcement. */
 export function resetToasts(): void {
+  heldIds.clear();
   setState(EMPTY);
 }

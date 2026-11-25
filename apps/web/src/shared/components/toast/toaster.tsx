@@ -4,13 +4,24 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { X } from '@/shared/icons/icons';
 import styles from './toaster.module.css';
-import { dismissToast, getServerSnapshot, getSnapshot, subscribe, type Toast } from './toast-store';
+import {
+  dismissToast,
+  getServerSnapshot,
+  getSnapshot,
+  holdToast,
+  subscribe,
+  type Toast,
+} from './toast-store';
 
 function ToastItem({ toast }: { toast: Toast }) {
   const t = useTranslations('common.toast');
   const { id, durationMs, action, message } = toast;
   // Hover or focus inside holds the toast so its Undo stays reachable (WCAG 2.2.1).
-  const [held, setHeld] = useState(false);
+  const [held, setHeldState] = useState(false);
+  function setHeld(next: boolean) {
+    setHeldState(next);
+    holdToast(id, next);
+  }
 
   useEffect(() => {
     if (durationMs === null || held) {
