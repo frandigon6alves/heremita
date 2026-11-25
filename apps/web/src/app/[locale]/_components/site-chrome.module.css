@@ -245,3 +245,12 @@
     padding-inline: calc((100% - var(--content-max)) / 2);
   }
 }
+
+/* No box of its own: the header and footer lay out as if unwrapped. */
+.chrome {
+  display: contents;
+}
+
+:root:has([data-trip-screen]) .chrome {
+  display: none;
+}

@@ -1,9 +1,9 @@
 import { useLocale, useTranslations } from 'next-intl';
-import Link from 'next/link';
 import { useId } from 'react';
 import { routes } from '@/lib/routes';
 import { ChevronDown, LogOut, Settings, ShieldCheck } from '@/shared/icons/icons';
 import { LogoutButton } from './logout-button';
+import { MenuLink } from './menu-link';
 import styles from './account-menu.module.css';
 
 /** The first letter of the name, for the avatar circle. */
@@ -46,17 +46,17 @@ export function AccountMenu({
         </p>
         <ul className={styles.items} role="list">
           <li>
-            <Link className={styles.item} href={routes.settings(locale)}>
+            <MenuLink className={styles.item} href={routes.settings(locale)}>
               <Settings size={20} />
               {t('settings')}
-            </Link>
+            </MenuLink>
           </li>
           {moderator && (
             <li>
-              <Link className={styles.item} href={routes.moderation(locale)}>
+              <MenuLink className={styles.item} href={routes.moderation(locale)}>
                 <ShieldCheck size={20} />
                 {t('moderation')}
-              </Link>
+              </MenuLink>
             </li>
           )}
           <li>
