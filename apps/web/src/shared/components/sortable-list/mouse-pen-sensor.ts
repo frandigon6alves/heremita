@@ -5,7 +5,7 @@ const [pointerActivator] = PointerSensor.activators;
 
 /**
  * `PointerSensor` for mouse and pen only: touch goes to `TouchSensor`, whose
- * press delay lets a quick swipe on the handle scroll the list instead.
+ * press delay keeps a tap on the handle from starting a drag.
  */
 export class MousePenSensor extends PointerSensor {
   static override activators = [

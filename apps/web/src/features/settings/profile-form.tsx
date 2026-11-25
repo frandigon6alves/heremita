@@ -20,7 +20,6 @@ import { showToast } from '@/shared/components/toast/toast-store';
 import styles from './settings.module.css';
 
 const FIELDS = ['displayName'] as const;
-/** The API refused a name that passed the shared schema here. */
 
 /** Display name (E9). Saved explicitly: a half-typed name never reaches other people. */
 export function ProfileForm({ displayName }: { displayName: string }) {

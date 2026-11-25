@@ -18,7 +18,6 @@ import { TextArea } from '@/shared/components/text-area/text-area';
 import { showToast } from '@/shared/components/toast/toast-store';
 import styles from './report-dialog.module.css';
 
-const REASONS = REPORT_REASONS;
 const reportFormSchema = createReportBodySchema.omit({ target: true });
 type ReportFields = Omit<CreateReportBody, 'target'>;
 
@@ -102,7 +101,7 @@ export function ReportDialog({ open, onClose, target }: ReportDialogProps) {
           <legend id={legendId} className={styles.legend}>
             {t('reason')}
           </legend>
-          {REASONS.map((value, index) => (
+          {REPORT_REASONS.map((value, index) => (
             <label key={value} className={styles.reason}>
               <input
                 type="radio"

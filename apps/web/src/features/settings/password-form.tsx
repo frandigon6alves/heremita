@@ -18,7 +18,6 @@ import { showToast } from '@/shared/components/toast/toast-store';
 import styles from './settings.module.css';
 
 const FIELDS = ['currentPassword', 'newPassword'] as const;
-/** The API refused a value that passed the shared schema here. */
 /** E10 422 `wrong_password`: the current password does not match. */
 const WRONG = 'wrong';
 /** The new password is the e-mail address or its local part. */
