@@ -37,10 +37,11 @@ export default defineConfig([
     },
   },
 
-  // Code that runs on Node.js: the API, the shared package, scripts and tool configs.
+  // Code that runs on Node.js: the API, the MCP server, the shared package, scripts and tool configs.
   {
     files: [
       'apps/api/**',
+      'apps/mcp/**',
       'packages/**',
       'scripts/**',
       'apps/web/scripts/**',
