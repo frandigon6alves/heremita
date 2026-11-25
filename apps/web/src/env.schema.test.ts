@@ -10,8 +10,23 @@ describe('parseServerEnv', () => {
       SESSION_COOKIE_NAME: 'hm_session',
       CONTACT_EMAIL: null,
       SERVER_FETCH_SECRET: null,
+      SITE_URL: 'http://localhost:3100',
       NEXT_PUBLIC_E2E: false,
     });
+  });
+
+  it('takes_the_site_url_from_site_url_else_from_vercels_production_domain', () => {
+    const base = { SESSION_COOKIE_NAME: 'hm_session' };
+
+    expect(parseServerEnv({ ...base, SITE_URL: 'https://heremita.example/path' }).SITE_URL).toBe(
+      'https://heremita.example',
+    );
+    expect(
+      parseServerEnv({ ...base, VERCEL_PROJECT_PRODUCTION_URL: 'heremita.vercel.app' }).SITE_URL,
+    ).toBe('https://heremita.vercel.app');
+    expect(() => parseServerEnv({ ...base, SITE_URL: 'heremita.example' })).toThrow(
+      /SITE_URL: not an absolute http\(s\) URL/,
+    );
   });
 
   it('treats_blank_values_as_unset', () => {

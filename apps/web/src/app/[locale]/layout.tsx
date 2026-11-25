@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { locale as rootLocale } from 'next/root-params';
 import { NONCE_HEADER } from '@/csp';
+import { env } from '@/env';
 import { ClientMessages } from '@/i18n/client-messages';
 import { routing } from '@/i18n/routing';
 import { getViewer } from '@/lib/api/server';
@@ -23,6 +24,8 @@ import '@/shared/styles/base.css';
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('common');
   return {
+    // Makes the pages' relative alternates absolute: search engines ignore relative hreflang.
+    metadataBase: new URL(env.SITE_URL),
     title: { default: t('appName'), template: `%s · ${t('appName')}` },
     description: t('meta.description'),
   };

@@ -155,11 +155,12 @@ describe('safeNext', () => {
 });
 
 describe('localeAlternates', () => {
-  it('maps_every_locale_to_its_path', () => {
+  it('maps_every_locale_to_its_path_and_the_default_one_to_x_default', () => {
     expect(localeAlternates((locale) => routes.about(locale))).toEqual({
       en: '/en/about',
       es: '/es/about',
       'pt-BR': '/pt-BR/about',
+      'x-default': '/en/about',
     });
   });
 });

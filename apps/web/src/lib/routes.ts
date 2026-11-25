@@ -54,12 +54,21 @@ export const routes = {
   moderation: (locale: Locale) => `/${locale}/moderation`,
 } as const;
 
-/** `alternates.languages` of a page's metadata: the same page in every locale. */
-export function localeAlternates(pathOf: (locale: Locale) => string): Record<Locale, string> {
-  return Object.fromEntries(routing.locales.map((locale) => [locale, pathOf(locale)])) as Record<
-    Locale,
-    string
-  >;
+/**
+ * `alternates.languages` of a page's metadata: the same page in every locale,
+ * plus `x-default` (the default locale) for visitors matching none of them.
+ * Paths are relative; the root layout's `metadataBase` makes them absolute.
+ */
+export function localeAlternates(
+  pathOf: (locale: Locale) => string,
+): Record<Locale | 'x-default', string> {
+  return {
+    ...(Object.fromEntries(routing.locales.map((locale) => [locale, pathOf(locale)])) as Record<
+      Locale,
+      string
+    >),
+    'x-default': pathOf(routing.defaultLocale),
+  };
 }
 
 /**

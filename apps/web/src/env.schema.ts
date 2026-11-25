@@ -33,6 +33,21 @@ export interface ServerEnv extends PublicEnv {
   CONTACT_EMAIL: string | null;
   /** Signs the browser's address on server renders (`lib/api/server.ts`); `null` → not sent. */
   SERVER_FETCH_SECRET: string | null;
+  /** Origin of the public site: absolute URLs in metadata (hreflang alternates, canonical). */
+  SITE_URL: string;
+}
+
+/** Without SITE_URL: Vercel's production domain (a system variable), else the dev server. */
+const DEV_SITE_URL = 'http://localhost:3100';
+
+function readSiteUrl(source: Source, problems: string[]): string {
+  const vercel = read(source, 'VERCEL_PROJECT_PRODUCTION_URL');
+  const value = read(source, 'SITE_URL') ?? (vercel ? `https://${vercel}` : DEV_SITE_URL);
+  if (!isHttpUrl(value)) {
+    problems.push(`SITE_URL: not an absolute http(s) URL (${value})`);
+    return DEV_SITE_URL;
+  }
+  return new URL(value).origin;
 }
 
 /** Shortest accepted `SERVER_FETCH_SECRET` (the API applies the same rule). */
@@ -132,6 +147,8 @@ export function parseServerEnv(source: Source): ServerEnv {
     problems.push(`CONTACT_EMAIL: not an e-mail address (${contactEmail})`);
   }
 
+  const siteUrl = readSiteUrl(source, problems);
+
   const serverFetchSecret = read(source, 'SERVER_FETCH_SECRET') ?? null;
   if (serverFetchSecret === null && read(source, 'NODE_ENV') === 'production') {
     problems.push(
@@ -155,5 +172,6 @@ export function parseServerEnv(source: Source): ServerEnv {
     SESSION_COOKIE_NAME: cookieName as SessionCookieName,
     CONTACT_EMAIL: contactEmail,
     SERVER_FETCH_SECRET: serverFetchSecret,
+    SITE_URL: siteUrl,
   };
 }
