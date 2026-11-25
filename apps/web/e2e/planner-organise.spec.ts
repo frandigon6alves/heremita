@@ -135,3 +135,20 @@ test('keeps_a_note_after_a_reload', async ({ page, account }) => {
     'Ler Devagar bookshop at the back, on the left.',
   );
 });
+
+test('keeps_the_keyboard_focus_on_a_row_moved_down_from_its_menu', async ({ page, account }) => {
+  const trip = await arrangeTrip(account.api, { title: 'Belém', days: [BELEM] });
+  await openPlanner(page, trip.id, `?day=${trip.plan.days[0]?.id}`);
+  const trigger = page.getByRole('button', { name: 'Actions for Torre de Belém' });
+
+  // Keyboard only: open the row's menu, pick "Move down".
+  await trigger.focus();
+  await page.keyboard.press('Enter');
+  const menu = page.locator('[popover]:popover-open');
+  await menu.getByRole('button', { name: 'Move down' }).focus();
+  await page.keyboard.press('Enter');
+
+  await expect(rows(page, 1)).toHaveText([/Mosteiro/, /Torre de Belém/, /Pastéis de Belém/]);
+  // The moved row's own menu button keeps the focus (it moved in the DOM with its row).
+  await expect(trigger).toBeFocused();
+});
