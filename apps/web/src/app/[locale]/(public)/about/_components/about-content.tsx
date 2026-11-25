@@ -1,7 +1,12 @@
 import { useTranslations } from 'next-intl';
-import { ContactSection } from './contact-section';
-import { externalLink, LegalList, LegalPage, LegalSection } from './legal-page';
-import { SERVICE_LINKS } from './service-links';
+import { ContactSection } from '../../_components/legal/contact-section';
+import {
+  externalLink,
+  LegalList,
+  LegalPage,
+  LegalSection,
+} from '../../_components/legal/legal-page';
+import { SERVICE_LINKS } from '../../_components/legal/service-links';
 
 /** What Heremita is, the credits its data sources and services require, and the operator contact. */
 export function AboutContent({ contactEmail }: { contactEmail: string | null }) {

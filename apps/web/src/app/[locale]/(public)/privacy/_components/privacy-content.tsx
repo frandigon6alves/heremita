@@ -1,14 +1,14 @@
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { routes } from '@/lib/routes';
-import { ContactSection } from '../../about/_components/contact-section';
+import { ContactSection } from '../../_components/legal/contact-section';
 import {
   externalLink,
   LegalList,
   LegalPage,
   LegalSection,
-} from '../../about/_components/legal-page';
-import { SERVICE_LINKS } from '../../about/_components/service-links';
+} from '../../_components/legal/legal-page';
+import { SERVICE_LINKS } from '../../_components/legal/service-links';
 
 /** What Heremita stores, who receives queries and coordinates, browser storage, deletion, contact. */
 export function PrivacyContent({ contactEmail }: { contactEmail: string | null }) {
