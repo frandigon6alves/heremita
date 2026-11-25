@@ -54,8 +54,6 @@ claude mcp add heremita -e HEREMITA_EMAIL=you@example.com -e HEREMITA_PASSWORD=â
 
 Then ask, for example: _"Find a public trip to Paris, then create my own 2-day walking trip there and add three quiet museums to day 1."_
 
-`pnpm --filter @heremita/mcp inspect` opens the MCP Inspector on the built server.
-
 ## Tests
 
 `pnpm --filter @heremita/mcp test` connects a real MCP client to the server over an in-memory transport, with the API faked at `fetch`: which tools are offered with and without an account, the request each tool sends (session cookie and `Origin` on writes), signing in again after an expired session, and API refusals turned into tool errors.
