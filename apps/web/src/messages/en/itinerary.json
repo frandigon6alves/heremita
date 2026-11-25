@@ -176,10 +176,10 @@
     "empty": "None of the ideas matched a real place near your trip. Try different words.",
     "dropped": "{count, plural, =0 {Every idea matched a real place.} one {# idea matched no real place nearby and was left out.} other {# ideas matched no real place nearby and were left out.}}",
     "showOnMap": "Show on map",
-    "showOnMapNamed": "Show {name} on the map",
     "add": "Add to ideas",
-    "addNamed": "Add {name} to ideas",
     "added": "In your trip",
-    "close": "Close"
+    "close": "Close",
+    "promptTooShort": "Describe what you are looking for in at least 3 characters.",
+    "found": "{count, plural, =0 {No real places found.} one {# real place found.} other {# real places found.}}"
   }
 }

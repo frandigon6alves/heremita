@@ -6,6 +6,7 @@ import {
   okResponse,
   onEndpoint,
   problemResponse,
+  respondWith,
   setupApiServer,
 } from '../../../test/msw/handlers';
 import { renderWithProviders } from '../../../test/render';
@@ -72,16 +73,20 @@ describe('AiSuggestions', () => {
     // A place the trip already holds offers no Add.
     expect(within(list).getByText('In your trip')).toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Add Castelo de São Jorge to ideas' }),
+      screen.queryByRole('button', { name: 'Add to ideas', description: 'Castelo de São Jorge' }),
     ).not.toBeInTheDocument();
 
+    // The visible label stays the accessible name (WCAG 2.5.3); the place describes it.
     await user.click(
-      screen.getByRole('button', { name: 'Add Museu Nacional do Azulejo to ideas' }),
+      screen.getByRole('button', {
+        name: 'Add to ideas',
+        description: 'Museu Nacional do Azulejo',
+      }),
     );
     expect(onAdd).toHaveBeenCalledWith(AZULEJO);
 
     await user.click(
-      screen.getByRole('button', { name: 'Show Museu Nacional do Azulejo on the map' }),
+      screen.getByRole('button', { name: 'Show on map', description: 'Museu Nacional do Azulejo' }),
     );
     expect(onShowOnMap).toHaveBeenCalledWith(AZULEJO);
   });
@@ -119,6 +124,60 @@ describe('AiSuggestions', () => {
       ),
     ).toBeInTheDocument();
     expect(calls).toBe(2);
+  });
+
+  it('asks_for_a_longer_prompt_in_the_app_language_instead_of_sending_blanks', async () => {
+    let calls = 0;
+    server.use(
+      onEndpoint(endpoints.suggestPlaces, () => {
+        calls += 1;
+        return okResponse(endpoints.suggestPlaces, { items: [], dropped: 0 });
+      }),
+    );
+    const { user } = renderPanel();
+
+    await ask(user, '   ab  ');
+
+    const field = screen.getByRole('textbox', { name: 'What are you looking for?' });
+    expect(field).toHaveAccessibleDescription(
+      expect.stringContaining('Describe what you are looking for in at least 3 characters.'),
+    );
+    expect(field).toHaveAttribute('aria-invalid', 'true');
+    expect(calls).toBe(0);
+  });
+
+  it('shows_the_last_answer_again_after_the_panel_was_unmounted', async () => {
+    server.use(
+      respondWith(endpoints.suggestPlaces, {
+        items: [{ place: AZULEJO, reason: 'Tiles from five centuries.' }],
+        dropped: 0,
+      }),
+    );
+    const panel = (shown: boolean) =>
+      shown ? (
+        <AiSuggestions
+          tripId={TRIP_ID}
+          plan={buildPlan()}
+          disabled={false}
+          onAdd={vi.fn()}
+          onShowOnMap={vi.fn()}
+        />
+      ) : (
+        <></>
+      );
+    // Same providers (and query client) throughout, as in the planner.
+    const { user, rerender } = renderWithProviders(panel(true));
+    await ask(user, 'Museums');
+    await screen.findByText('Tiles from five centuries.');
+
+    rerender(panel(false));
+    rerender(panel(true));
+    await user.click(screen.getByRole('button', { name: 'Suggest places with AI' }));
+
+    expect(await screen.findByText('Tiles from five centuries.')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'What are you looking for?' })).toHaveValue(
+      'Museums',
+    );
   });
 
   it('is_disabled_offline', () => {
