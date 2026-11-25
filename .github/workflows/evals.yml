@@ -2,7 +2,7 @@
 # Photon geocoder, the golden set and the LLM judge. Manual only, because every
 # run spends money; run it before merging a change to the prompt, the model or
 # the grounding, and compare the report with the last one.
-# Needs the repository secret ANTHROPIC_API_KEY.
+# Needs ANTHROPIC_API_KEY as a secret of the "evals" environment.
 name: Evals
 
 on:
@@ -29,8 +29,13 @@ jobs:
     name: suggestions
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    # The key is an environment secret: give the "evals" environment required
+    # reviewers so no branch can run its own code with it unapproved.
+    environment: evals
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - uses: pnpm/action-setup@v6
 

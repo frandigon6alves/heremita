@@ -940,10 +940,10 @@ V68: Route query key includes `planVersion` + `mode`; any route-affecting edit c
 V69: Delete-type actions (remove from day, delete from trip, review delete) offer Undo or confirm; delete trip + delete account + delete day w/ stops use `<dialog>` confirm [RTL].
 
 ### AI suggestions (E52)
-V76: AI ideas ⊥ persisted ∧ ⊥ applied by the server: E52 writes nothing; a pick reaches the plan only through the owner's own E29 [integration: row counts unchanged after E52].
-V77: ∀ E52 item → a geocoder hit for the idea's name, biased to the trip centre, ≤ `SUGGEST_RADIUS_KM` away, `kind` ≠ `area`, hit name holds > ½ of the idea's words (≥ 3 letters, folded), key ∉ trip ∧ unique in the answer; idea w/o such hit → dropped + counted in `dropped` (model text never becomes a place) [unit `grounding.test.ts` + integration].
+V76: AI ideas ⊥ persisted ∧ ⊥ applied by the server: E52 writes ⊥ trip/day/stop/place row (only the `place:v1:` provider cache of geocoder hits, as E42); a pick reaches the plan only through the owner's own E29 [integration: row counts unchanged after E52].
+V77: ∀ E52 item → a geocoder hit for the idea's name, biased to the trip centre, ≤ `SUGGEST_RADIUS_KM` away, `kind` ≠ `area`, hit name holds > ½ of the idea's words (≥ 3 letters, folded; a 1-word idea = the whole hit name), key ∉ trip ∧ unique in the answer; idea w/o such hit → dropped + counted in `dropped` (model text never becomes a place) [unit `grounding.test.ts` + integration].
 V78: Prompt text, model output and `ANTHROPIC_API_KEY` ⊥ logged; log line = trip id, provider, model, ideas, grounded, tokens, ms [review + `suggestions.service.test.ts` spy].
-V79: Model call: structured output (zod → JSON schema, `parsed_output` null → 503), `stop_reason: refusal` → 503, timeout 30 s, ⊥ retries beyond SDK default 2, server-side refusal fallback (`fallbacks: 'default'`); user prompt sent as data inside the user turn, ⊥ system prompt [unit w/ stub client].
+V79: Model call: structured output (zod → JSON schema, `parsed_output` null → 503), `stop_reason: refusal` → 503, timeout 30 s, 1 SDK retry, any failure → 503, server-side refusal fallback (`fallbacks: 'default'`); user prompt sent as data inside the user turn, ⊥ system prompt [unit w/ stub client].
 V80: Daily budget counted before the model call, per UTC day (injected clock); over → 429 `ai_quota_exhausted` w/ `Retry-After` = s until next UTC midnight [unit `daily-budget.test.ts`].
 
 ### Data, seed, tooling

@@ -49,7 +49,9 @@ describe('namesMatch', () => {
     ['Torre de Belem', 'Torre de Belém', true],
     ['Museu Nacional do Azulejo', 'Museu Nacional do Azulejo - MNAz', true],
     ['Castelo de São Jorge', 'Castelo São Jorge', true],
-    ['Jerónimos', 'Mosteiro dos Jerónimos', true],
+    ['Jerónimos', 'Mosteiro dos Jerónimos', false],
+    ['Beach', 'Beach Hotel', false],
+    ['Ginjinha', 'Ginjinha', true],
     ['Torre de Belém', 'Pastéis de Belém', false],
     ['Torre de Belém', 'Belém', false],
     ['Museu Imaginário do Teste', 'Museu do Teatro e da Dança', false],
@@ -121,9 +123,9 @@ describe('groundIdeas', () => {
 
   it('stops_looking_up_once_count_places_are_kept', async () => {
     const search = searchFrom({
-      Alpha: [hit('osm:N:11', 'Alpha place')],
-      Bravo: [hit('osm:N:12', 'Bravo place')],
-      Charlie: [hit('osm:N:13', 'Charlie place')],
+      Alpha: [hit('osm:N:11', 'Alpha')],
+      Bravo: [hit('osm:N:12', 'Bravo')],
+      Charlie: [hit('osm:N:13', 'Charlie')],
     });
 
     const result = await groundIdeas(
@@ -140,9 +142,7 @@ describe('groundIdeas', () => {
     let calls = 0;
     const search: PlaceSearch = (name) => {
       calls += 1;
-      return calls === 1
-        ? Promise.resolve([hit('osm:N:21', `${name} place`)])
-        : Promise.reject(failure);
+      return calls === 1 ? Promise.resolve([hit('osm:N:21', name)]) : Promise.reject(failure);
     };
 
     const result = await groundIdeas(input([idea('First'), idea('Second'), idea('Third')]), search);

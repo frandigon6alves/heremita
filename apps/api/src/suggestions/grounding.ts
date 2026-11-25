@@ -75,15 +75,20 @@ function words(text: string): string[] {
 /**
  * Whether a geocoder hit is the place the idea names: more than half of the
  * idea's meaningful words appear in the hit's name ("Torre de Belém" needs both
- * words, so "Pastéis de Belém" is not it). Photon matches loosely ("Museu
- * Imaginário" finds some "Museu"), so a hit alone proves nothing.
+ * words, so "Pastéis de Belém" is not it). A one-word idea must be the hit's
+ * whole name, so a generic "Beach" never lands on "Beach Hotel". Photon matches
+ * loosely ("Museu Imaginário" finds some "Museu"), so a hit alone proves nothing.
  */
 export function namesMatch(idea: string, hit: string): boolean {
   const ideaWords = words(idea);
   if (ideaWords.length === 0) {
     return false;
   }
-  const hitWords = new Set(words(hit));
+  const hitList = words(hit);
+  if (ideaWords.length === 1) {
+    return hitList.length === 1 && hitList[0] === ideaWords[0];
+  }
+  const hitWords = new Set(hitList);
   const shared = ideaWords.filter((word) => hitWords.has(word)).length;
   return shared * 2 > ideaWords.length;
 }
