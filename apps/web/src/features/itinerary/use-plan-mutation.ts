@@ -141,9 +141,12 @@ export function usePlanMutation<TVariables, TData>({
       await client.cancelQueries({ queryKey: planKey, exact: true });
       const plan = client.getQueryData<TripPlan>(planKey);
       const redo = (current: TripPlan): TripPlan =>
-        current.viewerRole === 'owner' && optimistic ? optimistic(current, variables) : current;
+        current.viewerRole === 'owner' && optimistic
+          ? optimistic(current, withConfirmedIds(client, variables))
+          : current;
       if (plan?.viewerRole === 'owner' && optimistic) {
-        const next = optimistic(plan, variables);
+        // The plan may already show the real ids of rows these variables still call pending.
+        const next = optimistic(plan, withConfirmedIds(client, variables));
         client.setQueryData<TripPlan>(planKey, next);
         if (announce) {
           announceText(announce(next, variables));
