@@ -132,11 +132,15 @@
 }
 
 /* A button inside an item list (Log out) looks like the links around it. */
+/* (The design-system Button centres its content and sets its own weight.) */
 button.item {
+  justify-content: flex-start;
   width: 100%;
   border: 0;
   background: transparent;
-  font: inherit;
+  color: var(--color-primary);
+  font-size: inherit;
+  font-weight: 600;
   text-align: start;
   cursor: pointer;
 }

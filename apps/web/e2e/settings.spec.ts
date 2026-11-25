@@ -1,6 +1,6 @@
 import { accountTest as test, expect, expectAccessible } from './support/fixtures';
 import { toasts } from './support/planner';
-import { checkOnceHydrated } from './support/ui';
+import { checkOnceHydrated, siteNav } from './support/ui';
 
 test('switches_english_to_spanish_to_portuguese_and_keeps_the_dark_theme', async ({ page }) => {
   await page.goto('/en/settings');
@@ -60,7 +60,9 @@ test('deletes_the_account_and_its_login_stops_working', async ({ page, account }
 
   await expect(page).toHaveURL(/\/en$/);
   await expect(toasts(page).getByText('Your account was deleted.')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Log in', exact: true })).toBeVisible();
+  await expect(
+    (await siteNav(page)).getByRole('link', { name: 'Log in', exact: true }),
+  ).toBeVisible();
 
   await page.goto('/en/login');
   await page.getByRole('textbox', { name: 'E-mail' }).fill(account.email);

@@ -116,41 +116,18 @@
   }
 }
 
-/* Phones: an icon-only link keeps its name for assistive technology. */
-.navTextPhoneHidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-.navLink:has(.navTextPhoneHidden) {
-  padding: 0;
-  justify-content: center;
-}
-
-/* Phones: the footer carries Explore, so the bar keeps room for the account links. */
-.optionalOnPhone {
+/* Phones get the gear menu; from 768 px the links and menus spread out in the bar. */
+.desktopNav {
   display: none;
 }
 
-@media (min-width: 480px) {
-  .optionalOnPhone {
-    display: list-item;
+@media (min-width: 768px) {
+  .desktopNav {
+    display: block;
   }
 
-  .navTextPhoneHidden {
-    position: static;
-    width: auto;
-    height: auto;
-    overflow: visible;
-    clip-path: none;
-  }
-
-  .navLink:has(.navTextPhoneHidden) {
-    padding: 0 var(--space-3);
+  .mobileNav {
+    display: none;
   }
 }
 

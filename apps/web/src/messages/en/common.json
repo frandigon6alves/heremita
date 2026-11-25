@@ -59,7 +59,7 @@
     "dark": "Dark"
   },
   "preferences": {
-    "menu": "Language and theme",
+    "mainMenu": "Menu",
     "language": "Language",
     "theme": "Theme",
     "themeFailed": "The theme was not saved to your account. Try again."

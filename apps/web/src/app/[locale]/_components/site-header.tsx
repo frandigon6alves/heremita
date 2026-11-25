@@ -7,14 +7,15 @@ import { AppBar } from '@/shared/components/app-bar/app-bar';
 import { BrandMark } from '@/shared/components/brand-mark/brand-mark';
 import { Compass, Map } from '@/shared/icons/icons';
 import { NavLink } from './nav-link';
-import { PreferencesMenu } from './preferences-menu';
+import { LanguageMenu, MobileMenu, ThemeMenu } from './header-menus';
 import styles from './site-chrome.module.css';
 
 /**
  * Skip link + app bar with the brand and the main navigation for non-planner
- * pages: Explore, then "My trips" and the account menu (name, settings, log
- * out) when signed in or "Log in" / "Sign up" when not, and the language and
- * theme menu last.
+ * pages. From 768 px: Explore, then "My trips" and the account menu (name,
+ * settings, log out) when signed in or "Log in" / "Sign up" when not, then a
+ * language menu and a theme menu. On phones all of it sits in one menu behind
+ * a gear. Both are in the HTML; CSS shows one (no width detection in JS).
  */
 export async function SiteHeader() {
   const locale = await getLocale();
@@ -29,50 +30,62 @@ export async function SiteHeader() {
       </a>
       <AppBar
         end={
-          <nav aria-label={t('nav.label')}>
-            <ul className={styles.navList} role="list">
-              <li className={styles.optionalOnPhone}>
-                <NavLink className={styles.navLink} href={routes.explore(locale)}>
-                  <Compass size={20} />
-                  <span className={styles.navText}>{t('nav.explore')}</span>
-                </NavLink>
-              </li>
-              {viewer ? (
-                <>
-                  <li>
-                    <NavLink className={styles.navLink} href={routes.trips(locale)}>
-                      <Map size={20} />
-                      <span className={`${styles.navText} ${styles.navTextPhoneHidden}`}>
+          <>
+            <nav className={styles.desktopNav} aria-label={t('nav.label')}>
+              <ul className={styles.navList} role="list">
+                <li>
+                  <NavLink className={styles.navLink} href={routes.explore(locale)}>
+                    <Compass size={20} />
+                    {t('nav.explore')}
+                  </NavLink>
+                </li>
+                {viewer ? (
+                  <>
+                    <li>
+                      <NavLink className={styles.navLink} href={routes.trips(locale)}>
+                        <Map size={20} />
                         {t('nav.myTrips')}
-                      </span>
-                    </NavLink>
-                  </li>
-                  <li>
-                    <AccountMenu
-                      displayName={viewer.displayName}
-                      moderator={viewer.role === 'moderator'}
-                    />
-                  </li>
-                </>
-              ) : (
-                <>
-                  <li>
-                    <NavLink className={styles.navLink} href={routes.login(locale)}>
-                      {t('nav.logIn')}
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink className={styles.navPrimary} href={routes.signup(locale)}>
-                      {t('nav.signUp')}
-                    </NavLink>
-                  </li>
-                </>
-              )}
-              <li>
-                <PreferencesMenu signedIn={viewer !== null} />
-              </li>
-            </ul>
-          </nav>
+                      </NavLink>
+                    </li>
+                    <li>
+                      <AccountMenu
+                        displayName={viewer.displayName}
+                        moderator={viewer.role === 'moderator'}
+                      />
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li>
+                      <NavLink className={styles.navLink} href={routes.login(locale)}>
+                        {t('nav.logIn')}
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink className={styles.navPrimary} href={routes.signup(locale)}>
+                        {t('nav.signUp')}
+                      </NavLink>
+                    </li>
+                  </>
+                )}
+                <li>
+                  <LanguageMenu signedIn={viewer !== null} />
+                </li>
+                <li>
+                  <ThemeMenu signedIn={viewer !== null} />
+                </li>
+              </ul>
+            </nav>
+            <nav className={styles.mobileNav} aria-label={t('nav.label')}>
+              <MobileMenu
+                viewer={
+                  viewer
+                    ? { displayName: viewer.displayName, moderator: viewer.role === 'moderator' }
+                    : null
+                }
+              />
+            </nav>
+          </>
         }
       >
         <Link className={styles.brand} href={routes.landing(locale)} aria-label={t('nav.home')}>
