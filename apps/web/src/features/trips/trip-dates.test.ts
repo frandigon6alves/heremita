@@ -24,8 +24,9 @@ describe('formatTripDates', () => {
     expect(formatTripDates('2027-03-14', 1, 'en')).toBe('Mar 14, 2027');
   });
 
-  it('formats_first_to_last_day_in_utc', () => {
-    expect(formatTripDates('2027-03-14', 4, 'en')).toMatch(/^Mar 14\s–\s17, 2027$/);
+  it('formats_first_to_last_day_in_utc_with_plain_spaces', () => {
+    // Plain spaces around the dash whatever ICU pads it with: the server and the browser must agree.
+    expect(formatTripDates('2027-03-14', 4, 'en')).toBe('Mar 14 – 17, 2027');
   });
 
   it('formats_in_portuguese', () => {

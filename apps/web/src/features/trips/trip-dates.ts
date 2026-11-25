@@ -20,11 +20,20 @@ export function daysInRange(startDate: string, endDate: string): number {
   return Math.round((utcDate(endDate).getTime() - utcDate(startDate).getTime()) / DAY_MS) + 1;
 }
 
+/**
+ * ICU pads a range's dash with a thin or narrow no-break space in some
+ * versions (Node) and a plain space in others (Chromium): the same text
+ * must come out of the server and the browser, or hydration fails.
+ */
+const ICU_SPACES = /[\u00a0\u2009\u202f]/g;
+
 /** "14–17 de mar. de 2027" / "Mar 14 – 17, 2027": first to last day of a dated trip. */
 export function formatTripDates(startDate: string, dayCount: number, locale: Locale): string {
   const format = cachedFormatter(Intl.DateTimeFormat, locale, RANGE_FORMAT);
   if (dayCount <= 1) {
     return format.format(utcDate(startDate));
   }
-  return format.formatRange(utcDate(startDate), utcDate(addDays(startDate, dayCount - 1)));
+  return format
+    .formatRange(utcDate(startDate), utcDate(addDays(startDate, dayCount - 1)))
+    .replace(ICU_SPACES, ' ');
 }

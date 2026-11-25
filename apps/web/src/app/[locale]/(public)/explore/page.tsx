@@ -5,6 +5,7 @@ import { ExploreResults } from '@/features/explore/explore-results';
 import { ExploreSearch } from '@/features/explore/explore-search';
 import { serverFetch } from '@/lib/api/server';
 import { localeAlternates, routes } from '@/lib/routes';
+import { Compass } from '@/shared/icons/icons';
 import { searchText } from './search-text';
 import styles from './explore-page.module.css';
 
@@ -29,7 +30,12 @@ export default async function ExplorePage({ searchParams }: PageProps<'/[locale]
   return (
     <main id="main" className={styles.main}>
       <header className={styles.header}>
-        <h1 className={styles.title}>{t('title')}</h1>
+        <h1 className={styles.title}>
+          <span className={styles.titleIcon}>
+            <Compass />
+          </span>
+          {t('title')}
+        </h1>
         <p className={styles.lead}>{t('lead')}</p>
       </header>
       <ExploreSearch key={q} q={q} />

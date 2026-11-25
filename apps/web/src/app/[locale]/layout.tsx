@@ -11,7 +11,7 @@ import { getViewer } from '@/lib/api/server';
 import { OfflineStatus } from '@/shared/components/offline-banner/offline-status';
 import { Toaster } from '@/shared/components/toast/toaster';
 import { atkinson, fraunces } from '@/shared/styles/fonts';
-import { THEME_SCRIPT } from '@/shared/theme/theme';
+import { THEME_COLORS, THEME_SCRIPT } from '@/shared/theme/theme';
 import { Providers } from './_components/providers';
 import { SiteChrome } from './_components/site-chrome';
 import { SiteFooter } from './_components/site-footer';
@@ -28,15 +28,27 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  viewportFit: 'cover',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f5efe3' },
-    { media: '(prefers-color-scheme: dark)', color: '#0f1619' },
-  ],
-};
+/**
+ * The browser chrome follows the page: a signed-in viewer's chosen theme
+ * (the server already knows it), else the OS setting. `applyTheme` keeps the
+ * metas in step when the viewer switches without a reload.
+ */
+export async function generateViewport(): Promise<Viewport> {
+  const viewer = await getViewer().catch(() => null);
+  const chosen = viewer?.theme;
+  return {
+    width: 'device-width',
+    initialScale: 1,
+    viewportFit: 'cover',
+    themeColor:
+      chosen === 'light' || chosen === 'dark'
+        ? THEME_COLORS[chosen]
+        : [
+            { media: '(prefers-color-scheme: light)', color: THEME_COLORS.light },
+            { media: '(prefers-color-scheme: dark)', color: THEME_COLORS.dark },
+          ],
+  };
+}
 
 export default async function LocaleLayout({ children }: LayoutProps<'/[locale]'>) {
   const locale = await rootLocale();

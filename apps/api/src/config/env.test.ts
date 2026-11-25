@@ -28,7 +28,28 @@ describe('parseEnv', () => {
       NOMINATIM_ENABLED: false,
       DEMO_PASSWORD: 'heremita-demo-2026',
       SERVER_FETCH_SECRET: null,
+      AI_PROVIDER: 'off',
+      ANTHROPIC_API_KEY: null,
+      AI_MODEL: 'claude-opus-5-5',
+      AI_DAILY_LIMIT: 200,
     });
+  });
+
+  it('requires_an_anthropic_key_for_the_claude_ai_provider', () => {
+    expect(() => parseEnv({ ...MINIMAL, AI_PROVIDER: 'claude', ANTHROPIC_API_KEY: ' ' })).toThrow(
+      /- ANTHROPIC_API_KEY: is required when AI_PROVIDER=claude/,
+    );
+    expect(parseEnv({ ...MINIMAL, AI_PROVIDER: 'claude', ANTHROPIC_API_KEY: 'sk-test' })).toEqual(
+      expect.objectContaining({ AI_PROVIDER: 'claude', ANTHROPIC_API_KEY: 'sk-test' }),
+    );
+  });
+
+  it('refuses_the_fake_ai_provider_in_production_unless_fakes_are_allowed', () => {
+    const parse = () =>
+      parseEnv({ ...PRODUCTION, ALLOW_FAKE_PROVIDERS: undefined, AI_PROVIDER: 'fake' });
+
+    expect(parse).toThrow(/- AI_PROVIDER: fake is refused in production/);
+    expect(parseEnv({ ...PRODUCTION, AI_PROVIDER: 'fake' }).AI_PROVIDER).toBe('fake');
   });
 
   it('reads_the_port_as_a_number', () => {

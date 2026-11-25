@@ -1,9 +1,10 @@
-import type { Locale } from '@heremita/shared';
 import { AJAXError, type TransformStyleFunction } from 'maplibre-gl';
 import { publicEnv } from '@/public-env';
+import type { LabelLanguage } from './label-language';
+
+export { labelLanguage, type LabelLanguage } from './label-language';
 
 export type MapTheme = 'light' | 'dark';
-export type LabelLanguage = 'en' | 'es' | 'pt';
 export type Basemap = 'primary' | 'fallback';
 
 type StyleSpecification = Parameters<TransformStyleFunction>[1];
@@ -39,13 +40,6 @@ export function labelFont(
   style: StyleSpecification | undefined,
 ): string[] | null {
   return style?.glyphs ? BOLD_FONT[basemap] : null;
-}
-
-/** OpenMapTiles `name:<language>` keys use bare language codes. */
-const LABEL_LANGUAGES: Record<Locale, LabelLanguage> = { en: 'en', es: 'es', 'pt-BR': 'pt' };
-
-export function labelLanguage(locale: Locale): LabelLanguage {
-  return LABEL_LANGUAGES[locale];
 }
 
 function showsName(layer: LayerSpecification): boolean {

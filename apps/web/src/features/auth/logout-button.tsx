@@ -2,7 +2,7 @@
 
 import { apiRoutes } from '@heremita/shared/api-routes';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { apiFetch } from '@/lib/api/client';
 import { isUnauthenticated } from '@/lib/api/problem';
 import { Button } from '@/shared/components/button/button';
@@ -11,6 +11,8 @@ import { useSignedOut } from '@/shared/hooks/use-signed-out';
 
 interface LogoutButtonProps {
   className?: string;
+  /** Decorative icon before the label (menus). */
+  icon?: ReactNode;
 }
 
 /**
@@ -18,7 +20,7 @@ interface LogoutButtonProps {
  * already ended counts as logged out. Called through `apiFetch` directly, not
  * a mutation, so the global 401 handler does not send the viewer to log-in.
  */
-export function LogoutButton({ className }: LogoutButtonProps) {
+export function LogoutButton({ className, icon }: LogoutButtonProps) {
   const t = useTranslations('auth.account');
   const signedOut = useSignedOut();
   const [pending, setPending] = useState(false);
@@ -39,6 +41,7 @@ export function LogoutButton({ className }: LogoutButtonProps) {
 
   return (
     <Button className={className} variant="ghost" busy={pending} onClick={() => void logOut()}>
+      {pending ? null : icon}
       {pending ? t('loggingOut') : t('logOut')}
     </Button>
   );

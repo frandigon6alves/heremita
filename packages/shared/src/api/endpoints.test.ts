@@ -62,8 +62,8 @@ function keyPaths(schema: z.ZodType, prefix: string): string[] {
 }
 
 describe('endpoints', () => {
-  it('defines_the_51_endpoints_of_the_v1_api', () => {
-    expect(definitions).toHaveLength(51);
+  it('defines_the_52_endpoints_of_the_v1_api', () => {
+    expect(definitions).toHaveLength(52);
   });
 
   it('gives_every_method_and_path_one_endpoint', () => {

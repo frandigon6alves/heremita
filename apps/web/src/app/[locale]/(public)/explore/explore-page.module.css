@@ -12,9 +12,23 @@
 }
 
 .title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   font-family: var(--font-heading);
   font-size: var(--text-2xl);
   line-height: var(--leading-2xl);
+}
+
+.titleIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--space-12);
+  height: var(--space-12);
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
 }
 
 .lead {

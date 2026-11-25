@@ -18,19 +18,41 @@
 .brand {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  /* The mark alone (narrow phones) still fills a 44 px target. */
+  min-width: var(--target-min);
   min-height: var(--target-min);
+  padding-inline-end: var(--space-1);
+  border-radius: var(--radius-md);
   color: var(--color-text);
   font-family: var(--font-heading);
   font-size: var(--text-lg);
   font-weight: 600;
   font-variation-settings: 'SOFT' 50;
   text-decoration: none;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.brand:active {
+  transform: scale(var(--pressed-scale));
+}
+
+/* The narrowest phones keep only the mark; the name is in the link's label. */
+.brandName {
+  display: none;
+}
+
+@media (min-width: 400px) {
+  .brandName {
+    display: inline;
+  }
 }
 
 .navList {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
   padding: 0;
   list-style: none;
 }
@@ -39,9 +61,11 @@
 .navPrimary {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-1);
+  min-width: var(--target-min);
   min-height: var(--target-min);
   padding: 0 var(--space-3);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
@@ -50,19 +74,26 @@
     background-color var(--duration-fast) var(--ease-out);
 }
 
+.navLink > svg,
+.link > svg,
+.languageLabel > svg {
+  flex: none;
+}
+
 .navLink {
   color: var(--color-text);
 }
 
 .navLink[aria-current='page'] {
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.3em;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-weight: 700;
 }
 
 .navPrimary {
   background: var(--color-primary);
   color: var(--color-on-primary);
+  box-shadow: var(--shadow-1);
 }
 
 .navLink:active {
@@ -85,6 +116,21 @@
   }
 }
 
+/* Phones: an icon-only link keeps its name for assistive technology. */
+.navTextPhoneHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.navLink:has(.navTextPhoneHidden) {
+  padding: 0;
+  justify-content: center;
+}
+
 /* Phones: the footer carries Explore, so the bar keeps room for the account links. */
 .optionalOnPhone {
   display: none;
@@ -94,16 +140,26 @@
   .optionalOnPhone {
     display: list-item;
   }
+
+  .navTextPhoneHidden {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .navLink:has(.navTextPhoneHidden) {
+    padding: 0 var(--space-3);
+  }
 }
 
 .footer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4) var(--space-8);
-  padding: var(--space-6) calc(var(--space-4) + env(safe-area-inset-right))
-    calc(var(--space-6) + env(safe-area-inset-bottom))
+  display: grid;
+  gap: var(--space-6);
+  margin-top: auto;
+  padding: var(--space-8) calc(var(--space-4) + env(safe-area-inset-right))
+    calc(var(--space-8) + env(safe-area-inset-bottom))
     calc(var(--space-4) + env(safe-area-inset-left));
   border-top: 1px solid var(--color-border);
   background: var(--color-surface);
@@ -111,10 +167,31 @@
   line-height: var(--leading-sm);
 }
 
+.footerBrand {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 36ch;
+}
+
+.footerBrandName {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text);
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 50;
+}
+
+.tagline {
+  color: var(--color-text-muted);
+}
+
 .inlineList {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: var(--space-1);
   padding: 0;
   list-style: none;
 }
@@ -122,10 +199,16 @@
 .link {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-1);
   min-height: var(--target-min);
-  padding: 0 var(--space-2);
-  border-radius: var(--radius-md);
+  padding: 0 var(--space-3) 0 var(--space-2);
+  border-radius: var(--radius-full);
   color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
 }
 
 .link:active {
@@ -135,10 +218,30 @@
 
 .language {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
 }
 
 .languageLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   color: var(--color-text-muted);
+}
+
+@media (min-width: 768px) {
+  .footer {
+    grid-template-columns: 1fr auto auto;
+    align-items: start;
+    gap: var(--space-8);
+    padding-inline: calc(var(--space-8) + env(safe-area-inset-left))
+      calc(var(--space-8) + env(safe-area-inset-right));
+  }
+}
+
+@media (min-width: 1280px) {
+  .footer {
+    padding-inline: calc((100% - var(--content-max)) / 2);
+  }
 }

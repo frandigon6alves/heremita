@@ -23,5 +23,6 @@ import { SEARCH_FALLBACK, type PlaceSearcher } from './search-fallback.js';
         env.NOMINATIM_ENABLED ? nominatimAdapter({ env, outbound, cache }) : null,
     },
   ],
+  exports: [PlacesService],
 })
 export class PlacesModule {}

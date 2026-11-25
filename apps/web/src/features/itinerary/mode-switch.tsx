@@ -5,7 +5,7 @@ import { TRAVEL_MODES } from '@heremita/shared/plain';
 import { useTranslations } from 'next-intl';
 import { useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
 import { SegmentedControl } from '@/shared/components/segmented-control/segmented-control';
-import { ModeIcon } from './mode-icon';
+import { ModeIcon } from '@/shared/components/mode-icon/mode-icon';
 import styles from './mode-switch.module.css';
 
 interface ModeSwitchProps {

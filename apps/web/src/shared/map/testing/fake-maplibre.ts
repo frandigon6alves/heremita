@@ -127,12 +127,18 @@ export class Map extends Evented {
   readonly sources = new globalThis.Map<string, FakeSource>();
   readonly featureState = new globalThis.Map<string, Record<string, unknown>>();
   readonly styleCalls: { url: string; options: Record<string, unknown> | undefined }[] = [];
-  readonly cameraCalls: { method: 'easeTo' | 'fitBounds'; args: unknown[] }[] = [];
+  readonly cameraCalls: { method: 'easeTo' | 'fitBounds' | 'jumpTo'; args: unknown[] }[] = [];
+  /** `isMoving()`: a test sets it while a camera animation is "running". */
+  moving = false;
+  padding = { top: 0, right: 0, bottom: 0, left: 0 };
   readonly touchZoomRotate = {
     rotationDisabled: false,
     disableRotation: () => this.disableRotation(),
   };
   readonly canvasContainer = document.createElement('div');
+  readonly canvas = document.createElement('canvas');
+  readonly jumps: unknown[] = [];
+  repaints = 0;
   glyphs: string | undefined = 'https://tiles.example/fonts/{fontstack}/{range}.pbf';
   renderedFeatures: FakeFeature[] = [];
 
@@ -270,7 +276,12 @@ export class Map extends Evented {
 
   easeTo(...args: unknown[]): this {
     this.cameraCalls.push({ method: 'easeTo', args });
+    this.rememberPadding(args[0]);
     return this;
+  }
+
+  getPadding(): { top: number; right: number; bottom: number; left: number } {
+    return { ...this.padding };
   }
 
   fitBounds(...args: unknown[]): this {
@@ -280,6 +291,42 @@ export class Map extends Evented {
 
   getCanvasContainer(): HTMLElement {
     return this.canvasContainer;
+  }
+
+  getCanvas(): HTMLCanvasElement {
+    return this.canvas;
+  }
+
+  jumpTo(options: unknown): this {
+    this.jumps.push(options);
+    this.cameraCalls.push({ method: 'jumpTo', args: [options] });
+    this.rememberPadding(options);
+    return this;
+  }
+
+  /** The padding a camera call asked for is applied at once (the real map eases it). */
+  private rememberPadding(options: unknown): void {
+    if (typeof options === 'object' && options !== null && 'padding' in options) {
+      const padding = options.padding as Partial<typeof this.padding>;
+      this.padding = { ...this.padding, ...padding };
+    }
+  }
+
+  isMoving(): boolean {
+    return this.moving;
+  }
+
+  /** The centre of the box at a fixed zoom: enough to see what the caller framed. */
+  cameraForBounds(bounds: [[number, number], [number, number]]): {
+    center: [number, number];
+    zoom: number;
+  } {
+    const [[west, south], [east, north]] = bounds;
+    return { center: [(west + east) / 2, (south + north) / 2], zoom: 12 };
+  }
+
+  triggerRepaint(): void {
+    this.repaints += 1;
   }
 
   remove(): void {

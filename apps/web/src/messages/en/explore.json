@@ -1,10 +1,12 @@
 {
   "landing": {
     "metaDescription": "Plan your own trip: mark places on a map with private notes, sort them into days, and see the route for each day.",
-    "title": "Your trip, your way.",
+    "eyebrow": "Plan · organise · go",
+    "title": "Your trip, <em>your way</em>.",
     "lead": "Mark places on the map, organise the days and see the route between them, on foot, by bike or by car.",
     "cta": "Start planning",
     "ctaSignedIn": "Go to my trips",
+    "exploreLink": "See public trips",
     "stepsTitle": "How it works",
     "steps": {
       "mark": {

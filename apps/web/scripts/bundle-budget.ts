@@ -112,14 +112,17 @@ function measure(buildDir: string): RouteSize[] {
     return size;
   };
 
-  return Object.entries(routes)
-    .filter(([, route]) => !route.startsWith('/_'))
-    .map(([entry, route]) => ({
-      route,
-      gzipBytes: firstLoadFiles(rootMainFiles, readClientManifest(buildDir, entry).entryJSFiles)
-        .map(gzipSize)
-        .reduce((total, size) => total + size, 0),
-    }));
+  return (
+    Object.entries(routes)
+      // Internal routes and route handlers (the app icons, the manifest) ship no page JS.
+      .filter(([entry, route]) => !route.startsWith('/_') && !entry.endsWith('/route'))
+      .map(([entry, route]) => ({
+        route,
+        gzipBytes: firstLoadFiles(rootMainFiles, readClientManifest(buildDir, entry).entryJSFiles)
+          .map(gzipSize)
+          .reduce((total, size) => total + size, 0),
+      }))
+  );
 }
 
 function main() {

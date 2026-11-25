@@ -821,6 +821,10 @@ const MATRIX = {
     },
   ],
   getOrderSuggestion: childCases(childRequest('dayId', 'dayId'), { status: 200 }),
+  suggestPlaces: ownerTripCases(
+    onTrip({ prompt: 'Museums and viewpoints', locale: 'en', count: 2 }),
+    { status: 200 },
+  ),
   searchPlaces: [
     {
       actor: 'anonymous',

@@ -1,16 +1,82 @@
 # Heremita
 
 [![CI](https://github.com/frandigon6alves/heremita/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/frandigon6alves/heremita/actions/workflows/ci.yml)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs)
+![NestJS](https://img.shields.io/badge/NestJS-12-E0234E?logo=nestjs)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql&logoColor=white)
+![Playwright](https://img.shields.io/badge/e2e-Playwright-2EAD33?logo=playwright&logoColor=white)
 
 Plan your own trip: places on a map with your private notes, a day-by-day itinerary you can reorder by touch, a route per day (walk, bike or drive) with distance and time, and reviews and public trips from other travellers. Mobile first, works on desktop. UI in English (the official language) with Spanish and Brazilian Portuguese translations, light and dark themes. Every URL carries its locale (`/en`, `/es`, `/pt-BR`); `/` goes to the visitor's last used locale, else the best `Accept-Language` match, else English.
 
-**Live demo:** https://heremita.vercel.app (web on Vercel, API on Render's free plan, PostgreSQL on Neon). The API sleeps when idle, so the first request after a while can take about a minute.
+**[Live demo](https://heremita.vercel.app/en)** · [A public trip](https://heremita.vercel.app/en/t/0193a000-0000-7000-8000-000300000009) · [OpenAPI document](https://heremita.vercel.app/api/v1/openapi.json) · [Spec](SPEC.md)
 
-| Workspace         | What it is                                                                          | Dev port |
-| ----------------- | ----------------------------------------------------------------------------------- | -------- |
-| `apps/web`        | Next.js 16 (App Router, React 19), MapLibre GL JS, TanStack Query, next-intl, nuqs  | 3100     |
-| `apps/api`        | NestJS 12 REST API under `/api/v1`, Prisma 7, PostgreSQL 18                         | 3101     |
-| `packages/shared` | `@heremita/shared`: zod 4 schemas, the endpoint table and the generated OpenAPI doc | -        |
+The demo runs the web app on Vercel, the API on Render's free plan and PostgreSQL on Neon. The API sleeps when idle, so the first request after a while can take about a minute.
+
+<table>
+  <tr>
+    <td width="68%"><img src="docs/screenshots/planner-desktop.png" alt="Trip planner on desktop: the day's places in order on the left, the walking route between them on a map of Lisbon on the right"></td>
+    <td width="32%"><img src="docs/screenshots/planner-mobile.png" alt="Trip planner on a phone: the map on top, the day's places in a bottom sheet"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/planner-desktop-dark.png" alt="Trip planner in the dark theme"></td>
+    <td><img src="docs/screenshots/explore-mobile.png" alt="Explore page in Brazilian Portuguese on a phone, with a map of each public trip"></td>
+  </tr>
+</table>
+
+## Engineering highlights
+
+A solo, production-shaped project: every point below links to the code or test that backs it.
+
+- **AI that cannot invent places.** Claude suggests places for a prompt ("street food and viewpoints, little walking"); the API keeps a suggestion only when the geocoder finds a real place with that name near the trip, so model text never becomes a pin. Structured output, a refusal fallback, a daily cost cap, and an [eval suite](#ai-place-suggestions) with a golden set, deterministic scores and an LLM judge.
+- **MCP server.** [`apps/mcp`](apps/mcp) lets Claude Desktop, Claude Code or any MCP client search public trips and plan your own (create a trip, search or AI-suggest places, add them to days) through the same typed contract, tested end to end over an in-memory MCP transport.
+- **Contract first.** Every request and response is a zod schema in [`packages/shared`](packages/shared/src). The API validates with it, the web client is typed by it, and the [OpenAPI 3.1 document](packages/shared/openapi.json) is generated from it; a test fails when the document drifts.
+- **Authorisation as a tested matrix.** [`authz-matrix.test.ts`](apps/api/test/authz-matrix.test.ts) has a row for every endpoint (anonymous, non-owner, owner, moderator, crossed ids) and fails when one is missing; [`route-table.test.ts`](apps/api/test/route-table.test.ts) fails when a handler and the contract disagree.
+- **Security by default.** Argon2id passwords, opaque sessions stored hashed in an HttpOnly `__Host-` cookie, an origin check against CSRF, a per-request nonce [Content Security Policy](apps/web/src/csp.ts), per-endpoint rate limits, failed sign-ins counted per address block, and an [HMAC-signed client address](#signed-client-address) so server renders do not share one rate-limit bucket.
+- **Resilient third-party calls.** Place search (Photon) and routing (OSRM) sit behind adapters with a cache, a [token bucket](apps/api/src/providers/core/token-bucket.ts), retries and a [circuit breaker](apps/api/src/providers/core/circuit-breaker.ts), plus fakes for offline development and tests. When routing is down, the day falls back to labelled estimates.
+- **Performance budget.** One hidden MapLibre map renders the thumbnail of every trip card ([`static-map.ts`](apps/web/src/shared/map/static-map.ts)), so a page of cards costs one WebGL context; MapLibre and zod stay off the pages that do not need them; [first-load JavaScript is measured per route](#performance-budget).
+- **Testing at every level.** About 1,600 tests in 212 files: Vitest unit tests, API integration tests on real PostgreSQL (each file works on its own clone of a template database), React Testing Library with MSW, and Playwright journeys on mobile and desktop with axe and CSP checks. Retries are off: a flaky test is a bug.
+- **Gated delivery.** CI runs typecheck, lint, format, build, tests and e2e on every pull request; Render and Vercel deploy `main` only after CI passes; migrations must work with the previous release ([CI/CD](#cicd)).
+- **Spec-driven.** [`SPEC.md`](SPEC.md) holds the interfaces, 75 invariants (each with the test that guards it), every decision and deviation, and a bug log with root causes. Deliberate shortcuts are [marked in the code and listed by CI](#deliberate-shortcuts).
+
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph Browser
+    UI["Next.js client<br/>React 19 · TanStack Query · MapLibre"]
+  end
+  subgraph Vercel
+    WEB["Next.js 16 server<br/>Server Components · CSP proxy<br/>rewrites /api/*"]
+  end
+  subgraph Render
+    API["NestJS 12 API<br/>/api/v1 · zod validation<br/>sessions · rate limits"]
+  end
+  DB[("PostgreSQL 18<br/>Neon")]
+  SHARED[["@heremita/shared<br/>zod schemas → OpenAPI"]]
+  TILES["OpenFreeMap tiles"]
+  PHOTON["Photon<br/>place search"]
+  OSRM["OSRM<br/>routes"]
+  CLAUDE["Claude API<br/>place ideas"]
+
+  UI -- "same-origin /api/*" --> WEB
+  WEB -- "server-to-server GET<br/>signed client address" --> API
+  WEB -- "rewrite" --> API
+  API -- "Prisma 7" --> DB
+  API -- "cache · throttle · breaker" --> PHOTON
+  API -- "cache · throttle · breaker" --> OSRM
+  API -- "structured output<br/>daily budget" --> CLAUDE
+  UI -- "vector tiles" --> TILES
+  SHARED -. "types + schemas" .- WEB
+  SHARED -. "types + schemas" .- API
+```
+
+| Workspace         | What it is                                                                                             | Dev port |
+| ----------------- | ------------------------------------------------------------------------------------------------------ | -------- |
+| `apps/web`        | Next.js 16 (App Router, React 19), MapLibre GL JS, TanStack Query, next-intl, nuqs                     | 3100     |
+| `apps/api`        | NestJS 12 REST API under `/api/v1`, Prisma 7, PostgreSQL 18                                            | 3101     |
+| `packages/shared` | `@heremita/shared`: zod 4 schemas, the endpoint table and the generated OpenAPI doc                    | -        |
+| `apps/mcp`        | MCP server: an AI assistant reads trips and plans yours through the API ([README](apps/mcp/README.md)) | stdio    |
 
 `SPEC.md` is the source of truth for behaviour, contracts and decisions (see [Project documents](#project-documents)). This README covers running, testing and operating the project.
 
@@ -21,6 +87,49 @@ Plan your own trip: places on a map with your private notes, a day-by-day itiner
 - The web app imports values from the zod-free subpaths `@heremita/shared/plain` (limits, option lists such as `LOCALES`, `cleanText`) and `@heremita/shared/api-routes` (method and path of every endpoint), and the schemas only through `apps/web/src/lib/schemas.ts`, which turns zod's JIT off first (the CSP forbids `eval`). An ESLint rule enforces it, so zod only ships to pages with a form.
 - Sessions are opaque tokens stored hashed in PostgreSQL, in an HttpOnly cookie set by the API. Passwords use Argon2id. There is no e-mail delivery at all.
 - Maps use OpenStreetMap data: basemap tiles from OpenFreeMap (VersaTiles as fallback), loaded by the browser; place search through Photon and routes through the FOSSGIS OSRM servers, called only by the API, which caches, throttles and retries them. No API keys, accounts or paid services.
+- Trip cards (Explore, My trips, the landing strip, profiles) show a real map of the trip with its places as pins. The browser draws it: one hidden MapLibre map (`apps/web/src/shared/map/static-map.ts`) renders each card's area in turn and hands back a JPEG, cached for the session, so a page of cards costs one WebGL context instead of one per card. A card draws its map only once it comes near the viewport, shows a route sketch until then, and keeps the sketch when WebGL or the basemap is unavailable. No static-map service is involved.
+- The app bar carries the language and theme menu (every page, signed in or not): a language link loads the same page under the other locale prefix (a signed-in account saves the language first); the theme applies at once, is saved to the account when signed in and kept in `localStorage` otherwise.
+
+## AI place suggestions
+
+In a trip's **Ideas**, _Suggest places with AI_ takes a request in the owner's words and answers real places near the trip, each with a one-line reason; the owner shows one on the map or adds it to the ideas. `POST /api/v1/trips/{tripId}/suggestions` (E52) writes nothing itself.
+
+```mermaid
+flowchart LR
+  P["Owner's request<br/>+ trip context"] --> C["Claude<br/>structured output:<br/>name · category · reason"]
+  C --> G{"Geocoder hit<br/>with that name,<br/>≤ 25 km, not in trip?"}
+  G -- yes --> K["Real place<br/>(OSM key, address)<br/>+ the reason"]
+  G -- no --> D["Dropped<br/>(counted)"]
+```
+
+- **Grounding** ([`grounding.ts`](apps/api/src/suggestions/grounding.ts)). The model only proposes names. Each one goes through the same geocoder as the search box, biased to the trip, and survives only if a hit shares most of its words, lies within 25 km, is not a whole district, and is not in the trip yet. The answer carries the geocoder's place (key, name, address, location), never the model's text, apart from the reason. The API asks for two ideas more than it shows, so a few drops still fill the list.
+- **Model call** ([`claude-idea-generator.ts`](apps/api/src/suggestions/claude-idea-generator.ts)). Claude Opus 5.5 with a zod schema as structured output, low effort (picking known places needs recall, not long reasoning), a 30 s timeout and the SDK's retries, and the server-side fallback for declined requests. The owner's words go in the user turn as quoted data; the system prompt is fixed.
+- **Guard rails.** Owner only; 10 requests per user per hour; a daily budget for the whole API (`AI_DAILY_LIMIT`); prompt and model output are never logged, only counts, tokens and timings. With `AI_PROVIDER=off` (the default) the endpoint answers 503 and the UI explains it.
+- **Without a key.** `AI_PROVIDER=fake` answers deterministic ideas from the offline gazetteer, for development, tests and end-to-end runs.
+
+### Evals
+
+`apps/api/evals/` measures the feature as it ships: the same generator, prompt and grounding, on a [golden set](apps/api/evals/golden-set.ts) of twelve hand-written requests (three languages, big and small destinations, a trip that already holds places, a prompt that tries to override the instructions).
+
+```sh
+pnpm --filter @heremita/api eval:suggestions                       # Claude + Photon + LLM judge (costs money)
+pnpm --filter @heremita/api eval:suggestions --reps=3 --cases=lisboa-street-food-pt,tokyo-coffee-en
+pnpm --filter @heremita/api eval:suggestions --generator=fake      # offline, free: checks the harness
+```
+
+| Metric                                       | Measured by                 | Bar    |
+| -------------------------------------------- | --------------------------- | ------ |
+| Ideas grounded in a real place nearby        | geocoder                    | ≥ 70 % |
+| Ideas no real place matched (hallucinations) | geocoder                    | ≤ 20 % |
+| Cases that got the places asked for          | count                       | ≥ 80 % |
+| Places of an expected category               | golden set                  | ≥ 70 % |
+| Ideas repeating a place already in the trip  | golden set                  | ≤ 5 %  |
+| Refusals                                     | stop reason                 | 0 %    |
+| Place fits the request                       | LLM judge, yes/no per place | ≥ 85 % |
+| Reason in the right language                 | LLM judge                   | ≥ 95 % |
+| Reason true of the place                     | LLM judge                   | ≥ 85 % |
+
+Each run writes `results.jsonl` (every case with its ideas, outcomes and judge verdict), `errors.jsonl` (timeouts and outages, never scored as zeros), `summary.json` and `report.md` (means with 95 % intervals over reps, tokens, cost, p50/p95 latency) to `apps/api/evals/reports/<run>/`, and exits 1 under a bar. The harness itself is unit-tested: an oracle that must pass and a null baseline that must fail ([`runner.test.ts`](apps/api/evals/runner.test.ts)). In CI, the **Evals** workflow runs it on demand (Actions → Evals → Run workflow) with the `ANTHROPIC_API_KEY` secret of the `evals` environment (give it a required reviewer) and publishes the report on the run's summary page; run it before merging a change to the prompt, the model or the grounding.
 
 ## Requirements
 
@@ -73,6 +182,7 @@ Workspace commands:
 | `pnpm --filter @heremita/shared openapi:generate`        | Regenerates `packages/shared/openapi.json` after a contract change              |
 | `pnpm --filter @heremita/api cli reset-password <email>` | Owner password reset (see [Owner operations](#owner-operations))                |
 | `pnpm --filter @heremita/api test:live`                  | One real request per geocoding provider with the real headers; manual, never CI |
+| `pnpm --filter @heremita/api eval:suggestions`           | The AI suggestions eval ([Evals](#evals)); costs money with Claude              |
 | `pnpm --filter @heremita/api db:deploy`                  | `prisma migrate deploy` (production and e2e; never creates migrations)          |
 | `pnpm --filter @heremita/api start`                      | Production API from `dist/` (after `pnpm build`)                                |
 | `pnpm --filter @heremita/web start`                      | Production web app on 3100 (after `pnpm build`)                                 |
@@ -98,6 +208,10 @@ Both apps validate their environment at start-up and stop with a list of the bad
 | `CONTACT_EMAIL`                           | web       | Operator contact shown on `/about`; the FOSSGIS terms require one. Required in production. Never commit a real address.                                                            |
 | `NEXT_PUBLIC_MAP_STYLE_*`                 | web       | Basemap styles (OpenFreeMap light/dark, VersaTiles fallbacks). `NEXT_PUBLIC_*` values are inlined at build time.                                                                   |
 | `DEMO_PASSWORD`                           | api       | Password the seed gives every demo account (at least 12 characters).                                                                                                               |
+| `AI_PROVIDER`                             | api       | `claude`, `fake` or `off` (default). `fake` in a production build is refused unless `ALLOW_FAKE_PROVIDERS=true` (e2e only).                                                        |
+| `ANTHROPIC_API_KEY`                       | api       | Required when `AI_PROVIDER=claude`. A secret: never commit it, never logged.                                                                                                       |
+| `AI_MODEL`                                | api       | Claude model id, default `claude-opus-5-5`.                                                                                                                                        |
+| `AI_DAILY_LIMIT`                          | api       | AI suggestion requests per UTC day for the whole API (cost cap), default 200; past it, 429 until midnight UTC.                                                                     |
 
 ## Tests
 
@@ -120,26 +234,27 @@ Both apps validate their environment at start-up and stop with a list of the bad
 
 SPEC.md (section "I.web.budget") sets first-load JavaScript budgets, gzipped: 180 KB for a page, 240 KB for the planner before its map chunk (MapLibre loads afterwards, off the critical path). `pnpm budget` reads the last production build in `apps/web/.next` (run `pnpm build` first) and prints, per route, the gzip size of the shared runtime plus every client chunk its layouts and page import (1 KB = 1000 bytes), its budget and `WARNING over` when it exceeds it. It is a warning, never a gate: it always exits 0. Chunks loaded on demand (the map, the place search combobox, the report form) are not counted.
 
-Measured on 2026-11-19 (Next 16.4.6, Turbopack) before and after the audit follow-ups (dnd-kit moved into the planner's first load, the site header and footer rendered once from the locale layout); the planner and the pages without a form or a trip are within budget, the rest still over:
+Measured on 2026-11-24 (Next 16.4.6, Turbopack) after the UI refresh (real map cards, the language and theme menu in the app bar), next to the audit measurement of 2026-11-19; the planner and the pages without a form or a trip list are within budget, the rest still over:
 
-| Route                                                                    | Before   | After    | Budget | Status |
-| ------------------------------------------------------------------------ | -------- | -------- | ------ | ------ |
-| `/[locale]/trips/[tripId]` (planner)                                     | 227.3 KB | 230.5 KB | 240 KB | ok     |
-| `/[locale]/trips/[tripId]/settings`                                      | 240.7 KB | 232.5 KB | 180 KB | over   |
-| `/[locale]/settings`                                                     | 231.5 KB | 230.4 KB | 180 KB | over   |
-| `/[locale]/trips/new`                                                    | 237.4 KB | 229.8 KB | 180 KB | over   |
-| `/[locale]/places/[placeId]/review`                                      | 225.4 KB | 224.4 KB | 180 KB | over   |
-| `/[locale]/signup`                                                       | 222.7 KB | 221.6 KB | 180 KB | over   |
-| `/[locale]/login`                                                        | 222.5 KB | 221.4 KB | 180 KB | over   |
-| `/[locale]/t/[tripId]`, `/[locale]/s/[shareToken]`                       | 212.3 KB | 205.3 KB | 180 KB | over   |
-| `/[locale]/places/[placeId]`                                             | 192.3 KB | 191.3 KB | 180 KB | over   |
-| `/[locale]/explore`                                                      | 183.9 KB | 182.9 KB | 180 KB | over   |
-| `/[locale]/u/[userId]`                                                   | 183.4 KB | 182.3 KB | 180 KB | over   |
-| `/[locale]/moderation`                                                   | 181.5 KB | 180.5 KB | 180 KB | over   |
-| `/[locale]/trips`                                                        | 194.5 KB | 180.4 KB | 180 KB | over   |
-| `/[locale]`, `/[locale]/about`, `/[locale]/privacy`, not-found catch-all | 171.8 KB | 170.7 KB | 180 KB | ok     |
+| Route                                              | 2026-11-19 | 2026-11-24 | Budget | Status |
+| -------------------------------------------------- | ---------- | ---------- | ------ | ------ |
+| `/[locale]/trips/[tripId]` (planner)               | 230.5 KB   | 232.6 KB   | 240 KB | ok     |
+| `/[locale]/trips/[tripId]/settings`                | 232.5 KB   | 234.7 KB   | 180 KB | over   |
+| `/[locale]/settings`                               | 230.4 KB   | 232.6 KB   | 180 KB | over   |
+| `/[locale]/trips/new`                              | 229.8 KB   | 232.2 KB   | 180 KB | over   |
+| `/[locale]/places/[placeId]/review`                | 224.4 KB   | 226.9 KB   | 180 KB | over   |
+| `/[locale]/signup`                                 | 221.6 KB   | 224.3 KB   | 180 KB | over   |
+| `/[locale]/login`                                  | 221.4 KB   | 224.1 KB   | 180 KB | over   |
+| `/[locale]/t/[tripId]`, `/[locale]/s/[shareToken]` | 205.3 KB   | 207.5 KB   | 180 KB | over   |
+| `/[locale]/places/[placeId]`                       | 191.3 KB   | 193.6 KB   | 180 KB | over   |
+| `/[locale]/explore`                                | 182.9 KB   | 187.4 KB   | 180 KB | over   |
+| `/[locale]/u/[userId]`                             | 182.3 KB   | 186.8 KB   | 180 KB | over   |
+| `/[locale]/trips`                                  | 180.4 KB   | 184.2 KB   | 180 KB | over   |
+| `/[locale]/moderation`                             | 180.5 KB   | 182.4 KB   | 180 KB | over   |
+| `/[locale]` (landing)                              | 170.7 KB   | 176.8 KB   | 180 KB | ok     |
+| `/[locale]/about`, `/[locale]/privacy`, not-found  | 170.7 KB   | 175.0 KB   | 180 KB | ok     |
 
-The floor every page shares is about 171 KB: React DOM (73.4 KB), the Next.js client router and Turbopack runtime (about 62 KB), `intl-messageformat` from next-intl (12.4 KB), TanStack Query (5.5 KB) and the site header and footer's client parts (language switcher, account menu, nav links; 4.5 KB), now shipped once in the locale layout's chunk instead of a copy in the not-found chunk and in each page's. zod and the shared schemas (about 39 KB) load only on the pages with a form (log in, sign up, settings, new trip, trip settings, review) and with the first failed API call; nuqs only on the planner, the read-only trip pages and the place page; dnd-kit (15.6 KB) only on the planner, part of its first load so the owner's rows are sortable from the first paint and never swapped under a tap. Loaded on demand and not counted: the map, the place search combobox (downshift, on the first focus of the field) and the report form (on its first open). Each page's HTML carries only the message namespaces its client components use (`ClientMessages`; `src/i18n/client-messages.test.ts` checks every route).
+The floor every page shares is about 175 KB: React DOM (73.4 KB), the Next.js client router and Turbopack runtime (about 62 KB), `intl-messageformat` from next-intl (12.4 KB), TanStack Query (5.5 KB) and the site header and footer's client parts (language and theme menu, account menu, nav links, icons; about 9 KB), shipped once in the locale layout's chunk instead of a copy in the not-found chunk and in each page's. Pages that list trips add the card's map component (about 2 KB); MapLibre itself loads on demand when a card comes near the viewport, and `src/shared/components/trip-thumbnail/static-imports.test.ts` keeps it out of the card's static import graph. zod and the shared schemas (about 39 KB) load only on the pages with a form (log in, sign up, settings, new trip, trip settings, review) and with the first failed API call; nuqs only on the planner, the read-only trip pages and the place page; dnd-kit (15.6 KB) only on the planner, part of its first load so the owner's rows are sortable from the first paint and never swapped under a tap. Loaded on demand and not counted: the map, the place search combobox (downshift, on the first focus of the field) and the report form (on its first open). Each page's HTML carries only the message namespaces its client components use (`ClientMessages`; `src/i18n/client-messages.test.ts` checks every route).
 
 The production output carries only MapLibre's production library and worker: a Turbopack rule (`scripts/maplibre-url-loader.mjs`) stops MapLibre's fallback worker URL from being read as a pattern that copied all of `maplibre-gl/dist` (its 3.8 MB of development builds included) into `.next/static/media` (`.next/static` 8.5 MB → 3.6 MB).
 
@@ -247,7 +362,8 @@ The live demo already exists, so steps 1 to 4 describe how it should be configur
    - Environment variables (Production and Preview): `API_URL` = the Render URL from step 2 (no trailing slash; baked in at build time, so change it → redeploy), `SESSION_COOKIE_NAME=__Host-hm_session` (the API runs with `NODE_ENV=production`, so its cookie is Secure), `CONTACT_EMAIL` = the operator address shown on `/about` (required in production). `SERVER_FETCH_SECRET` = the same value as on Render (required; the build fails without it). Optional: `NEXT_PUBLIC_MAP_STYLE_LIGHT`, `NEXT_PUBLIC_MAP_STYLE_DARK`, `NEXT_PUBLIC_MAP_STYLE_FALLBACK_LIGHT`, `NEXT_PUBLIC_MAP_STYLE_FALLBACK_DARK` (the defaults are OpenFreeMap and VersaTiles). Never set `NEXT_PUBLIC_E2E`.
    - Settings → Environments → Production: automatic aliasing (auto-assign custom domains) on. Settings → Build and Deployment → Deployment Checks → Add Checks → GitHub → select `checks` and `e2e`.
 4. Back on Render, set `WEB_ORIGIN` / `PUBLIC_SITE_URL` to the final web URL if they were placeholders, and redeploy once. Then open `https://<web>/api/v1/health/ready`: it should answer `{"status":"ok","db":"up"}` through the Vercel rewrite.
-5. GitHub (optional): Settings → Branches → add a rule or ruleset for `main` that requires the `checks` and `e2e` status checks, so a pull request cannot merge red.
+5. AI suggestions (optional): create an API key in the Anthropic Console, set a monthly spend limit there, then on Render set `ANTHROPIC_API_KEY` and `AI_PROVIDER=claude` and redeploy. For the Evals workflow, add the same key as the secret `ANTHROPIC_API_KEY` of an `evals` environment with yourself as required reviewer (Settings → Environments). Until then the feature answers "unavailable".
+6. GitHub (optional): Settings → Branches → add a rule or ruleset for `main` that requires the `checks` and `e2e` status checks, so a pull request cannot merge red.
 
 The free Render instance sleeps after 15 minutes without traffic; the first request after that takes about a minute.
 

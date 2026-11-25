@@ -37,6 +37,13 @@ services:
         value: osrm
       - key: OSRM_URL
         value: https://routing.openstreetmap.de
+      # AI place suggestions: "off" until the key is set, then "claude" (README, AI place suggestions).
+      - key: AI_PROVIDER
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: AI_DAILY_LIMIT
+        value: '100'
       - key: DEMO_PASSWORD
         generateValue: true
       # Same value as SERVER_FETCH_SECRET on Vercel (openssl rand -base64 32).
