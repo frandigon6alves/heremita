@@ -30,6 +30,8 @@ export interface PlaceSearchProps {
   defaultValue?: string;
   /** Every change of the text, including the name a selection writes into it. */
   onInputChange?: (text: string) => void;
+  /** Id of the form's error message for this field: marks the field invalid and described by it. */
+  errorId?: string;
 }
 
 type Combobox = ComponentType<PlaceSearchComboboxProps>;
@@ -120,6 +122,8 @@ export function PlaceSearch({ defaultValue = '', ...props }: PlaceSearchProps) {
           aria-expanded={false}
           aria-controls={listboxId}
           aria-autocomplete="list"
+          aria-invalid={props.errorId === undefined ? undefined : true}
+          aria-describedby={props.errorId}
           className={styles.input}
           placeholder={name}
           type="text"

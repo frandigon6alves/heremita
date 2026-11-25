@@ -1,22 +1,9 @@
 'use client';
 
-import { PlaceSearch } from '@/features/place-search';
 import { TripForm } from '@/features/trips/trip-form';
+import { DestinationSearch } from '../../_components/destination-search';
 
 /** The create form with the place search as its destination field. */
 export function NewTripForm() {
-  return (
-    <TripForm
-      renderDestination={({ label, defaultValue, onPick, onText }) => (
-        <PlaceSearch
-          label={label}
-          showLabel
-          intent="submit"
-          defaultValue={defaultValue}
-          onSelect={onPick}
-          onInputChange={onText}
-        />
-      )}
-    />
-  );
+  return <TripForm renderDestination={(picker) => <DestinationSearch {...picker} />} />;
 }

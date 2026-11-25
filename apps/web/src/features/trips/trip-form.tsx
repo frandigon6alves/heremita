@@ -6,7 +6,7 @@ import { LIMITS } from '@heremita/shared/plain';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useState, type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { useForm, useWatch, type FieldErrors, type Resolver } from 'react-hook-form';
 import { apiFetch } from '@/lib/api/client';
 import { bodyPathsOf, hasCode, SERVER_ERROR, showFieldErrors } from '@/lib/api/failure';
@@ -31,8 +31,6 @@ import {
   type NewTripValues,
 } from './new-trip-model';
 import styles from './trip-form.module.css';
-
-/** A field the API refused although it passed the shared schema here. */
 
 const resolver: Resolver<NewTripValues, unknown, CreateTripBody> = (values) => {
   const parsed = parseNewTrip(values);
@@ -158,6 +156,7 @@ export function TripForm({ renderDestination }: TripFormProps) {
     }
   };
   const destinationError = message('destination');
+  const destinationErrorId = useId();
 
   return (
     <form className={styles.form} noValidate onSubmit={(event) => void onSubmit(event)}>
@@ -169,10 +168,13 @@ export function TripForm({ renderDestination }: TripFormProps) {
         {...register('title')}
       />
       <div className={styles.group}>
-        {renderDestination(picker)}
+        {renderDestination({
+          ...picker,
+          errorId: destinationError === undefined ? undefined : destinationErrorId,
+        })}
         <p className={styles.summary}>{t('destinationHint')}</p>
         {destinationError === undefined ? null : (
-          <p className={styles.fieldError} role="alert">
+          <p id={destinationErrorId} className={styles.fieldError} role="alert">
             {destinationError}
           </p>
         )}

@@ -46,9 +46,9 @@ export function VisibilitySettings({ trip }: { trip: TripOwner }) {
   return (
     <form className={styles.visibility} noValidate onSubmit={submit}>
       <fieldset className={styles.choices} disabled={!online || update.isPending}>
-        <legend className={styles.legend}>
-          {t('legend')} <StatusLine status={status()} />
-        </legend>
+        {/* The status stays out of the legend: the group's name must not change as it saves. */}
+        <legend className={styles.legend}>{t('legend')}</legend>
+        <StatusLine status={status()} />
         {OPTIONS.map((option) => (
           <label key={option} className={styles.choice}>
             <input

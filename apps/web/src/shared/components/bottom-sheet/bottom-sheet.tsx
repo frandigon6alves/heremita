@@ -152,6 +152,11 @@ export function BottomSheet({
     if (current === null || current.pointerId !== event.pointerId) {
       return;
     }
+    // A mouse released outside the header before the drag began never sent pointerup here.
+    if (event.pointerType !== 'touch' && event.buttons === 0) {
+      gesture.current = null;
+      return;
+    }
     const grownBy = current.startY - event.clientY;
     if (!current.dragging) {
       if (Math.abs(grownBy) < DRAG_SLOP_PX) {

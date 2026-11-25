@@ -417,7 +417,10 @@ describe('PlannerScreen optimise order', () => {
 
     await user.click(screen.getByRole('button', { name: 'Optimise order' }));
 
-    expect(await screen.findByText('This order is already the shortest.')).toBeInTheDocument();
+    // Shown in the dialog and read out once through the app's live region.
+    expect(
+      await within(screen.getByRole('dialog')).findByText('This order is already the shortest.'),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
   });
 
@@ -447,7 +450,7 @@ describe('PlannerScreen optimise order', () => {
     });
     const { user } = renderPlanner();
     await user.click(screen.getByRole('button', { name: 'Optimise order' }));
-    await screen.findByText('Before: 25 min · After: 15 min');
+    await within(screen.getByRole('dialog')).findByText('Before: 25 min · After: 15 min');
 
     await user.click(screen.getByRole('button', { name: 'Apply' }));
 

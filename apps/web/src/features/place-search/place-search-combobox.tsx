@@ -55,6 +55,7 @@ export function PlaceSearchCombobox({
   label,
   showLabel = false,
   onInputChange,
+  errorId,
   inputId,
   initialText,
   restoreCaret,
@@ -225,6 +226,8 @@ export function PlaceSearchCombobox({
             spellCheck: false,
             maxLength: LIMITS.SEARCH_Q_MAX,
             'aria-busy': loading || undefined,
+            'aria-invalid': errorId === undefined ? undefined : true,
+            'aria-describedby': errorId,
           })}
         />
         {text === '' ? null : (

@@ -60,7 +60,8 @@ export interface SortableListProps<Id extends string> {
 
 /**
  * Vertical list reordered by dragging each row's `DragHandle`: mouse/pen
- * after 4 px, touch after a 200 ms press (a quick swipe scrolls), keyboard
+ * after 4 px, touch after a 200 ms press (the handle has `touch-action: none`:
+ * a swipe elsewhere on the row scrolls), keyboard
  * with Space + arrows. The drag is one way among several: rows still need
  * their own move-up/down menu (V55).
  */
@@ -134,13 +135,14 @@ export function SortableList<Id extends string>({
         strategy={verticalListSortingStrategy}
         disabled={disabled}
       >
-        <ul className={styles.list} aria-label={label}>
+        {/* Ordered: the position is the point of a reorderable list (the read-only one is an <ol> too). */}
+        <ol className={styles.list} aria-label={label}>
           {items.map((id) => (
             <SortableRow key={id} id={id} roleDescription={announcements.roleDescription}>
               {(isDragging) => renderItem(id, { isDragging })}
             </SortableRow>
           ))}
-        </ul>
+        </ol>
       </SortableContext>
     </DndContext>
   );
