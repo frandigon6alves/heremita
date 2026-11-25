@@ -154,5 +154,32 @@
     "report": "Denunciar esta viagem",
     "emptyTrip": "Esta viagem ainda não tem lugares.",
     "panelHeading": "Roteiro"
+  },
+  "ai": {
+    "open": "Sugerir lugares com IA",
+    "title": "Sugerir lugares com IA",
+    "promptLabel": "O que você procura?",
+    "disclaimer": "As ideias da IA são conferidas com lugares reais do OpenStreetMap perto da sua viagem. Confira os horários antes de ir.",
+    "examples": "Por exemplo: comida de rua e mirantes, andando pouco. Ou: museus para um dia de chuva.",
+    "submit": "Sugerir",
+    "submitting": "Sugerindo…",
+    "loading": "Procurando lugares reais perto da sua viagem…",
+    "failed": "Nenhuma sugestão desta vez",
+    "errors": {
+      "destination": "Defina um destino nas configurações da viagem, ou adicione um lugar antes, para a IA saber onde procurar.",
+      "quota": "As sugestões com IA de hoje acabaram. Tente de novo amanhã.",
+      "rateLimited": "Você pediu muitas sugestões em pouco tempo. Tente de novo daqui a pouco.",
+      "unavailable": "A IA não conseguiu responder agora. Tente de novo ou escreva de outro jeito.",
+      "geocoding": "A busca de lugares está indisponível agora, então as ideias não puderam ser conferidas. Tente de novo em instantes."
+    },
+    "resultsLabel": "Lugares sugeridos",
+    "empty": "Nenhuma ideia bateu com um lugar real perto da sua viagem. Tente outras palavras.",
+    "dropped": "{count, plural, =0 {Todas as ideias bateram com um lugar real.} one {# ideia não bateu com nenhum lugar real por perto e ficou de fora.} other {# ideias não bateram com nenhum lugar real por perto e ficaram de fora.}}",
+    "showOnMap": "Ver no mapa",
+    "add": "Adicionar às ideias",
+    "added": "Na sua viagem",
+    "close": "Fechar",
+    "promptTooShort": "Descreva o que você procura com pelo menos 3 caracteres.",
+    "found": "{count, plural, =0 {Nenhum lugar real encontrado.} one {# lugar real encontrado.} other {# lugares reais encontrados.}}"
   }
 }

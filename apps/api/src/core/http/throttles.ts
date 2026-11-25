@@ -25,4 +25,5 @@ export const THROTTLES: Record<ThrottleName, ThrottleWindow> = {
   reverse: { limit: 3, ttl: 3 * SECOND_MS },
   route: { limit: 5, ttl: 2_500 },
   ugc: { limit: 10, ttl: HOUR_MS },
+  ai: { limit: 10, ttl: HOUR_MS },
 };

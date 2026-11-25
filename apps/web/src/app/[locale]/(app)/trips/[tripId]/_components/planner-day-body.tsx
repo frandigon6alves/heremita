@@ -1,9 +1,10 @@
 'use client';
 
-import type { TravelMode, TripPlanOwner } from '@heremita/shared';
+import type { PlaceResult, TravelMode, TripPlanOwner } from '@heremita/shared';
 import { LIMITS } from '@heremita/shared/plain';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { AiSuggestions } from '@/features/itinerary/ai-suggestions';
 import { AllDaysList } from '@/features/itinerary/all-days-list';
 import { IdeasList } from '@/features/itinerary/ideas-list';
 import { OptimisePreview } from '@/features/itinerary/optimise-preview';
@@ -33,6 +34,10 @@ interface PlannerDayBodyProps {
   editor: PlanEditor;
   onOpen: (tripPlaceId: string, source: OpenSource) => void;
   onDayModeChange: (mode: TravelMode) => void;
+  /** Adds a place the AI suggested to the ideas. */
+  onAddSuggestion: (place: PlaceResult) => void;
+  /** Shows a place the AI suggested on the map, with its card. */
+  onShowSuggestion: (place: PlaceResult) => void;
 }
 
 /** The panel when no card is open: the ideas, every day, or one day with its route and "Optimise". */
@@ -44,12 +49,25 @@ export function PlannerDayBody({
   editor,
   onOpen,
   onDayModeChange,
+  onAddSuggestion,
+  onShowSuggestion,
 }: PlannerDayBodyProps) {
   const t = useTranslations('itinerary');
   const [optimising, setOptimising] = useState(false);
 
   if (selection === IDEAS) {
-    return <IdeasList plan={plan} selectedPlaceId={null} onOpen={onOpen} editor={editor} />;
+    return (
+      <>
+        <AiSuggestions
+          tripId={tripId}
+          plan={plan}
+          disabled={editor.disabled}
+          onAdd={onAddSuggestion}
+          onShowOnMap={onShowSuggestion}
+        />
+        <IdeasList plan={plan} selectedPlaceId={null} onOpen={onOpen} editor={editor} />
+      </>
+    );
   }
   if (selection === ALL_DAYS) {
     return <AllDaysList plan={plan} selectedPlaceId={null} onOpen={onOpen} />;

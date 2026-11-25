@@ -26,6 +26,7 @@ import { photonAdapter } from './providers/photon/photon.geocoder.js';
 import { ReportsModule } from './reports/reports.module.js';
 import { ReviewsModule } from './reviews/reviews.module.js';
 import { RoutingModule } from './routing/routing.module.js';
+import { SuggestionsModule } from './suggestions/suggestions.module.js';
 import { TripsModule } from './trips/trips.module.js';
 import { UsersModule } from './users/users.module.js';
 
@@ -54,6 +55,7 @@ import { UsersModule } from './users/users.module.js';
     PlanModule,
     PlacesModule,
     RoutingModule,
+    SuggestionsModule,
     ReviewsModule,
     ReportsModule,
     ModerationModule,

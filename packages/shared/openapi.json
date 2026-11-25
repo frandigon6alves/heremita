@@ -3645,6 +3645,119 @@
         }
       }
     },
+    "/trips/{tripId}/suggestions": {
+      "post": {
+        "operationId": "suggestPlaces",
+        "tags": ["trips"],
+        "security": [{ "session": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tripId",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/SuggestPlacesBody" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/PlaceSuggestions" } }
+            }
+          },
+          "400": {
+            "description": "Problem with code `malformed_request`",
+            "content": {
+              "application/problem+json": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+              }
+            }
+          },
+          "401": {
+            "description": "Problem with code `unauthenticated`",
+            "content": {
+              "application/problem+json": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+              }
+            }
+          },
+          "403": {
+            "description": "Problem with code `csrf_rejected`",
+            "content": {
+              "application/problem+json": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+              }
+            }
+          },
+          "404": {
+            "description": "Problem with code `trip_not_found`",
+            "content": {
+              "application/problem+json": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+              }
+            }
+          },
+          "413": {
+            "description": "Problem with code `payload_too_large`",
+            "content": {
+              "application/problem+json": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+              }
+            }
+          },
+          "415": {
+            "description": "Problem with code `unsupported_media_type`",
+            "content": {
+              "application/problem+json": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+              }
+            }
+          },
+          "422": {
+            "description": "Problem with code `destination_required`, `validation_failed`",
+            "content": {
+              "application/problem+json": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+              }
+            }
+          },
+          "429": {
+            "description": "Problem with code `ai_quota_exhausted`, `rate_limited`",
+            "content": {
+              "application/problem+json": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+              }
+            }
+          },
+          "500": {
+            "description": "Problem with code `internal_error`",
+            "content": {
+              "application/problem+json": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem with code `ai_unavailable`, `geocoding_unavailable`, `geocoding_busy`",
+            "content": {
+              "application/problem+json": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/places/search": {
       "get": {
         "operationId": "searchPlaces",
@@ -4963,6 +5076,16 @@
         "required": ["modeToNext"],
         "additionalProperties": false
       },
+      "SuggestPlacesBody": {
+        "type": "object",
+        "properties": {
+          "prompt": { "type": "string", "minLength": 3, "maxLength": 300 },
+          "locale": { "type": "string", "enum": ["en", "es", "pt-BR"] },
+          "count": { "default": 6, "type": "integer", "minimum": 1, "maximum": 8 }
+        },
+        "required": ["prompt", "locale"],
+        "additionalProperties": false
+      },
       "PutReviewBody": {
         "type": "object",
         "properties": {
@@ -5826,12 +5949,21 @@
         },
         "required": ["dayId", "planVersion", "stopIds", "before", "after", "estimated"]
       },
-      "PlaceResults": {
+      "PlaceSuggestions": {
         "type": "object",
         "properties": {
-          "items": { "type": "array", "items": { "$ref": "#/components/schemas/PlaceResult" } }
+          "items": { "type": "array", "items": { "$ref": "#/components/schemas/PlaceSuggestion" } },
+          "dropped": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 }
         },
-        "required": ["items"]
+        "required": ["items", "dropped"]
+      },
+      "PlaceSuggestion": {
+        "type": "object",
+        "properties": {
+          "place": { "$ref": "#/components/schemas/PlaceResult" },
+          "reason": { "type": "string" }
+        },
+        "required": ["place", "reason"]
       },
       "PlaceResult": {
         "type": "object",
@@ -5915,6 +6047,13 @@
           "placeId",
           "rating"
         ]
+      },
+      "PlaceResults": {
+        "type": "object",
+        "properties": {
+          "items": { "type": "array", "items": { "$ref": "#/components/schemas/PlaceResult" } }
+        },
+        "required": ["items"]
       },
       "PlaceDetail": {
         "type": "object",

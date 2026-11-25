@@ -154,5 +154,32 @@
     "report": "Report this trip",
     "emptyTrip": "This trip has no places yet.",
     "panelHeading": "Itinerary"
+  },
+  "ai": {
+    "open": "Suggest places with AI",
+    "title": "Suggest places with AI",
+    "promptLabel": "What are you looking for?",
+    "disclaimer": "The AI's ideas are matched to real places on OpenStreetMap near your trip. Check opening hours before you go.",
+    "examples": "For example: street food and viewpoints, little walking. Or: museums for a rainy day.",
+    "submit": "Suggest",
+    "submitting": "Suggesting…",
+    "loading": "Finding real places near your trip…",
+    "failed": "No suggestions this time",
+    "errors": {
+      "destination": "Give the trip a destination in its settings, or add a place first, so the AI knows where to look.",
+      "quota": "AI suggestions are used up for today. Try again tomorrow.",
+      "rateLimited": "You asked for many suggestions in a short time. Try again in a while.",
+      "unavailable": "The AI could not answer right now. Try again, or word it differently.",
+      "geocoding": "Place search is unavailable right now, so the ideas could not be checked. Try again shortly."
+    },
+    "resultsLabel": "Suggested places",
+    "empty": "None of the ideas matched a real place near your trip. Try different words.",
+    "dropped": "{count, plural, =0 {Every idea matched a real place.} one {# idea matched no real place nearby and was left out.} other {# ideas matched no real place nearby and were left out.}}",
+    "showOnMap": "Show on map",
+    "add": "Add to ideas",
+    "added": "In your trip",
+    "close": "Close",
+    "promptTooShort": "Describe what you are looking for in at least 3 characters.",
+    "found": "{count, plural, =0 {No real places found.} one {# real place found.} other {# real places found.}}"
   }
 }

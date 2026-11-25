@@ -28,6 +28,7 @@ The demo runs the web app on Vercel, the API on Render's free plan and PostgreSQ
 
 A solo, production-shaped project: every point below links to the code or test that backs it.
 
+- **AI that cannot invent places.** Claude suggests places for a prompt ("street food and viewpoints, little walking"); the API keeps a suggestion only when the geocoder finds a real place with that name near the trip, so model text never becomes a pin. Structured output, a refusal fallback, a daily cost cap, and an [eval suite](#ai-place-suggestions) with a golden set, deterministic scores and an LLM judge.
 - **Contract first.** Every request and response is a zod schema in [`packages/shared`](packages/shared/src). The API validates with it, the web client is typed by it, and the [OpenAPI 3.1 document](packages/shared/openapi.json) is generated from it; a test fails when the document drifts.
 - **Authorisation as a tested matrix.** [`authz-matrix.test.ts`](apps/api/test/authz-matrix.test.ts) has a row for every endpoint (anonymous, non-owner, owner, moderator, crossed ids) and fails when one is missing; [`route-table.test.ts`](apps/api/test/route-table.test.ts) fails when a handler and the contract disagree.
 - **Security by default.** Argon2id passwords, opaque sessions stored hashed in an HttpOnly `__Host-` cookie, an origin check against CSRF, a per-request nonce [Content Security Policy](apps/web/src/csp.ts), per-endpoint rate limits, failed sign-ins counted per address block, and an [HMAC-signed client address](#signed-client-address) so server renders do not share one rate-limit bucket.
@@ -55,6 +56,7 @@ flowchart LR
   TILES["OpenFreeMap tiles"]
   PHOTON["Photon<br/>place search"]
   OSRM["OSRM<br/>routes"]
+  CLAUDE["Claude API<br/>place ideas"]
 
   UI -- "same-origin /api/*" --> WEB
   WEB -- "server-to-server GET<br/>signed client address" --> API
@@ -62,6 +64,7 @@ flowchart LR
   API -- "Prisma 7" --> DB
   API -- "cache · throttle · breaker" --> PHOTON
   API -- "cache · throttle · breaker" --> OSRM
+  API -- "structured output<br/>daily budget" --> CLAUDE
   UI -- "vector tiles" --> TILES
   SHARED -. "types + schemas" .- WEB
   SHARED -. "types + schemas" .- API
@@ -84,6 +87,47 @@ flowchart LR
 - Maps use OpenStreetMap data: basemap tiles from OpenFreeMap (VersaTiles as fallback), loaded by the browser; place search through Photon and routes through the FOSSGIS OSRM servers, called only by the API, which caches, throttles and retries them. No API keys, accounts or paid services.
 - Trip cards (Explore, My trips, the landing strip, profiles) show a real map of the trip with its places as pins. The browser draws it: one hidden MapLibre map (`apps/web/src/shared/map/static-map.ts`) renders each card's area in turn and hands back a JPEG, cached for the session, so a page of cards costs one WebGL context instead of one per card. A card draws its map only once it comes near the viewport, shows a route sketch until then, and keeps the sketch when WebGL or the basemap is unavailable. No static-map service is involved.
 - The app bar carries the language and theme menu (every page, signed in or not): a language link loads the same page under the other locale prefix (a signed-in account saves the language first); the theme applies at once, is saved to the account when signed in and kept in `localStorage` otherwise.
+
+## AI place suggestions
+
+In a trip's **Ideas**, _Suggest places with AI_ takes a request in the owner's words and answers real places near the trip, each with a one-line reason; the owner shows one on the map or adds it to the ideas. `POST /api/v1/trips/{tripId}/suggestions` (E52) writes nothing itself.
+
+```mermaid
+flowchart LR
+  P["Owner's request<br/>+ trip context"] --> C["Claude<br/>structured output:<br/>name · category · reason"]
+  C --> G{"Geocoder hit<br/>with that name,<br/>≤ 25 km, not in trip?"}
+  G -- yes --> K["Real place<br/>(OSM key, address)<br/>+ the reason"]
+  G -- no --> D["Dropped<br/>(counted)"]
+```
+
+- **Grounding** ([`grounding.ts`](apps/api/src/suggestions/grounding.ts)). The model only proposes names. Each one goes through the same geocoder as the search box, biased to the trip, and survives only if a hit shares most of its words, lies within 25 km, is not a whole district, and is not in the trip yet. The answer carries the geocoder's place (key, name, address, location), never the model's text, apart from the reason. The API asks for two ideas more than it shows, so a few drops still fill the list.
+- **Model call** ([`claude-idea-generator.ts`](apps/api/src/suggestions/claude-idea-generator.ts)). Claude Opus 5.5 with a zod schema as structured output, low effort (picking known places needs recall, not long reasoning), a 30 s timeout and the SDK's retries, and the server-side fallback for declined requests. The owner's words go in the user turn as quoted data; the system prompt is fixed.
+- **Guard rails.** Owner only; 10 requests per user per hour; a daily budget for the whole API (`AI_DAILY_LIMIT`); prompt and model output are never logged, only counts, tokens and timings. With `AI_PROVIDER=off` (the default) the endpoint answers 503 and the UI explains it.
+- **Without a key.** `AI_PROVIDER=fake` answers deterministic ideas from the offline gazetteer, for development, tests and end-to-end runs.
+
+### Evals
+
+`apps/api/evals/` measures the feature as it ships: the same generator, prompt and grounding, on a [golden set](apps/api/evals/golden-set.ts) of twelve hand-written requests (three languages, big and small destinations, a trip that already holds places, a prompt that tries to override the instructions).
+
+```sh
+pnpm --filter @heremita/api eval:suggestions                       # Claude + Photon + LLM judge (costs money)
+pnpm --filter @heremita/api eval:suggestions --reps=3 --cases=lisboa-street-food-pt,tokyo-coffee-en
+pnpm --filter @heremita/api eval:suggestions --generator=fake      # offline, free: checks the harness
+```
+
+| Metric                                       | Measured by                 | Bar    |
+| -------------------------------------------- | --------------------------- | ------ |
+| Ideas grounded in a real place nearby        | geocoder                    | ≥ 70 % |
+| Ideas no real place matched (hallucinations) | geocoder                    | ≤ 20 % |
+| Cases that got the places asked for          | count                       | ≥ 80 % |
+| Places of an expected category               | golden set                  | ≥ 70 % |
+| Ideas repeating a place already in the trip  | golden set                  | ≤ 5 %  |
+| Refusals                                     | stop reason                 | 0 %    |
+| Place fits the request                       | LLM judge, yes/no per place | ≥ 85 % |
+| Reason in the right language                 | LLM judge                   | ≥ 95 % |
+| Reason true of the place                     | LLM judge                   | ≥ 85 % |
+
+Each run writes `results.jsonl` (every case with its ideas, outcomes and judge verdict), `errors.jsonl` (timeouts and outages, never scored as zeros), `summary.json` and `report.md` (means with 95 % intervals over reps, tokens, cost, p50/p95 latency) to `apps/api/evals/reports/<run>/`, and exits 1 under a bar. The harness itself is unit-tested: an oracle that must pass and a null baseline that must fail ([`runner.test.ts`](apps/api/evals/runner.test.ts)). In CI, the **Evals** workflow runs it on demand (Actions → Evals → Run workflow) with the `ANTHROPIC_API_KEY` secret of the `evals` environment (give it a required reviewer) and publishes the report on the run's summary page; run it before merging a change to the prompt, the model or the grounding.
 
 ## Requirements
 
@@ -136,6 +180,7 @@ Workspace commands:
 | `pnpm --filter @heremita/shared openapi:generate`        | Regenerates `packages/shared/openapi.json` after a contract change              |
 | `pnpm --filter @heremita/api cli reset-password <email>` | Owner password reset (see [Owner operations](#owner-operations))                |
 | `pnpm --filter @heremita/api test:live`                  | One real request per geocoding provider with the real headers; manual, never CI |
+| `pnpm --filter @heremita/api eval:suggestions`           | The AI suggestions eval ([Evals](#evals)); costs money with Claude              |
 | `pnpm --filter @heremita/api db:deploy`                  | `prisma migrate deploy` (production and e2e; never creates migrations)          |
 | `pnpm --filter @heremita/api start`                      | Production API from `dist/` (after `pnpm build`)                                |
 | `pnpm --filter @heremita/web start`                      | Production web app on 3100 (after `pnpm build`)                                 |
@@ -161,6 +206,10 @@ Both apps validate their environment at start-up and stop with a list of the bad
 | `CONTACT_EMAIL`                           | web       | Operator contact shown on `/about`; the FOSSGIS terms require one. Required in production. Never commit a real address.                                                            |
 | `NEXT_PUBLIC_MAP_STYLE_*`                 | web       | Basemap styles (OpenFreeMap light/dark, VersaTiles fallbacks). `NEXT_PUBLIC_*` values are inlined at build time.                                                                   |
 | `DEMO_PASSWORD`                           | api       | Password the seed gives every demo account (at least 12 characters).                                                                                                               |
+| `AI_PROVIDER`                             | api       | `claude`, `fake` or `off` (default). `fake` in a production build is refused unless `ALLOW_FAKE_PROVIDERS=true` (e2e only).                                                        |
+| `ANTHROPIC_API_KEY`                       | api       | Required when `AI_PROVIDER=claude`. A secret: never commit it, never logged.                                                                                                       |
+| `AI_MODEL`                                | api       | Claude model id, default `claude-opus-5-5`.                                                                                                                                        |
+| `AI_DAILY_LIMIT`                          | api       | AI suggestion requests per UTC day for the whole API (cost cap), default 200; past it, 429 until midnight UTC.                                                                     |
 
 ## Tests
 
@@ -311,7 +360,8 @@ The live demo already exists, so steps 1 to 4 describe how it should be configur
    - Environment variables (Production and Preview): `API_URL` = the Render URL from step 2 (no trailing slash; baked in at build time, so change it → redeploy), `SESSION_COOKIE_NAME=__Host-hm_session` (the API runs with `NODE_ENV=production`, so its cookie is Secure), `CONTACT_EMAIL` = the operator address shown on `/about` (required in production). `SERVER_FETCH_SECRET` = the same value as on Render (required; the build fails without it). Optional: `NEXT_PUBLIC_MAP_STYLE_LIGHT`, `NEXT_PUBLIC_MAP_STYLE_DARK`, `NEXT_PUBLIC_MAP_STYLE_FALLBACK_LIGHT`, `NEXT_PUBLIC_MAP_STYLE_FALLBACK_DARK` (the defaults are OpenFreeMap and VersaTiles). Never set `NEXT_PUBLIC_E2E`.
    - Settings → Environments → Production: automatic aliasing (auto-assign custom domains) on. Settings → Build and Deployment → Deployment Checks → Add Checks → GitHub → select `checks` and `e2e`.
 4. Back on Render, set `WEB_ORIGIN` / `PUBLIC_SITE_URL` to the final web URL if they were placeholders, and redeploy once. Then open `https://<web>/api/v1/health/ready`: it should answer `{"status":"ok","db":"up"}` through the Vercel rewrite.
-5. GitHub (optional): Settings → Branches → add a rule or ruleset for `main` that requires the `checks` and `e2e` status checks, so a pull request cannot merge red.
+5. AI suggestions (optional): create an API key in the Anthropic Console, set a monthly spend limit there, then on Render set `ANTHROPIC_API_KEY` and `AI_PROVIDER=claude` and redeploy. For the Evals workflow, add the same key as the secret `ANTHROPIC_API_KEY` of an `evals` environment with yourself as required reviewer (Settings → Environments). Until then the feature answers "unavailable".
+6. GitHub (optional): Settings → Branches → add a rule or ruleset for `main` that requires the `checks` and `e2e` status checks, so a pull request cannot merge red.
 
 The free Render instance sleeps after 15 minutes without traffic; the first request after that takes about a minute.
 

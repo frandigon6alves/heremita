@@ -48,6 +48,7 @@ import {
   orderSuggestionSchema,
   routeQuerySchema,
 } from '../routes.js';
+import { placeSuggestionsSchema, suggestPlacesBodySchema } from '../suggestions.js';
 import {
   copyTripBodySchema,
   createTripBodySchema,
@@ -67,7 +68,15 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 export type EndpointAuth = 'none' | 'optional' | 'required' | 'moderator';
 
 /** Named per-endpoint throttles; endpoints without one use the default throttle. */
-export const THROTTLE_NAMES = ['auth', 'signup', 'search', 'reverse', 'route', 'ugc'] as const;
+export const THROTTLE_NAMES = [
+  'auth',
+  'signup',
+  'search',
+  'reverse',
+  'route',
+  'ugc',
+  'ai',
+] as const;
 export type ThrottleName = (typeof THROTTLE_NAMES)[number];
 
 export interface EndpointDef {
@@ -139,7 +148,7 @@ const openApiDocumentSchema = z.looseObject({ openapi: z.literal('3.1.0') });
 
 const { PAGE_SIZES } = LIMITS;
 
-/** Every endpoint of `/api/v1` (E1–E51), keyed by the operation name of §I.api. */
+/** Every endpoint of `/api/v1` (E1–E52), keyed by the operation name of §I.api. */
 export const endpoints = {
   getLiveness: endpoint({
     method: 'GET',
@@ -527,6 +536,24 @@ export const endpoints = {
     status: 200,
     response: orderSuggestionSchema,
     errors: ['trip_not_found', 'not_found', 'too_few_stops'],
+  }),
+  suggestPlaces: endpoint({
+    method: 'POST',
+    path: '/trips/{tripId}/suggestions',
+    auth: 'required',
+    throttle: 'ai',
+    params: tripParams,
+    body: suggestPlacesBodySchema,
+    status: 200,
+    response: placeSuggestionsSchema,
+    errors: [
+      'trip_not_found',
+      'destination_required',
+      'ai_quota_exhausted',
+      'ai_unavailable',
+      'geocoding_unavailable',
+      'geocoding_busy',
+    ],
   }),
   searchPlaces: endpoint({
     method: 'GET',
