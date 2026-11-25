@@ -59,7 +59,7 @@
     "dark": "Escuro"
   },
   "preferences": {
-    "menu": "Idioma e tema",
+    "mainMenu": "Menu",
     "language": "Idioma",
     "theme": "Tema",
     "themeFailed": "O tema não foi salvo na sua conta. Tente de novo."

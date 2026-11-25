@@ -88,7 +88,7 @@ flowchart LR
 - Sessions are opaque tokens stored hashed in PostgreSQL, in an HttpOnly cookie set by the API. Passwords use Argon2id. There is no e-mail delivery at all.
 - Maps use OpenStreetMap data: basemap tiles from OpenFreeMap (VersaTiles as fallback), loaded by the browser; place search through Photon and routes through the FOSSGIS OSRM servers, called only by the API, which caches, throttles and retries them. No API keys, accounts or paid services.
 - Trip cards (Explore, My trips, the landing strip, profiles) show a real map of the trip with its places as pins. The browser draws it: one hidden MapLibre map (`apps/web/src/shared/map/static-map.ts`) renders each card's area in turn and hands back a JPEG, cached for the session, so a page of cards costs one WebGL context instead of one per card. A card draws its map only once it comes near the viewport, shows a route sketch until then, and keeps the sketch when WebGL or the basemap is unavailable. No static-map service is involved.
-- The app bar carries the language and theme menu (every page, signed in or not): a language link loads the same page under the other locale prefix (a signed-in account saves the language first); the theme applies at once, is saved to the account when signed in and kept in `localStorage` otherwise.
+- From 768 px the app bar carries a language menu and a theme menu (every page, signed in or not); on phones they sit with the navigation and the account in one menu behind a gear. A language link loads the same page under the other locale prefix (a signed-in account saves the language first); the theme applies at once, is saved to the account when signed in and kept in `localStorage` otherwise.
 
 ## AI place suggestions
 
