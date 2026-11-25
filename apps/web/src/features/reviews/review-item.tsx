@@ -35,6 +35,11 @@ export function ReviewItem({ review, signedIn }: ReviewItemProps) {
   const headingId = useId();
   const router = useRouter();
   const [dialog, setDialog] = useState<OpenDialog>(null);
+  // Mounted on the first "Block" only: a long list of reviews holds no idle dialogs.
+  const [blockMounted, setBlockMounted] = useState(false);
+  if (dialog === 'block' && !blockMounted) {
+    setBlockMounted(true);
+  }
   const { author } = review;
 
   function act(next: Exclude<OpenDialog, null>) {
@@ -85,11 +90,13 @@ export function ReviewItem({ review, signedIn }: ReviewItemProps) {
             onClose={() => setDialog(null)}
             target={{ type: 'review', id: review.id }}
           />
-          <BlockUserDialog
-            open={dialog === 'block'}
-            onClose={() => setDialog(null)}
-            user={author}
-          />
+          {blockMounted ? (
+            <BlockUserDialog
+              open={dialog === 'block'}
+              onClose={() => setDialog(null)}
+              user={author}
+            />
+          ) : null}
         </>
       ) : null}
     </article>
