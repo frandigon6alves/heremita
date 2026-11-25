@@ -391,7 +391,8 @@ export function PlannerScreen({ tripId, initialPlan, initialUpdatedAt }: Planner
           onOpen={openPlace}
           onDayModeChange={changeDayMode}
           onAddSuggestion={addResult}
-          onShowSuggestion={(result) => showResult(result, false)}
+          // The dialog's button unmounts with the panel: the card takes the focus.
+          onShowSuggestion={(result) => showResult(result, true)}
         />
       )}
     </TripScreenShell>

@@ -176,10 +176,10 @@
     "empty": "Nenhuma ideia bateu com um lugar real perto da sua viagem. Tente outras palavras.",
     "dropped": "{count, plural, =0 {Todas as ideias bateram com um lugar real.} one {# ideia não bateu com nenhum lugar real por perto e ficou de fora.} other {# ideias não bateram com nenhum lugar real por perto e ficaram de fora.}}",
     "showOnMap": "Ver no mapa",
-    "showOnMapNamed": "Ver {name} no mapa",
     "add": "Adicionar às ideias",
-    "addNamed": "Adicionar {name} às ideias",
     "added": "Na sua viagem",
-    "close": "Fechar"
+    "close": "Fechar",
+    "promptTooShort": "Descreva o que você procura com pelo menos 3 caracteres.",
+    "found": "{count, plural, =0 {Nenhum lugar real encontrado.} one {# lugar real encontrado.} other {# lugares reais encontrados.}}"
   }
 }

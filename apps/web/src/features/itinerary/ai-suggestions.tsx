@@ -8,10 +8,12 @@ import { Button } from '@/shared/components/button/button';
 import { Sparkles } from '@/shared/icons/icons';
 import styles from './ai-suggestions.module.css';
 
-// The dialog (form, results, its mutation) loads on the first press: the
-// planner's first load stays within its budget (I.web.budget).
+// The dialog (form, results, its mutation) loads on demand: the planner's
+// first load stays within its budget (I.web.budget). Pointing at or focusing
+// the button starts the download, so the press itself rarely waits for it.
+const loadDialog = () => import('./ai-suggestions-dialog');
 const AiSuggestionsDialog = dynamic(
-  () => import('./ai-suggestions-dialog').then((module) => module.AiSuggestionsDialog),
+  () => loadDialog().then((module) => module.AiSuggestionsDialog),
   { ssr: false },
 );
 
@@ -28,14 +30,20 @@ export interface AiSuggestionsProps {
 export function AiSuggestions(props: AiSuggestionsProps) {
   const t = useTranslations('itinerary.ai');
   const [open, setOpen] = useState(false);
-  // Mounted from the first press on, so the last answer is still there when it reopens.
+  // Mounted from the first press on, so the dialog keeps its form while it is closed.
   const [mounted, setMounted] = useState(false);
+
+  function preload() {
+    void loadDialog();
+  }
 
   return (
     <>
       <Button
         className={styles.open}
         disabled={props.disabled}
+        onPointerEnter={preload}
+        onFocus={preload}
         onClick={() => {
           setMounted(true);
           setOpen(true);

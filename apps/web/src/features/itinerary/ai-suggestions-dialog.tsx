@@ -3,9 +3,9 @@
 import type { PlaceResult, PlaceSuggestions, TripPlanOwner } from '@heremita/shared';
 import { apiRoutes } from '@heremita/shared/api-routes';
 import { LIMITS } from '@heremita/shared/plain';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useMutationState } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
-import { useState, type FormEvent } from 'react';
+import { useId, useState, type FormEvent } from 'react';
 import { apiFetch } from '@/lib/api/client';
 import { hasCode } from '@/lib/api/failure';
 import { Button } from '@/shared/components/button/button';
@@ -13,8 +13,19 @@ import { Dialog, DialogActions, initialFocus } from '@/shared/components/dialog/
 import { ErrorState } from '@/shared/components/error-state/error-state';
 import { Skeleton, SkeletonBlock } from '@/shared/components/skeleton/skeleton';
 import { TextArea } from '@/shared/components/text-area/text-area';
+import { announce } from '@/shared/components/toast/toast-store';
 import { Check, MapPin, Plus } from '@/shared/icons/icons';
 import styles from './ai-suggestions.module.css';
+
+const PROMPT_MIN = 3;
+
+/**
+ * Not under `planMutationKey(tripId)`: the "Saving…" indicator matches that
+ * prefix, and asking the AI saves nothing.
+ */
+export function suggestMutationKey(tripId: string) {
+  return ['ai-suggestions', tripId] as const;
+}
 
 interface AiSuggestionsDialogProps {
   tripId: string;
@@ -48,6 +59,60 @@ function failure(error: unknown): { key: FailureKey; retry: boolean } | null {
   return null;
 }
 
+interface SuggestionItemProps {
+  place: PlaceResult;
+  reason: string;
+  added: boolean;
+  disabled: boolean;
+  onAdd: () => void;
+  onShowOnMap: () => void;
+}
+
+/**
+ * One suggestion. The buttons keep their visible label as their accessible
+ * name (WCAG 2.5.3, so voice control users can say it) and take the place's
+ * name as their description.
+ */
+function SuggestionItem({
+  place,
+  reason,
+  added,
+  disabled,
+  onAdd,
+  onShowOnMap,
+}: SuggestionItemProps) {
+  const t = useTranslations('itinerary.ai');
+  const nameId = useId();
+  return (
+    <li className={styles.item}>
+      <div className={styles.text}>
+        <h3 id={nameId} className={styles.name}>
+          {place.name}
+        </h3>
+        <p className={styles.label}>{place.label}</p>
+        <p className={styles.reason}>{reason}</p>
+      </div>
+      <div className={styles.actions}>
+        <Button variant="ghost" aria-describedby={nameId} onClick={onShowOnMap}>
+          <MapPin size={20} />
+          {t('showOnMap')}
+        </Button>
+        {added ? (
+          <span className={styles.added}>
+            <Check size={20} />
+            {t('added')}
+          </span>
+        ) : (
+          <Button aria-describedby={nameId} disabled={disabled} onClick={onAdd}>
+            <Plus size={20} />
+            {t('add')}
+          </Button>
+        )}
+      </div>
+    </li>
+  );
+}
+
 /**
  * The owner describes what they want; the API answers real places near the
  * trip (each one found on OpenStreetMap, V77) with the AI's reason. Nothing
@@ -64,20 +129,40 @@ export function AiSuggestionsDialog({
 }: AiSuggestionsDialogProps) {
   const t = useTranslations('itinerary.ai');
   const locale = useLocale();
-  const [prompt, setPrompt] = useState('');
+  const mutationKey = suggestMutationKey(tripId);
+  // The planner unmounts this panel while a place card is open ("Show on map"):
+  // the last answer, kept in the mutation cache, is shown again when it comes back.
+  const [previous] = useMutationState({
+    filters: { mutationKey, status: 'success' },
+    select: (mutation) => ({
+      prompt: mutation.state.variables as string,
+      data: mutation.state.data as PlaceSuggestions,
+    }),
+  }).slice(-1);
+  const [prompt, setPrompt] = useState(previous?.prompt ?? '');
+  const [promptError, setPromptError] = useState(false);
   const suggest = useMutation({
+    mutationKey,
     mutationFn: (text: string): Promise<PlaceSuggestions> =>
       apiFetch(apiRoutes.suggestPlaces, {
         params: { tripId },
         body: { prompt: text, locale, count: LIMITS.SUGGEST_COUNT.default },
       }),
+    onSuccess: ({ items }) => announce(t('found', { count: items.length })),
+    onError: () => announce(t('failed')),
   });
+  const answer = suggest.data ?? (suggest.isIdle ? previous?.data : undefined);
   const inTrip = new Set(plan.places.flatMap((entry) => entry.place.key ?? []));
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const text = prompt.trim();
-    if (text.length >= 3 && !suggest.isPending) {
+    if (text.length < PROMPT_MIN) {
+      setPromptError(true);
+      return;
+    }
+    setPromptError(false);
+    if (!suggest.isPending) {
       suggest.mutate(text);
     }
   }
@@ -94,82 +179,65 @@ export function AiSuggestionsDialog({
     }
     if (suggest.isError) {
       const known = failure(suggest.error);
+      const retry = suggest.variables;
       return (
         <ErrorState
           headingLevel={3}
           title={t('failed')}
           message={known ? t(`errors.${known.key}`) : undefined}
-          onRetry={known && !known.retry ? undefined : () => suggest.mutate(suggest.variables)}
+          onRetry={
+            (known && !known.retry) || retry === undefined ? undefined : () => suggest.mutate(retry)
+          }
           error={suggest.error}
         />
       );
     }
-    if (!suggest.data) {
+    if (!answer) {
       return <p className={styles.hint}>{t('examples')}</p>;
     }
-    const { items, dropped } = suggest.data;
     return (
       <>
-        {items.length === 0 ? (
+        {answer.items.length === 0 ? (
           <p className={styles.hint}>{t('empty')}</p>
         ) : (
           <ul className={styles.list} aria-label={t('resultsLabel')}>
-            {items.map(({ place, reason }) => {
-              const added = inTrip.has(place.key);
-              return (
-                <li key={place.key} className={styles.item}>
-                  <div className={styles.text}>
-                    <h3 className={styles.name}>{place.name}</h3>
-                    <p className={styles.label}>{place.label}</p>
-                    <p className={styles.reason}>{reason}</p>
-                  </div>
-                  <div className={styles.actions}>
-                    <Button
-                      variant="ghost"
-                      aria-label={t('showOnMapNamed', { name: place.name })}
-                      onClick={() => onShowOnMap(place)}
-                    >
-                      <MapPin size={20} />
-                      {t('showOnMap')}
-                    </Button>
-                    {added ? (
-                      <span className={styles.added}>
-                        <Check size={20} />
-                        {t('added')}
-                      </span>
-                    ) : (
-                      <Button
-                        aria-label={t('addNamed', { name: place.name })}
-                        disabled={disabled}
-                        onClick={() => onAdd(place)}
-                      >
-                        <Plus size={20} />
-                        {t('add')}
-                      </Button>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
+            {answer.items.map(({ place, reason }) => (
+              <SuggestionItem
+                key={place.key}
+                place={place}
+                reason={reason}
+                added={inTrip.has(place.key)}
+                disabled={disabled}
+                onAdd={() => onAdd(place)}
+                onShowOnMap={() => onShowOnMap(place)}
+              />
+            ))}
           </ul>
         )}
-        {dropped > 0 ? <p className={styles.hint}>{t('dropped', { count: dropped })}</p> : null}
+        {answer.dropped > 0 ? (
+          <p className={styles.hint}>{t('dropped', { count: answer.dropped })}</p>
+        ) : null}
       </>
     );
   }
 
   return (
     <Dialog open={open} onClose={onClose} title={t('title')}>
-      <form className={styles.form} onSubmit={submit}>
+      {/* noValidate: the hint below speaks the app's language, not the browser's. */}
+      <form className={styles.form} onSubmit={submit} noValidate>
         <TextArea
           label={t('promptLabel')}
           hint={t('disclaimer')}
+          error={promptError ? t('promptTooShort') : undefined}
           rows={3}
           value={prompt}
-          minLength={3}
           maxLength={LIMITS.SUGGEST_PROMPT_MAX}
-          required
-          onChange={(event) => setPrompt(event.target.value)}
+          onChange={(event) => {
+            setPrompt(event.target.value);
+            if (promptError && event.target.value.trim().length >= PROMPT_MIN) {
+              setPromptError(false);
+            }
+          }}
           {...initialFocus}
         />
         <Button
@@ -182,9 +250,8 @@ export function AiSuggestionsDialog({
           {suggest.isPending ? t('submitting') : t('submit')}
         </Button>
       </form>
-      <div className={styles.result} aria-live="polite">
-        {body()}
-      </div>
+      {/* Outcomes are announced in one sentence (announce), not by reading the whole list. */}
+      <div className={styles.result}>{body()}</div>
       <DialogActions>
         <Button onClick={onClose}>{t('close')}</Button>
       </DialogActions>
